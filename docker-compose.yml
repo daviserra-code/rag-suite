@@ -11,6 +11,41 @@ services:
       - ./packages:/app/packages
       - ./ui:/app/ui
       - ./data:/app/data
+  shopfloor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      - API_BASE=http://localhost:8010/api
+    depends_on: [postgres, chroma]
+    ports: ["8010:8010"]
+    command: uvicorn apps.shopfloor_copilot.main:app --host 0.0.0.0 --port 8010 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+  cittadino:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on: [postgres, chroma]
+    ports: ["8020:8020"]
+    command: uvicorn apps.cittadino_facile.main:app --host 0.0.0.0 --port 8020 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+  musea:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on: [postgres, chroma]
+    ports: ["8030:8030"]
+    command: uvicorn apps.musea.main:app --host 0.0.0.0 --port 8030 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
   postgres:
     image: postgres:16
     environment:
