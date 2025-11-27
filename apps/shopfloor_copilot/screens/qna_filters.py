@@ -76,8 +76,9 @@ Format: Return only the checklist items as a numbered list."""
             response = await client.post(
                 f"{api_base}/ask",
                 json={
-                    "question": prompt,
-                    "collection": "technical_docs"
+                    "app": "shopfloor_docs",
+                    "query": prompt,
+                    "filters": {}
                 }
             )
             
@@ -358,8 +359,84 @@ def build_qna_filters():
         checklist_display.refresh()
     
     def export_pdf():
-        """Export checklist to PDF (placeholder)"""
-        ui.notify('PDF export feature coming soon', type='info')
+        """Export checklist to PDF"""
+        checklist_id = app.storage.user.get('selected_checklist_id')
+        
+        if not checklist_id:
+            ui.notify('Please select a checklist first', type='warning')
+            return
+        
+        # Get checklist details
+        try:
+            with engine.connect() as conn:
+                # Get checklist info
+                checklist_result = conn.execute(text("""
+                    SELECT id, line_id, name, checklist_type, description, created_at
+                    FROM checklists
+                    WHERE id = :checklist_id
+                """), {"checklist_id": checklist_id})
+                
+                checklist = checklist_result.fetchone()
+                if not checklist:
+                    ui.notify('Checklist not found', type='negative')
+                    return
+                
+                # Get checklist items
+                items_result = conn.execute(text("""
+                    SELECT sequence, item_text, is_critical
+                    FROM checklist_items
+                    WHERE checklist_id = :checklist_id
+                    ORDER BY sequence
+                """), {"checklist_id": checklist_id})
+                
+                items = [dict(row._mapping) for row in items_result]
+        except Exception as e:
+            ui.notify(f'Error loading checklist: {str(e)}', type='negative')
+            return
+        
+        # Build PDF content
+        content_html = f'''
+        <h2>Checklist Information</h2>
+        <table style="margin-bottom: 20px;">
+            <tr><th>Line ID</th><td>{checklist[1]}</td></tr>
+            <tr><th>Checklist Name</th><td>{checklist[2]}</td></tr>
+            <tr><th>Type</th><td>{checklist[3]}</td></tr>
+            <tr><th>Description</th><td>{checklist[4] or 'N/A'}</td></tr>
+            <tr><th>Created</th><td>{checklist[5]}</td></tr>
+        </table>
+        
+        <h2>Checklist Items</h2>
+        <div style="margin-top: 15px;">
+        '''
+        
+        for item in items:
+            critical_class = ' checklist-critical' if item['is_critical'] else ''
+            critical_badge = ' <span style="color: #dc2626; font-weight: bold;">[CRITICAL]</span>' if item['is_critical'] else ''
+            
+            content_html += f'''
+            <div class="checklist-item{critical_class}">
+                <div class="checklist-checkbox"></div>
+                <div style="flex-grow: 1;">
+                    <strong>{item['sequence']}.</strong> {item['item_text']}{critical_badge}
+                </div>
+            </div>
+            '''
+        
+        content_html += '</div>'
+        
+        # Generate PDF
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"checklist_{checklist[1]}_{checklist[3]}_{timestamp}.pdf"
+        
+        pdf_bytes = export_to_pdf(
+            title=f'{checklist[2]} Checklist',
+            subtitle=f'Line {checklist[1]} - {checklist[3]}',
+            content_html=content_html,
+            filename=filename
+        )
+        
+        ui.download(pdf_bytes, filename)
+        ui.notify('Checklist exported to PDF successfully', type='positive')
     
     # Main layout
     with ui.row().classes('w-full gap-4'):

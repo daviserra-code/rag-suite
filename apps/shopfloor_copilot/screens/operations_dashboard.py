@@ -3,6 +3,12 @@ from sqlalchemy import text
 from apps.shopfloor_copilot.routers.oee_analytics import get_db_engine
 from datetime import datetime, timedelta
 
+# Import export utilities
+import sys
+sys.path.insert(0, '/app')
+from packages.export_utils.csv_export import create_csv_download
+from packages.export_utils.pdf_export import export_to_pdf, generate_pdf_metric_cards, generate_pdf_table
+
 def build_operations_dashboard(selected_line: str = None):
     """Operations Dashboard screen with line selector and detailed metrics"""
     
@@ -227,11 +233,37 @@ def build_operations_dashboard(selected_line: str = None):
                 with ui.card().classes('w-80 bg-gray-800 border border-gray-700 p-6'):
                     ui.label('Quick Actions').classes('text-lg font-semibold text-white mb-4')
                     
+                    def export_line_report():
+                        """Export current line data to CSV"""
+                        if not line_data or not station_data:
+                            ui.notify('No data to export', type='warning')
+                            return
+                        
+                        # Prepare CSV data
+                        csv_data = []
+                        for station in station_data:
+                            csv_data.append({
+                                'Station': station[0],
+                                'OEE (%)': round(station[1] * 100, 2),
+                                'Availability (%)': round(station[2] * 100, 2),
+                                'Performance (%)': round(station[3] * 100, 2),
+                                'Quality (%)': round(station[4] * 100, 2),
+                                'Units Produced': station[5],
+                                'Good Units': station[6]
+                            })
+                        
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"line_{line_id}_report_{timestamp}.csv"
+                        csv_content = create_csv_download(csv_data, filename)
+                        
+                        ui.download(csv_content, filename)
+                        ui.notify(f'Line {line_id} report exported', type='positive')
+                    
                     with ui.column().classes('gap-3 w-full'):
                         ui.button('Report Issue', icon='report_problem').classes('w-full bg-red-600 hover:bg-red-700 text-white').props('no-caps')
                         ui.button('Request Maintenance', icon='build').classes('w-full bg-yellow-600 hover:bg-yellow-700 text-white').props('no-caps')
                         ui.button('View Detailed Analytics', icon='analytics').classes('w-full bg-teal-600 hover:bg-teal-700 text-white').props('no-caps')
-                        ui.button('Export Report', icon='download').classes('w-full bg-gray-700 hover:bg-gray-600 text-white').props('no-caps')
+                        ui.button('Export Report', icon='download', on_click=export_line_report).classes('w-full bg-gray-700 hover:bg-gray-600 text-white').props('no-caps')
     
     # Build line selector buttons
     with line_selector_container:

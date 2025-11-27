@@ -3,8 +3,14 @@ import httpx
 from nicegui import ui, app
 from typing import List, Dict
 import re
+from datetime import datetime
 
-async def ask_with_citations(question: str, collection: str = "technical_docs") -> Dict:
+# Import export utilities
+import sys
+sys.path.insert(0, '/app')
+from packages.export_utils.pdf_export import export_to_pdf, generate_pdf_section
+
+async def ask_with_citations(question: str, collection: str = "shopfloor_docs") -> Dict:
     """Ask a question and get answer with citations from RAG"""
     try:
         api_base = os.getenv("API_BASE", "http://core-api:8000")
@@ -15,16 +21,35 @@ async def ask_with_citations(question: str, collection: str = "technical_docs") 
             response = await client.post(
                 f"{api_base}/ask",
                 json={
-                    "question": question,
-                    "collection": collection,
-                    "include_sources": True
+                    "app": collection,
+                    "query": question,
+                    "filters": {}
                 }
             )
             
             if response.status_code == 200:
                 result = response.json()
+                print(f"DEBUG: Full API response: {result}")
+                
                 answer = result.get('answer', 'No answer provided')
-                sources = result.get('sources', [])
+                citations = result.get('citations', [])
+                
+                print(f"DEBUG: Found {len(citations)} citations")
+                print(f"DEBUG: Citations: {citations}")
+                
+                # Convert citations to sources format for compatibility
+                sources = []
+                for citation in citations:
+                    sources.append({
+                        'metadata': {
+                            'source': citation.get('doc_id', 'Unknown'),
+                            'page': citation.get('pages', 'N/A'),
+                            'type': 'document',
+                            'url': citation.get('url', '')
+                        },
+                        'content': '',  # Not provided by this API
+                        'score': citation.get('score', 0)
+                    })
                 
                 print(f"Got answer with {len(sources)} sources")
                 
@@ -94,6 +119,65 @@ def build_answer_citations():
     if 'citation_collection' not in app.storage.user:
         app.storage.user['citation_collection'] = 'technical_docs'
     
+    def export_answer_pdf():
+        """Export Q&A answer with citations to PDF"""
+        result = app.storage.user.get('citation_result')
+        question = app.storage.user.get('citation_question')
+        
+        if not result or not result.get('success'):
+            ui.notify('No answer to export', type='warning')
+            return
+        
+        answer = result.get('answer', '')
+        steps = result.get('steps', [])
+        sources = result.get('sources', [])
+        
+        # Build content
+        content_html = f'<h2>Question</h2><p style="font-size: 11pt; font-style: italic; color: #0F7C7C; padding: 10px; background: #f0f9ff; border-left: 3px solid #0F7C7C;">{question}</p>'
+        
+        content_html += f'<h2>Answer</h2><div style="padding: 10px; line-height: 1.8;">{answer.replace(chr(10), "<br>")}</div>'
+        
+        # Parse steps if available
+        if steps and len(steps) > 1:
+            content_html += '<h2>Step-by-Step Guide</h2><ol style="padding-left: 25px;">'
+            for step in steps:
+                content_html += f'<li style="margin-bottom: 12px; line-height: 1.6;">{step}</li>'
+            content_html += '</ol>'
+        
+        # Add citations
+        if sources:
+            content_html += '<h2>Source Citations</h2>'
+            for idx, source in enumerate(sources, 1):
+                metadata = source.get('metadata', {})
+                content = source.get('content', '')[:300]
+                score = source.get('score', 0)
+                
+                content_html += f'''
+                <div class="citation">
+                    <div class="citation-title">[{idx}] {metadata.get('source', 'Unknown Source')}</div>
+                    <div style="font-size: 8pt; color: #888; margin: 5px 0;">
+                        Relevance Score: {score:.3f} | 
+                        Type: {metadata.get('type', 'N/A')} | 
+                        Page: {metadata.get('page', 'N/A')}
+                    </div>
+                    <div class="citation-content">"{content}..."</div>
+                </div>
+                '''
+        
+        # Generate PDF
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"qa_answer_{timestamp}.pdf"
+        
+        pdf_bytes = export_to_pdf(
+            title='Q&A Answer with Citations',
+            subtitle='Shopfloor Copilot Knowledge Base',
+            content_html=content_html,
+            filename=filename
+        )
+        
+        ui.download(pdf_bytes, filename)
+        ui.notify('Answer exported to PDF successfully', type='positive')
+    
     async def submit_question():
         """Submit question to RAG and get answer with citations"""
         question = app.storage.user.get('citation_question', '').strip()
@@ -104,7 +188,7 @@ def build_answer_citations():
         
         ui.notify('Searching knowledge base...', type='info')
         
-        collection = app.storage.user.get('citation_collection', 'technical_docs')
+        collection = app.storage.user.get('citation_collection', 'shopfloor_docs')
         result = await ask_with_citations(question, collection)
         
         app.storage.user['citation_result'] = result
@@ -165,7 +249,7 @@ def build_answer_citations():
             # Actions
             with ui.row().classes('gap-2 mt-2'):
                 ui.button('New Question', icon='refresh', on_click=clear_results).classes('sf-btn secondary')
-                ui.button('Export PDF', icon='picture_as_pdf', on_click=lambda: ui.notify('PDF export coming soon', type='info')).classes('sf-btn')
+                ui.button('Export PDF', icon='picture_as_pdf', on_click=export_answer_pdf).classes('sf-btn')
     
     @ui.refreshable
     def citations_display():
@@ -225,12 +309,13 @@ def build_answer_citations():
             with ui.row().classes('w-full gap-2'):
                 ui.select(
                     {
+                        'shopfloor_docs': 'Shopfloor Documents',
                         'technical_docs': 'Technical Documents',
                         'procedures': 'Procedures',
                         'safety': 'Safety Manuals',
                         'maintenance': 'Maintenance Guides'
                     },
-                    value=app.storage.user.get('citation_collection', 'technical_docs'),
+                    value=app.storage.user.get('citation_collection', 'shopfloor_docs'),
                     label='Collection',
                     on_change=lambda e: app.storage.user.update({'citation_collection': e.value})
                 ).classes('w-48')

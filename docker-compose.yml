@@ -57,6 +57,14 @@ services:
     image: chromadb/chroma:0.5.20
     ports: ["8001:8000"]
     volumes: ["chromadata:/chroma/chroma"]
+  jira-mcp:
+    image: ghcr.io/nguyenvanduocit/jira-mcp:latest
+    environment:
+      - ATLASSIAN_HOST=${ATLASSIAN_HOST:-https://your-company.atlassian.net}
+      - ATLASSIAN_EMAIL=${ATLASSIAN_EMAIL:-your-email@company.com}
+      - ATLASSIAN_TOKEN=${ATLASSIAN_TOKEN:-your-api-token}
+    ports: ["3100:3000"]
+    command: ["-http_port", "3000"]
 volumes:
   pgdata: {}
   chromadata: {}

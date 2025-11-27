@@ -8,6 +8,7 @@ from apps.shopfloor_copilot.screens.answer_citations import build_answer_citatio
 from apps.shopfloor_copilot.screens.ticket_insights import build_ticket_insights
 from apps.shopfloor_copilot.screens.operator_qna_interactive import build_operator_qna
 from apps.shopfloor_copilot.screens.kpi_dashboard_interactive import build_kpi_dashboard
+from apps.shopfloor_copilot.screens.reports import render_reports_screen
 
 def build_ui():
     """Build the Shopfloor Copilot UI"""
@@ -28,6 +29,7 @@ def build_ui():
         tab_filters = ui.tab('Q&A Filters', icon='filter_list')
         tab_citations = ui.tab('Answer Citations', icon='book')
         tab_tickets = ui.tab('Ticket Insights', icon='confirmation_number')
+        tab_reports = ui.tab('Reports', icon='description')
 
     # Container for operations tab content (for programmatic switching)
     operations_container = ui.tab_panels(tabs, value=tab_lines).classes('w-full p-4 bg-white rounded shadow')
@@ -71,3 +73,7 @@ def build_ui():
         # Ticket Insights (Tab 8)
         with ui.tab_panel(tab_tickets).classes('p-4'):
             build_ticket_insights()
+
+        # Reports (Tab 9)
+        with ui.tab_panel(tab_reports).classes('p-4'):
+            render_reports_screen()
