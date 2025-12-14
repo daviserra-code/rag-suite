@@ -7,7 +7,11 @@ from datetime import datetime, timedelta
 import asyncio
 import os
 import sys
-sys.path.insert(0, '/app')
+
+# Add root directory to path to import generate_report
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
 
 from generate_report import generate_executive_report
 

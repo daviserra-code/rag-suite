@@ -11,6 +11,10 @@ services:
       - ./packages:/app/packages
       - ./ui:/app/ui
       - ./data:/app/data
+      - ./simulate_plant_history.py:/app/simulate_plant_history.py
+      - ./simulate_station_data.py:/app/simulate_station_data.py
+      - ./generate_maintenance_predictions.py:/app/generate_maintenance_predictions.py
+      - ./generate_shift_handovers.py:/app/generate_shift_handovers.py
   shopfloor:
     build:
       context: .
@@ -24,6 +28,9 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./packages:/app/packages
+      - ./generate_report.py:/app/generate_report.py
+      - ./embed_logo.py:/app/embed_logo.py
+      - ./logo_base64.txt:/app/logo_base64.txt
   cittadino:
     build:
       context: .

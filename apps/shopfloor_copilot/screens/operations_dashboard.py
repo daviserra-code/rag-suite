@@ -53,20 +53,26 @@ def build_operations_dashboard(selected_line: str = None):
                     LIMIT 1
                 """), {"line_id": line_id}).fetchone()
                 
-                # Get station performance
-                station_data = conn.execute(text("""
-                    SELECT 
-                        station_id,
-                        AVG(oee) as avg_oee,
-                        AVG(availability) as avg_avail,
-                        COUNT(*) as shifts
-                    FROM oee_station_shift
-                    WHERE line_id = :line_id
-                      AND date >= CURRENT_DATE - INTERVAL '7 days'
-                    GROUP BY station_id
-                    ORDER BY avg_oee DESC
-                """), {"line_id": line_id}).fetchall()
-                
+            # Get station performance in separate connection (table may not exist)
+            station_data = []
+            try:
+                with engine.connect() as conn:
+                    station_data = conn.execute(text("""
+                        SELECT 
+                            station_id,
+                            AVG(oee) as avg_oee,
+                            AVG(availability) as avg_avail,
+                            COUNT(*) as shifts
+                        FROM oee_station_shift
+                        WHERE line_id = :line_id
+                          AND date >= CURRENT_DATE - INTERVAL '7 days'
+                        GROUP BY station_id
+                        ORDER BY avg_oee DESC
+                    """), {"line_id": line_id}).fetchall()
+            except:
+                pass  # Station data is optional
+            
+            with engine.connect() as conn:
                 # Get top losses
                 loss_data = conn.execute(text("""
                     SELECT 

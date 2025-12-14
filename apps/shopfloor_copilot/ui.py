@@ -9,6 +9,13 @@ from apps.shopfloor_copilot.screens.ticket_insights import build_ticket_insights
 from apps.shopfloor_copilot.screens.operator_qna_interactive import build_operator_qna
 from apps.shopfloor_copilot.screens.kpi_dashboard_interactive import build_kpi_dashboard
 from apps.shopfloor_copilot.screens.reports import render_reports_screen
+from apps.shopfloor_copilot.screens.station_heatmap import render_station_heatmap_screen
+from apps.shopfloor_copilot.screens.predictive_maintenance import render_predictive_maintenance_screen
+from apps.shopfloor_copilot.screens.live_monitoring import render_live_monitoring_screen
+from apps.shopfloor_copilot.screens.shift_handover import shift_handover_screen
+from apps.shopfloor_copilot.screens.root_cause_analysis import root_cause_analysis_screen
+from apps.shopfloor_copilot.screens.why_analysis import why_analysis_screen
+from apps.shopfloor_copilot.screens.comparative_analytics import comparative_analytics_screen
 
 def build_ui():
     """Build the Shopfloor Copilot UI"""
@@ -21,9 +28,16 @@ def build_ui():
 
     # Tabs Layout with Enhanced Styling
     with ui.tabs().classes('w-full bg-gray-100') as tabs:
+        tab_live = ui.tab('Live Monitoring', icon='sensors')
         tab_lines = ui.tab('Production Lines', icon='precision_manufacturing')
         tab_plant = ui.tab('Plant Overview', icon='factory')
         tab_operations = ui.tab('Operations', icon='dashboard')
+        tab_stations = ui.tab('Station Heatmap', icon='grid_view')
+        tab_maintenance = ui.tab('Predictive Maintenance', icon='build_circle')
+        tab_handover = ui.tab('Shift Handover', icon='sync_alt')
+        tab_rca = ui.tab('Root Cause Analysis', icon='troubleshoot')
+        tab_why = ui.tab('5 Whys Analysis', icon='psychology')
+        tab_compare = ui.tab('Comparative Analytics', icon='compare_arrows')
         tab_qna = ui.tab('Operator Q&A', icon='question_answer')
         tab_kpi = ui.tab('KPI Dashboard', icon='analytics')
         tab_filters = ui.tab('Q&A Filters', icon='filter_list')
@@ -42,7 +56,11 @@ def build_ui():
 
     # Tab Panels with Individual Screen Content
     with operations_container:
-        # Production Lines Overview (Tab 1)
+        # Live Monitoring (Tab 1)
+        with ui.tab_panel(tab_live).classes('p-4'):
+            render_live_monitoring_screen()
+
+        # Production Lines Overview (Tab 2)
         with ui.tab_panel(tab_lines).classes('p-4'):
             build_production_lines_overview()
 
@@ -54,7 +72,31 @@ def build_ui():
         with ui.tab_panel(tab_operations).classes('p-4'):
             build_operations_dashboard()
 
-        # Operator Q&A (Tab 4)
+        # Station Heatmap (Tab 4)
+        with ui.tab_panel(tab_stations).classes('p-4'):
+            render_station_heatmap_screen()
+
+        # Predictive Maintenance (Tab 5)
+        with ui.tab_panel(tab_maintenance).classes('p-4'):
+            render_predictive_maintenance_screen()
+
+        # Shift Handover (Tab 6)
+        with ui.tab_panel(tab_handover).classes('p-4'):
+            shift_handover_screen()
+
+        # Root Cause Analysis (Tab 7)
+        with ui.tab_panel(tab_rca).classes('p-4'):
+            root_cause_analysis_screen()
+
+        # 5 Whys Analysis (Tab 8)
+        with ui.tab_panel(tab_why).classes('p-4'):
+            why_analysis_screen()
+
+        # Comparative Analytics (Tab 9)
+        with ui.tab_panel(tab_compare).classes('p-4'):
+            comparative_analytics_screen()
+
+        # Operator Q&A (Tab 10)
         with ui.tab_panel(tab_qna).classes('p-4'):
             build_operator_qna()
 

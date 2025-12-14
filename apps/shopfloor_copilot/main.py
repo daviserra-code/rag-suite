@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from nicegui import ui
-from apps.shopfloor_copilot.routers import ask, ingest, export, kpi, oee_analytics
+from apps.shopfloor_copilot.routers import ask, ingest, export, kpi, oee_analytics, realtime
 
 app = FastAPI(title="Shopfloor Copilot", version="0.2.0")
 
@@ -18,6 +18,7 @@ app.include_router(ingest.router, prefix="/api")
 app.include_router(export.router, prefix="/api")
 app.include_router(kpi.router, prefix="/api")
 app.include_router(oee_analytics.router, prefix="/api")
+app.include_router(realtime.router, prefix="/api")
 
 @app.get("/health")
 def health():
