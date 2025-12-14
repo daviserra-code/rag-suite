@@ -1,0 +1,74 @@
+import os
+import time
+import asyncio
+from typing import Dict, Any, Optional
+from psycopg.types.json import Json
+
+from .db import get_conn
+from .log import get_logger
+
+logger = get_logger("opc-studio.historian")
+
+HISTORIAN_ENABLED = os.getenv("HISTORIAN_ENABLED", "true").lower() in ("1","true","yes","on")
+INTERVAL_S = float(os.getenv("HISTORIAN_INTERVAL_S", "5"))
+
+class Historian:
+    def __init__(self):
+        self.last_write_ts: Optional[float] = None
+        self.enabled = HISTORIAN_ENABLED
+        self.interval_s = INTERVAL_S
+        self.last_error: Optional[str] = None
+
+    def write_snapshot(self, snapshot: Dict[str, Any]) -> None:
+        if not self.enabled:
+            return
+        data = snapshot.get("data") or {}
+        plant = data.get("plant", "PLANT")
+        lines = data.get("lines", {})
+
+        now = time.time()
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                for line_id, line in lines.items():
+                    cur.execute(
+                        """INSERT INTO opc_kpi_samples(ts, plant, line, oee, availability, performance, quality, status)
+                           VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s)""",
+                        (plant, line_id, float(line.get("oee",0)), float(line.get("availability",0)),
+                         float(line.get("performance",0)), float(line.get("quality",0)), str(line.get("status","")))
+                    )
+                    for st_id, st in (line.get("stations") or {}).items():
+                        cur.execute(
+                            """INSERT INTO opc_station_samples(ts, plant, line, station, state, cycle_time_s, good_count, scrap_count, alarms)
+                               VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s)""",
+                            (plant, line_id, st_id, str(st.get("state","")), float(st.get("cycle_time_s",0)),
+                             int(st.get("good_count",0)), int(st.get("scrap_count",0)), Json(st.get("alarms", [])))
+                        )
+            conn.commit()
+        self.last_write_ts = now
+        self.last_error = None
+
+    def write_event(self, plant: str, line: str, station: str, event_type: str, payload: Dict[str, Any]) -> None:
+        if not self.enabled:
+            return
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO opc_events(ts, plant, line, station, event_type, payload)
+                       VALUES (NOW(), %s, %s, %s, %s, %s)""",
+                    (plant, line, station, event_type, Json(payload))
+                )
+            conn.commit()
+
+    async def loop(self, snapshot_fn):
+        if not self.enabled:
+            logger.info("Historian disabled (HISTORIAN_ENABLED=false)")
+            return
+        logger.info("Historian enabled; interval_s=%s", self.interval_s)
+        while True:
+            try:
+                snap = snapshot_fn()
+                await asyncio.to_thread(self.write_snapshot, snap)
+            except Exception as e:
+                self.last_error = str(e)
+                logger.exception("Historian write failed: %s", e)
+            await asyncio.sleep(self.interval_s)
