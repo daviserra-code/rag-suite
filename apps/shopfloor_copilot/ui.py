@@ -16,6 +16,14 @@ from apps.shopfloor_copilot.screens.shift_handover import shift_handover_screen
 from apps.shopfloor_copilot.screens.root_cause_analysis import root_cause_analysis_screen
 from apps.shopfloor_copilot.screens.why_analysis import why_analysis_screen
 from apps.shopfloor_copilot.screens.comparative_analytics import comparative_analytics_screen
+from apps.shopfloor_copilot.screens.mobile_operator import render_mobile_operator
+from apps.shopfloor_copilot.screens.advanced_rag import advanced_rag_screen
+from apps.shopfloor_copilot.screens.energy_tracking import energy_tracking_screen
+from apps.shopfloor_copilot.screens.digital_twin import digital_twin_screen
+from apps.shopfloor_copilot.screens.opc_studio import opc_studio_screen
+from apps.shopfloor_copilot.screens.opc_explorer import render_opc_explorer
+from apps.shopfloor_copilot.screens.semantic_signals import render_semantic_signals
+from apps.shopfloor_copilot.screens.diagnostics_explainer import render_diagnostics_explainer
 
 def build_ui():
     """Build the Shopfloor Copilot UI"""
@@ -38,6 +46,14 @@ def build_ui():
         tab_rca = ui.tab('Root Cause Analysis', icon='troubleshoot')
         tab_why = ui.tab('5 Whys Analysis', icon='psychology')
         tab_compare = ui.tab('Comparative Analytics', icon='compare_arrows')
+        tab_mobile = ui.tab('Mobile Operator', icon='phone_android')
+        tab_ai_rag = ui.tab('AI Copilot', icon='psychology')
+        tab_energy = ui.tab('Energy Tracking', icon='bolt')
+        tab_twin = ui.tab('Digital Twin', icon='account_tree')
+        tab_opc = ui.tab('OPC Studio', icon='settings_input_component')
+        tab_opc_explorer = ui.tab('OPC Explorer', icon='explore')
+        tab_semantic = ui.tab('Semantic Signals', icon='transform')
+        tab_diagnostics = ui.tab('AI Diagnostics', icon='psychology_alt')
         tab_qna = ui.tab('Operator Q&A', icon='question_answer')
         tab_kpi = ui.tab('KPI Dashboard', icon='analytics')
         tab_filters = ui.tab('Q&A Filters', icon='filter_list')
@@ -96,7 +112,39 @@ def build_ui():
         with ui.tab_panel(tab_compare).classes('p-4'):
             comparative_analytics_screen()
 
-        # Operator Q&A (Tab 10)
+        # Mobile Operator (Tab 10)
+        with ui.tab_panel(tab_mobile).classes('p-4'):
+            render_mobile_operator()
+
+        # Advanced RAG / AI Copilot (Tab 11)
+        with ui.tab_panel(tab_ai_rag).classes('p-4'):
+            advanced_rag_screen()
+
+        # Energy Tracking (Tab 12)
+        with ui.tab_panel(tab_energy).classes('p-4'):
+            energy_tracking_screen()
+
+        # Digital Twin Simulation (Tab 13)
+        with ui.tab_panel(tab_twin).classes('p-4'):
+            digital_twin_screen()
+
+        # OPC Studio Control Panel (Tab 14) - Phase B
+        with ui.tab_panel(tab_opc).classes('p-4'):
+            opc_studio_screen()
+
+        # OPC Explorer (Tab 15) - Sprint 1
+        with ui.tab_panel(tab_opc_explorer).classes('p-4'):
+            render_opc_explorer()
+
+        # Semantic Signals (Tab 16) - Sprint 2
+        with ui.tab_panel(tab_semantic).classes('p-4'):
+            render_semantic_signals()
+
+        # AI Diagnostics (Tab 17) - Sprint 3
+        with ui.tab_panel(tab_diagnostics).classes('p-4'):
+            render_diagnostics_explainer()
+
+        # Operator Q&A (Tab 18)
         with ui.tab_panel(tab_qna).classes('p-4'):
             build_operator_qna()
 

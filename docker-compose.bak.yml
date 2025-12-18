@@ -1,0 +1,106 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on: [postgres, chroma]
+    ports: ["8000:8000"]
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./ui:/app/ui
+      - ./data:/app/data
+      - ./simulate_plant_history.py:/app/simulate_plant_history.py
+      - ./simulate_station_data.py:/app/simulate_station_data.py
+      - ./generate_maintenance_predictions.py:/app/generate_maintenance_predictions.py
+      - ./generate_shift_handovers.py:/app/generate_shift_handovers.py
+  shopfloor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      - API_BASE=http://localhost:8010/api
+    depends_on: [postgres, chroma]
+    ports: ["8010:8010"]
+    command: uvicorn apps.shopfloor_copilot.main:app --host 0.0.0.0 --port 8010 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./generate_report.py:/app/generate_report.py
+      - ./embed_logo.py:/app/embed_logo.py
+      - ./logo_base64.txt:/app/logo_base64.txt
+  cittadino:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on: [postgres, chroma]
+    ports: ["8020:8020"]
+    command: uvicorn apps.cittadino_facile.main:app --host 0.0.0.0 --port 8020 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+  musea:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on: [postgres, chroma]
+    ports: ["8030:8030"]
+    command: uvicorn apps.musea.main:app --host 0.0.0.0 --port 8030 --reload
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+
+  opc-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app/opc-studio
+    env_file: .env
+    environment:
+      - OPC_STUDIO_HTTP_PORT=8040
+      - OPC_UA_PORT=4840
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/ragdb}
+      - OPC_SECURITY_MODE=${OPC_SECURITY_MODE:-None}
+    depends_on: [postgres]
+    ports:
+      - "8040:8040"   # OPC Studio REST API (internal-facing; Copilot will call this later)
+      - "4840:4840"   # OPC UA server port (simulation / OT-facing)
+    volumes:
+      - ./opc-studio:/app/opc-studio
+      - ./packages:/app/packages
+      - opc_certs:/app/opc-studio/certs
+      - opc_models:/app/opc-studio/models
+    command: >
+      bash -c "cd /app/opc-studio && 
+      pip install -q -r requirements.txt && 
+      uvicorn main:app --host 0.0.0.0 --port 8040 --reload"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ragdb
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  chroma:
+    image: chromadb/chroma:0.5.20
+    ports: ["8001:8000"]
+    volumes: ["chromadata:/chroma/chroma"]
+  jira-mcp:
+    image: ghcr.io/nguyenvanduocit/jira-mcp:latest
+    environment:
+      - ATLASSIAN_HOST=${ATLASSIAN_HOST:-https://your-company.atlassian.net}
+      - ATLASSIAN_EMAIL=${ATLASSIAN_EMAIL:-your-email@company.com}
+      - ATLASSIAN_TOKEN=${ATLASSIAN_TOKEN:-your-api-token}
+    ports: ["3100:3000"]
+    command: ["-http_port", "3000"]
+volumes:
+  pgdata: {}
+  chromadata: {}
+  opc_certs: {}
+  opc_models: {}

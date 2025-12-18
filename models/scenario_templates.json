@@ -1,0 +1,339 @@
+{
+  "templates": [
+    {
+      "id": "robot_axis_fault",
+      "name": "Robot Axis Fault",
+      "category": "equipment_failure.mechanical",
+      "description": "Robotic arm axis encoder failure requiring recalibration",
+      "applicable_station_types": ["assembly", "welding", "packaging"],
+      "severity": "major",
+      "duration_min": 45,
+      "impact": {
+        "availability": -0.25,
+        "performance": -0.15,
+        "quality": -0.05
+      },
+      "alarms": ["ROBOT_FAULT", "E_STOP"],
+      "cascading": true
+    },
+    {
+      "id": "material_shortage_upstream",
+      "name": "Material Shortage (Upstream)",
+      "category": "material_shortage.shortage",
+      "description": "Raw material or component shortage from supplier delay",
+      "applicable_station_types": ["material_prep"],
+      "severity": "critical",
+      "duration_min": 120,
+      "impact": {
+        "availability": -0.80,
+        "performance": -0.40,
+        "quality": 0
+      },
+      "alarms": ["MAT_SHORT", "SUPPLY_CHAIN_ALERT"],
+      "cascading": true,
+      "cascading_delay_min": 10
+    },
+    {
+      "id": "weld_quality_defect",
+      "name": "Weld Quality Defect",
+      "category": "quality_issue.defect",
+      "description": "Welding parameters drift causing weak joints",
+      "applicable_station_types": ["welding"],
+      "severity": "moderate",
+      "duration_min": 20,
+      "impact": {
+        "availability": -0.08,
+        "performance": -0.05,
+        "quality": -0.12
+      },
+      "alarms": ["QUALITY_FAIL", "WELD_STRENGTH_LOW"],
+      "cascading": true
+    },
+    {
+      "id": "conveyor_jam",
+      "name": "Conveyor Jam",
+      "category": "equipment_failure.mechanical",
+      "description": "Product jam in conveyor transfer mechanism",
+      "applicable_station_types": ["material_prep", "packaging"],
+      "severity": "moderate",
+      "duration_min": 15,
+      "impact": {
+        "availability": -0.12,
+        "performance": -0.08,
+        "quality": -0.02
+      },
+      "alarms": ["CONVEYOR_FAULT", "JAM_DETECTED"],
+      "cascading": false
+    },
+    {
+      "id": "sensor_malfunction",
+      "name": "Vision Sensor Malfunction",
+      "category": "equipment_failure.electrical",
+      "description": "Vision system fails to detect parts correctly",
+      "applicable_station_types": ["inspection", "testing"],
+      "severity": "major",
+      "duration_min": 35,
+      "impact": {
+        "availability": -0.22,
+        "performance": -0.10,
+        "quality": -0.18
+      },
+      "alarms": ["SENSOR_FAULT", "VISION_SYSTEM_ERROR"],
+      "cascading": true
+    },
+    {
+      "id": "product_changeover",
+      "name": "Product Changeover",
+      "category": "process_issue.changeover",
+      "description": "Planned changeover to different product variant",
+      "applicable_station_types": ["assembly", "forming", "winding"],
+      "severity": "minor",
+      "duration_min": 25,
+      "impact": {
+        "availability": -0.10,
+        "performance": -0.05,
+        "quality": 0
+      },
+      "alarms": ["CHANGEOVER_IN_PROGRESS"],
+      "cascading": false
+    },
+    {
+      "id": "motor_drive_fault",
+      "name": "Motor Drive Fault",
+      "category": "equipment_failure.electrical",
+      "description": "Servo drive overcurrent fault on main spindle",
+      "applicable_station_types": ["forming", "cutting", "winding"],
+      "severity": "critical",
+      "duration_min": 90,
+      "impact": {
+        "availability": -0.95,
+        "performance": -0.45,
+        "quality": -0.10
+      },
+      "alarms": ["DRIVE_FAULT", "MOTOR_OVERCURRENT", "E_STOP"],
+      "cascading": true
+    },
+    {
+      "id": "tool_wear_excessive",
+      "name": "Excessive Tool Wear",
+      "category": "equipment_failure.tooling",
+      "description": "Cutting tool or die exceeds wear limits",
+      "applicable_station_types": ["forming", "cutting", "assembly"],
+      "severity": "moderate",
+      "duration_min": 18,
+      "impact": {
+        "availability": -0.10,
+        "performance": -0.12,
+        "quality": -0.08
+      },
+      "alarms": ["TOOL_WEAR", "QUALITY_DEGRADED"],
+      "cascading": false
+    },
+    {
+      "id": "incoming_quality_reject",
+      "name": "Incoming Quality Reject",
+      "category": "material_shortage.defect",
+      "description": "Batch of incoming components fails quality inspection",
+      "applicable_station_types": ["material_prep"],
+      "severity": "major",
+      "duration_min": 60,
+      "impact": {
+        "availability": -0.30,
+        "performance": -0.20,
+        "quality": -0.15
+      },
+      "alarms": ["IQC_REJECT", "MATERIAL_HOLD"],
+      "cascading": true,
+      "cascading_delay_min": 15
+    },
+    {
+      "id": "calibration_required",
+      "name": "Calibration Required",
+      "category": "process_issue.adjustment",
+      "description": "Periodic calibration of measurement equipment",
+      "applicable_station_types": ["testing", "inspection"],
+      "severity": "minor",
+      "duration_min": 12,
+      "impact": {
+        "availability": -0.05,
+        "performance": -0.02,
+        "quality": 0
+      },
+      "alarms": ["CALIBRATION_DUE"],
+      "cascading": false
+    },
+    {
+      "id": "emergency_stop",
+      "name": "Emergency Stop",
+      "category": "operator_issue.safety",
+      "description": "Emergency stop button pressed due to safety concern",
+      "applicable_station_types": ["assembly", "welding", "forming", "testing"],
+      "severity": "critical",
+      "duration_min": 30,
+      "impact": {
+        "availability": -1.0,
+        "performance": -0.50,
+        "quality": 0
+      },
+      "alarms": ["E_STOP", "SAFETY_SYSTEM_ACTIVE"],
+      "cascading": true
+    },
+    {
+      "id": "hydraulic_leak",
+      "name": "Hydraulic Leak",
+      "category": "equipment_failure.mechanical",
+      "description": "Hydraulic system leak requiring seal replacement",
+      "applicable_station_types": ["forming", "assembly"],
+      "severity": "major",
+      "duration_min": 50,
+      "impact": {
+        "availability": -0.28,
+        "performance": -0.18,
+        "quality": -0.05
+      },
+      "alarms": ["HYDRAULIC_FAULT", "PRESSURE_LOW"],
+      "cascading": false
+    },
+    {
+      "id": "preventive_maintenance",
+      "name": "Preventive Maintenance",
+      "category": "process_issue.maintenance",
+      "description": "Scheduled preventive maintenance activity",
+      "applicable_station_types": ["assembly", "welding", "forming", "testing", "inspection"],
+      "severity": "minor",
+      "duration_min": 30,
+      "impact": {
+        "availability": -0.12,
+        "performance": 0,
+        "quality": 0
+      },
+      "alarms": ["PM_SCHEDULED"],
+      "cascading": false
+    },
+    {
+      "id": "plc_communication_error",
+      "name": "PLC Communication Error",
+      "category": "equipment_failure.electrical",
+      "description": "Network communication loss with PLC controller",
+      "applicable_station_types": ["assembly", "testing", "inspection", "material_prep"],
+      "severity": "major",
+      "duration_min": 40,
+      "impact": {
+        "availability": -0.30,
+        "performance": -0.15,
+        "quality": -0.08
+      },
+      "alarms": ["PLC_COMM_FAIL", "NETWORK_ERROR"],
+      "cascading": true
+    },
+    {
+      "id": "rework_station_overload",
+      "name": "Rework Station Overload",
+      "category": "quality_issue.rework",
+      "description": "Rework queue exceeds capacity due to quality issues",
+      "applicable_station_types": ["inspection", "assembly"],
+      "severity": "moderate",
+      "duration_min": 35,
+      "impact": {
+        "availability": -0.15,
+        "performance": -0.20,
+        "quality": -0.10
+      },
+      "alarms": ["REWORK_OVERLOAD", "WIP_EXCESSIVE"],
+      "cascading": true
+    },
+    {
+      "id": "power_supply_fault",
+      "name": "Power Supply Fault",
+      "category": "equipment_failure.electrical",
+      "description": "Main power supply unit voltage instability",
+      "applicable_station_types": ["smt", "testing", "heat_treat"],
+      "severity": "critical",
+      "duration_min": 75,
+      "impact": {
+        "availability": -0.90,
+        "performance": -0.40,
+        "quality": -0.20
+      },
+      "alarms": ["POWER_FAULT", "VOLTAGE_UNSTABLE", "E_STOP"],
+      "cascading": true
+    },
+    {
+      "id": "wip_buffer_empty",
+      "name": "WIP Buffer Empty",
+      "category": "material_shortage.shortage",
+      "description": "Work-in-progress buffer depleted between stations",
+      "applicable_station_types": ["assembly", "testing", "packaging"],
+      "severity": "moderate",
+      "duration_min": 20,
+      "impact": {
+        "availability": -0.18,
+        "performance": -0.25,
+        "quality": 0
+      },
+      "alarms": ["BUFFER_EMPTY", "STARVED"],
+      "cascading": true,
+      "cascading_delay_min": 5
+    },
+    {
+      "id": "temperature_out_of_range",
+      "name": "Temperature Out of Range",
+      "category": "process_issue.adjustment",
+      "description": "Process temperature exceeds acceptable limits",
+      "applicable_station_types": ["heat_treat", "welding", "coating"],
+      "severity": "moderate",
+      "duration_min": 25,
+      "impact": {
+        "availability": -0.10,
+        "performance": -0.08,
+        "quality": -0.12
+      },
+      "alarms": ["TEMP_OUT_OF_RANGE", "QUALITY_RISK"],
+      "cascading": false
+    },
+    {
+      "id": "gripper_jaw_failure",
+      "name": "Gripper Jaw Failure",
+      "category": "equipment_failure.tooling",
+      "description": "Robot gripper jaws fail to close properly",
+      "applicable_station_types": ["assembly", "material_prep", "packaging"],
+      "severity": "major",
+      "duration_min": 45,
+      "impact": {
+        "availability": -0.25,
+        "performance": -0.15,
+        "quality": -0.08
+      },
+      "alarms": ["GRIPPER_FAULT", "PART_DROP"],
+      "cascading": true
+    },
+    {
+      "id": "filter_clogged",
+      "name": "Filter Clogged",
+      "category": "process_issue.maintenance",
+      "description": "Air or fluid filter exceeds pressure drop limit",
+      "applicable_station_types": ["coating", "assembly", "testing"],
+      "severity": "minor",
+      "duration_min": 15,
+      "impact": {
+        "availability": -0.08,
+        "performance": -0.10,
+        "quality": -0.03
+      },
+      "alarms": ["FILTER_CLOGGED", "PRESSURE_LOW"],
+      "cascading": false
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-12-15",
+    "total_templates": 20,
+    "severity_distribution": {
+      "minor": 4,
+      "moderate": 7,
+      "major": 6,
+      "critical": 3
+    },
+    "cascading_enabled": 12
+  }
+}

@@ -1,0 +1,5 @@
+﻿{
+  "app": "shopfloor",
+  "query": "There is a material shortage alarm on line A01 station ST17. What should I do?",
+  "use_llm": true
+}

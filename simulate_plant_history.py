@@ -12,61 +12,109 @@ from typing import Dict, List, Tuple
 # Database connection
 DB_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@postgres:5432/ragdb")
 
-# Production Lines Configuration
+# Production Lines Configuration (aligned with plant_model.json)
 LINES = {
-    'M10': {
-        'name': 'Main Assembly Line M10',
+    # TORINO Plant Lines
+    'A01': {
+        'name': 'Assembly Line A01',
         'ideal_cycle_time': 45.0,  # seconds per unit
         'theoretical_output': 960,  # units per shift (8 hours)
-        'base_availability': 0.92,
+        'base_availability': 0.90,
         'base_performance': 0.88,
-        'base_quality': 0.96,
-        'downtime_prone': 0.15  # 15% chance of significant downtime
+        'base_quality': 0.93,
+        'downtime_prone': 0.15
     },
-    'B02': {
-        'name': 'Battery Assembly Line B02',
+    'A02': {
+        'name': 'Assembly Line A02',
+        'ideal_cycle_time': 45.0,
+        'theoretical_output': 960,
+        'base_availability': 0.89,
+        'base_performance': 0.87,
+        'base_quality': 0.92,
+        'downtime_prone': 0.16
+    },
+    'B01': {
+        'name': 'Battery Assembly Line B01',
         'ideal_cycle_time': 52.0,
         'theoretical_output': 830,
-        'base_availability': 0.90,
-        'base_performance': 0.92,
-        'base_quality': 0.97,
-        'downtime_prone': 0.12
-    },
-    'C03': {
-        'name': 'Component Line C03',
-        'ideal_cycle_time': 38.0,
-        'theoretical_output': 1140,
-        'base_availability': 0.95,
-        'base_performance': 0.90,
+        'base_availability': 0.87,
+        'base_performance': 0.85,
         'base_quality': 0.94,
-        'downtime_prone': 0.08
-    },
-    'D01': {
-        'name': 'Final Assembly Line D01',
-        'ideal_cycle_time': 65.0,
-        'theoretical_output': 660,
-        'base_availability': 0.88,
-        'base_performance': 0.91,
-        'base_quality': 0.98,
         'downtime_prone': 0.18
     },
-    'SMT1': {
-        'name': 'SMT Line 1',
-        'ideal_cycle_time': 42.0,
-        'theoretical_output': 1030,
-        'base_availability': 0.91,
-        'base_performance': 0.89,
-        'base_quality': 0.95,
+    'C01': {
+        'name': 'Component Line C01',
+        'ideal_cycle_time': 36.0,
+        'theoretical_output': 1200,
+        'base_availability': 0.92,
+        'base_performance': 0.90,
+        'base_quality': 0.91,
+        'downtime_prone': 0.12
+    },
+    # MILAN Plant Lines
+    'M10': {
+        'name': 'PCB Assembly Line M10',
+        'ideal_cycle_time': 31.0,
+        'theoretical_output': 1400,
+        'base_availability': 0.93,
+        'base_performance': 0.91,
+        'base_quality': 0.96,
         'downtime_prone': 0.10
     },
+    'M11': {
+        'name': 'PCB Assembly Line M11',
+        'ideal_cycle_time': 31.0,
+        'theoretical_output': 1400,
+        'base_availability': 0.92,
+        'base_performance': 0.90,
+        'base_quality': 0.95,
+        'downtime_prone': 0.11
+    },
+    'D01': {
+        'name': 'Final Drive Assembly D01',
+        'ideal_cycle_time': 60.0,
+        'theoretical_output': 720,
+        'base_availability': 0.88,
+        'base_performance': 0.86,
+        'base_quality': 0.97,
+        'downtime_prone': 0.17
+    },
+    # ROME Plant Lines
+    'B02': {
+        'name': 'Battery Cell Testing B02',
+        'ideal_cycle_time': 18.0,
+        'theoretical_output': 2400,
+        'base_availability': 0.95,
+        'base_performance': 0.94,
+        'base_quality': 0.98,
+        'downtime_prone': 0.08
+    },
+    'C03': {
+        'name': 'Cable Harness Line C03',
+        'ideal_cycle_time': 24.0,
+        'theoretical_output': 1800,
+        'base_availability': 0.91,
+        'base_performance': 0.89,
+        'base_quality': 0.93,
+        'downtime_prone': 0.13
+    },
+    'SMT1': {
+        'name': 'Sensor Module Line SMT1',
+        'ideal_cycle_time': 14.0,
+        'theoretical_output': 3200,
+        'base_availability': 0.94,
+        'base_performance': 0.92,
+        'base_quality': 0.97,
+        'downtime_prone': 0.09
+    },
     'WC01': {
-        'name': 'Wire Cutting Line WC01',
-        'ideal_cycle_time': 35.0,
-        'theoretical_output': 1230,
-        'base_availability': 0.87,
-        'base_performance': 0.93,
-        'base_quality': 0.96,
-        'downtime_prone': 0.20
+        'name': 'Wire Coil Line WC01',
+        'ideal_cycle_time': 48.0,
+        'theoretical_output': 900,
+        'base_availability': 0.89,
+        'base_performance': 0.87,
+        'base_quality': 0.95,
+        'downtime_prone': 0.16
     }
 }
 

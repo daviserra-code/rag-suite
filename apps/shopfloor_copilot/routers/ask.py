@@ -221,9 +221,19 @@ async def get_runtime_context_async() -> Dict[str, Any]:
 
 def build_runtime_context_string(snapshot: Dict[str, Any], kpi_trend: Dict[str, Any], events: Dict[str, Any]) -> str:
     """
-    Build a formatted string of runtime context for LLM injection.
+    Build a formatted string of runtime context for LLM injection with guardrails.
+    
+    GUARDRAILS: The context includes explicit lists of available line/station IDs.
+    The LLM should ONLY reference IDs present in this runtime data.
     """
     context_parts = []
+    available_lines = []
+    available_stations = []
+    
+    # Header with guardrails
+    context_parts.append("=== RUNTIME CONTEXT FROM OPC STUDIO ===")
+    context_parts.append("IMPORTANT: Only reference line/station IDs explicitly listed below.")
+    context_parts.append("If runtime data is unavailable or incomplete, state this clearly.\n")
     
     # Current snapshot
     if snapshot.get("available"):
@@ -232,7 +242,9 @@ def build_runtime_context_string(snapshot: Dict[str, Any], kpi_trend: Dict[str, 
         lines = data.get("lines", {})
         
         context_parts.append(f"=== LIVE PLANT STATE ({plant}) ===")
+        
         for line_id, line_data in lines.items():
+            available_lines.append(line_id)
             oee = line_data.get("oee", 0)
             avail = line_data.get("availability", 0)
             perf = line_data.get("performance", 0)
@@ -243,12 +255,24 @@ def build_runtime_context_string(snapshot: Dict[str, Any], kpi_trend: Dict[str, 
             
             stations = line_data.get("stations", {})
             for st_id, st_data in stations.items():
+                available_stations.append(f"{line_id}/{st_id}")
                 state = st_data.get("state", "UNKNOWN")
+                cycle_time = st_data.get("cycle_time_s", 0)
                 alarms = st_data.get("alarms", [])
+                
+                station_info = f"  Station {st_id}: {state}"
+                if cycle_time > 0:
+                    station_info += f" (Cycle: {cycle_time:.1f}s)"
                 if alarms:
-                    context_parts.append(f"  Station {st_id}: {state} - Alarms: {alarms}")
-                elif state != "RUNNING":
-                    context_parts.append(f"  Station {st_id}: {state}")
+                    station_info += f" - ALARMS: {', '.join(alarms)}"
+                context_parts.append(station_info)
+        
+        # Add explicit guardrail list
+        context_parts.append(f"\nAvailable Lines: {', '.join(available_lines)}")
+        context_parts.append(f"Available Stations: {', '.join(available_stations)}")
+    else:
+        context_parts.append("⚠️ RUNTIME DATA UNAVAILABLE - OPC Studio connection failed or timed out")
+        context_parts.append("Fallback to RAG documentation only. Do NOT invent line/station statuses.")
     
     # Recent KPI trend
     if kpi_trend.get("sample_count", 0) > 0:
@@ -321,7 +345,7 @@ async def ask_with_llm(req: AskWithLLMReq):
     
     if runtime_enabled:
         try:
-            # Get runtime snapshot
+            # Get runtime snapshot with timeout guardrails
             snapshot = await get_runtime_context_async()
             
             # Get KPI trend (last 15 minutes)
@@ -330,17 +354,27 @@ async def ask_with_llm(req: AskWithLLMReq):
             # Get recent events (last 60 minutes)
             events = get_runtime_events(minutes=60)
             
-            # Build context string for LLM
+            # Build context string for LLM with guardrails
             runtime_context_text = build_runtime_context_string(snapshot, kpi_trend, events)
             
             runtime_metadata = {
                 "runtime_context_available": snapshot.get("available", False),
+                "runtime_source": snapshot.get("source", "unknown"),
                 "kpi_samples": kpi_trend.get("sample_count", 0),
                 "event_count": events.get("event_count", 0)
             }
             
+            # If runtime fetch failed, add explicit message
+            if not snapshot.get("available"):
+                runtime_metadata["runtime_status"] = "unavailable - continuing with RAG only"
+            
         except Exception as e:
-            runtime_metadata = {"runtime_context_error": str(e)}
+            # Guardrail: If runtime fetch fails entirely, continue with RAG only
+            runtime_metadata = {
+                "runtime_context_error": str(e),
+                "runtime_status": "fetch failed - continuing with RAG only"
+            }
+            runtime_context_text = "⚠️ RUNTIME DATA UNAVAILABLE - OPC Studio connection error. Using RAG documentation only."
     
     # ========== End Runtime Context Injection ==========
     

@@ -1,0 +1,264 @@
+{
+  "taxonomy": {
+    "equipment_failure": {
+      "name": "Equipment Failure",
+      "description": "Mechanical, electrical, or system failures",
+      "categories": {
+        "mechanical": {
+          "name": "Mechanical Failure",
+          "events": [
+            "bearing_failure",
+            "gearbox_failure",
+            "conveyor_jam",
+            "robot_axis_fault",
+            "pneumatic_leak",
+            "hydraulic_failure"
+          ]
+        },
+        "electrical": {
+          "name": "Electrical Failure",
+          "events": [
+            "motor_failure",
+            "drive_fault",
+            "sensor_malfunction",
+            "plc_error",
+            "power_supply_fault",
+            "encoder_failure"
+          ]
+        },
+        "tooling": {
+          "name": "Tooling Issue",
+          "events": [
+            "tool_wear",
+            "tool_breakage",
+            "fixture_failure",
+            "gripper_fault"
+          ]
+        }
+      }
+    },
+    "material_shortage": {
+      "name": "Material Issues",
+      "description": "Supply chain and material handling problems",
+      "categories": {
+        "shortage": {
+          "name": "Material Shortage",
+          "events": [
+            "raw_material_shortage",
+            "component_shortage",
+            "packaging_shortage",
+            "wip_buffer_empty"
+          ]
+        },
+        "defect": {
+          "name": "Material Defect",
+          "events": [
+            "incoming_quality_reject",
+            "material_contamination",
+            "wrong_material_delivered",
+            "dimension_out_of_spec"
+          ]
+        }
+      }
+    },
+    "quality_issue": {
+      "name": "Quality Issues",
+      "description": "Product quality and inspection problems",
+      "categories": {
+        "defect": {
+          "name": "Quality Defect",
+          "events": [
+            "dimensional_defect",
+            "cosmetic_defect",
+            "functional_failure",
+            "assembly_error",
+            "contamination"
+          ]
+        },
+        "rework": {
+          "name": "Rework Required",
+          "events": [
+            "rework_station_overload",
+            "quality_hold",
+            "reinspection_required"
+          ]
+        }
+      }
+    },
+    "process_issue": {
+      "name": "Process Issues",
+      "description": "Planned and unplanned process disruptions",
+      "categories": {
+        "changeover": {
+          "name": "Changeover",
+          "events": [
+            "product_changeover",
+            "tool_changeover",
+            "format_change",
+            "recipe_change"
+          ]
+        },
+        "adjustment": {
+          "name": "Process Adjustment",
+          "events": [
+            "calibration",
+            "parameter_tuning",
+            "alignment",
+            "cleaning"
+          ]
+        },
+        "maintenance": {
+          "name": "Maintenance",
+          "events": [
+            "preventive_maintenance",
+            "lubrication",
+            "filter_replacement",
+            "safety_inspection"
+          ]
+        }
+      }
+    },
+    "operator_issue": {
+      "name": "Operator & Safety",
+      "description": "Human factors and safety events",
+      "categories": {
+        "safety": {
+          "name": "Safety Event",
+          "events": [
+            "emergency_stop",
+            "safety_gate_open",
+            "light_curtain_breach",
+            "lockout_tagout"
+          ]
+        },
+        "operator": {
+          "name": "Operator Issue",
+          "events": [
+            "operator_training",
+            "staffing_shortage",
+            "operator_error"
+          ]
+        }
+      }
+    }
+  },
+  "severity_levels": {
+    "minor": {
+      "name": "Minor",
+      "description": "Minimal impact, quick recovery",
+      "duration_range_min": [2, 10],
+      "impact": {
+        "availability": [-0.05, -0.02],
+        "performance": [-0.03, -0.01],
+        "quality": [-0.02, 0]
+      },
+      "icon": "⚪",
+      "color": "blue",
+      "escalation_threshold_min": 30
+    },
+    "moderate": {
+      "name": "Moderate",
+      "description": "Noticeable impact, standard response",
+      "duration_range_min": [10, 30],
+      "impact": {
+        "availability": [-0.15, -0.05],
+        "performance": [-0.10, -0.03],
+        "quality": [-0.05, -0.01]
+      },
+      "icon": "🟡",
+      "color": "yellow",
+      "escalation_threshold_min": 60
+    },
+    "major": {
+      "name": "Major",
+      "description": "Significant impact, requires intervention",
+      "duration_range_min": [30, 90],
+      "impact": {
+        "availability": [-0.35, -0.15],
+        "performance": [-0.25, -0.10],
+        "quality": [-0.15, -0.05]
+      },
+      "icon": "🟠",
+      "color": "orange",
+      "escalation_threshold_min": 120
+    },
+    "critical": {
+      "name": "Critical",
+      "description": "Severe impact, line stop possible",
+      "duration_range_min": [60, 180],
+      "impact": {
+        "availability": [-1.0, -0.35],
+        "performance": [-0.50, -0.25],
+        "quality": [-0.30, -0.15]
+      },
+      "icon": "🔴",
+      "color": "red",
+      "escalation_threshold_min": null
+    }
+  },
+  "cascading_rules": {
+    "critical_station_down": {
+      "description": "Critical station failure affects entire line",
+      "trigger": {
+        "station_critical": true,
+        "availability_delta": "< -0.3"
+      },
+      "effects": [
+        {
+          "target": "line",
+          "availability_multiplier": 0.6,
+          "performance_multiplier": 0.8,
+          "alarms": ["CRITICAL_STATION_FAULT", "LINE_DEGRADED"]
+        },
+        {
+          "target": "downstream_stations",
+          "availability_multiplier": 0.7,
+          "alarms": ["UPSTREAM_BLOCKAGE"]
+        }
+      ]
+    },
+    "material_shortage": {
+      "description": "Material shortage starves downstream stations",
+      "trigger": {
+        "event_type": "material_shortage"
+      },
+      "effects": [
+        {
+          "target": "line",
+          "performance_multiplier": 0.5,
+          "alarms": ["MATERIAL_SHORTAGE"]
+        },
+        {
+          "target": "downstream_stations",
+          "state": "STARVED",
+          "alarms": ["WAITING_FOR_MATERIAL"]
+        }
+      ]
+    },
+    "quality_issue": {
+      "description": "Quality issue increases rework load",
+      "trigger": {
+        "event_category": "quality_issue"
+      },
+      "effects": [
+        {
+          "target": "line",
+          "quality_multiplier": 0.85,
+          "alarms": ["QUALITY_ALERT"]
+        },
+        {
+          "target": "inspection_stations",
+          "cycle_time_multiplier": 1.3,
+          "alarms": ["INCREASED_INSPECTION"]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-12-15",
+    "total_event_types": 42,
+    "total_severity_levels": 4,
+    "total_cascading_rules": 3
+  }
+}

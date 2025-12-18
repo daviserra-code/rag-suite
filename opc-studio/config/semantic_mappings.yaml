@@ -1,0 +1,391 @@
+# Semantic Mapping Configuration
+# YAML-first semantic engine for OPC Studio
+# Transforms raw OPC UA tags into stable MES-like semantic signals
+#
+# Principles:
+# 1. YAML is source of truth
+# 2. Raw OPC ≠ Semantic signal (explicit mapping required)
+# 3. Semantic identifiers are contracts (stable, versioned)
+# 4. loss_category is mandatory for all operational signals
+
+version: "1.0"
+metadata:
+  name: "Manufacturing Semantic Mappings"
+  description: "Maps raw OPC UA tags to semantic MES signals"
+  updated: "2025-12-15"
+  
+# Loss Category Classification
+# Standard MES loss categories (OEE framework)
+loss_categories:
+  # Availability Losses
+  availability:
+    - equipment_failure
+    - tooling_failure
+    - unplanned_maintenance
+    - setup_changeover
+    - material_shortage
+    - operator_absence
+    - upstream_starvation
+    - downstream_blocking
+  
+  # Performance Losses
+  performance:
+    - minor_stops
+    - reduced_speed
+    - startup_losses
+    - process_adjustment
+    - operator_inefficiency
+  
+  # Quality Losses
+  quality:
+    - scrap
+    - rework
+    - startup_reject
+    - process_defect
+  
+  # Non-productive (not in OEE)
+  non_productive:
+    - planned_downtime
+    - no_scheduled_production
+    - engineering_test
+
+# Station Type Semantic Models
+# Define semantic signals per station type
+station_types:
+  assembly:
+    semantic_signals:
+      - semantic_id: "station.state"
+        description: "Station operational state"
+        opc_source: "Status"
+        data_type: "string"
+        valid_states: ["RUNNING", "IDLE", "BLOCKED", "STARVED", "FAULTED", "MAINTENANCE"]
+        loss_category_map:
+          RUNNING: null
+          IDLE: "non_productive.no_scheduled_production"
+          BLOCKED: "availability.downstream_blocking"
+          STARVED: "availability.upstream_starvation"
+          FAULTED: "availability.equipment_failure"
+          MAINTENANCE: "non_productive.planned_downtime"
+      
+      - semantic_id: "station.cycle_time_actual"
+        description: "Actual cycle time in seconds"
+        opc_source: "CycleTime"
+        data_type: "float"
+        unit: "seconds"
+        loss_category: null
+        transforms:
+          - type: "range_check"
+            min: 0
+            max: 300
+          - type: "moving_average"
+            window: 10
+      
+      - semantic_id: "station.parts_count"
+        description: "Cumulative parts produced"
+        opc_source: "ProductCount"
+        data_type: "integer"
+        unit: "parts"
+        loss_category: null
+      
+      - semantic_id: "station.quality_ok"
+        description: "Parts passed quality check"
+        opc_source: "QualityOK"
+        data_type: "integer"
+        unit: "parts"
+        loss_category: null
+      
+      - semantic_id: "station.temperature"
+        description: "Process temperature"
+        opc_source: "Temperature"
+        data_type: "float"
+        unit: "celsius"
+        loss_category: null
+        transforms:
+          - type: "range_check"
+            min: -50
+            max: 200
+      
+      - semantic_id: "station.speed_actual"
+        description: "Actual operating speed"
+        opc_source: "Speed"
+        data_type: "float"
+        unit: "percent"
+        loss_category_rule:
+          condition: "value < 90"
+          category: "performance.reduced_speed"
+  
+  welding:
+    semantic_signals:
+      - semantic_id: "station.state"
+        description: "Station operational state"
+        opc_source: "Status"
+        data_type: "string"
+        valid_states: ["RUNNING", "IDLE", "BLOCKED", "STARVED", "FAULTED", "MAINTENANCE"]
+        loss_category_map:
+          RUNNING: null
+          IDLE: "non_productive.no_scheduled_production"
+          BLOCKED: "availability.downstream_blocking"
+          STARVED: "availability.upstream_starvation"
+          FAULTED: "availability.equipment_failure"
+          MAINTENANCE: "non_productive.planned_downtime"
+      
+      - semantic_id: "welding.temperature"
+        description: "Weld temperature"
+        opc_source: "Temperature"
+        data_type: "float"
+        unit: "celsius"
+        loss_category: null
+        transforms:
+          - type: "range_check"
+            min: 0
+            max: 2000
+      
+      - semantic_id: "welding.current"
+        description: "Welding current"
+        opc_source: "WeldCurrent"
+        data_type: "float"
+        unit: "amperes"
+        loss_category: null
+        transforms:
+          - type: "range_check"
+            min: 0
+            max: 500
+      
+      - semantic_id: "welding.quality_score"
+        description: "Weld quality score"
+        opc_source: "QualityScore"
+        data_type: "float"
+        unit: "percent"
+        loss_category_rule:
+          condition: "value < 90"
+          category: "quality.process_defect"
+      
+      - semantic_id: "station.parts_count"
+        description: "Cumulative parts welded"
+        opc_source: "ProductCount"
+        data_type: "integer"
+        unit: "parts"
+        loss_category: null
+  
+  testing:
+    semantic_signals:
+      - semantic_id: "station.state"
+        description: "Station operational state"
+        opc_source: "Status"
+        data_type: "string"
+        valid_states: ["RUNNING", "IDLE", "BLOCKED", "STARVED", "FAULTED", "MAINTENANCE"]
+        loss_category_map:
+          RUNNING: null
+          IDLE: "non_productive.no_scheduled_production"
+          BLOCKED: "availability.downstream_blocking"
+          STARVED: "availability.upstream_starvation"
+          FAULTED: "availability.equipment_failure"
+          MAINTENANCE: "non_productive.planned_downtime"
+      
+      - semantic_id: "testing.pressure"
+        description: "Test pressure"
+        opc_source: "Pressure"
+        data_type: "float"
+        unit: "bar"
+        loss_category: null
+        transforms:
+          - type: "range_check"
+            min: 0
+            max: 20
+      
+      - semantic_id: "testing.pass_rate"
+        description: "Test pass rate"
+        opc_source: "PassRate"
+        data_type: "float"
+        unit: "percent"
+        loss_category_rule:
+          condition: "value < 95"
+          category: "quality.process_defect"
+      
+      - semantic_id: "station.parts_count"
+        description: "Cumulative parts tested"
+        opc_source: "ProductCount"
+        data_type: "integer"
+        unit: "parts"
+        loss_category: null
+  
+  robot:
+    semantic_signals:
+      - semantic_id: "station.state"
+        description: "Robot operational state"
+        opc_source: "Status"
+        data_type: "string"
+        valid_states: ["RUNNING", "IDLE", "MOVING", "FAULTED", "MAINTENANCE"]
+        loss_category_map:
+          RUNNING: null
+          IDLE: "non_productive.no_scheduled_production"
+          MOVING: null
+          FAULTED: "availability.equipment_failure"
+          MAINTENANCE: "non_productive.planned_downtime"
+      
+      - semantic_id: "robot.position_x"
+        description: "Robot X position"
+        opc_source: "PositionX"
+        data_type: "float"
+        unit: "millimeters"
+        loss_category: null
+      
+      - semantic_id: "robot.position_y"
+        description: "Robot Y position"
+        opc_source: "PositionY"
+        data_type: "float"
+        unit: "millimeters"
+        loss_category: null
+      
+      - semantic_id: "robot.position_z"
+        description: "Robot Z position"
+        opc_source: "PositionZ"
+        data_type: "float"
+        unit: "millimeters"
+        loss_category: null
+
+# Derived KPIs
+# Computed from semantic signals at runtime
+derived_kpis:
+  - kpi_id: "oee.availability"
+    description: "OEE Availability percentage"
+    formula: "running_time / (running_time + downtime)"
+    dependencies:
+      - "station.state"
+    loss_categories: ["availability.*"]
+    unit: "percent"
+    target: 85.0
+  
+  - kpi_id: "oee.performance"
+    description: "OEE Performance percentage"
+    formula: "(actual_cycle_time * parts_count) / theoretical_cycle_time"
+    dependencies:
+      - "station.cycle_time_actual"
+      - "station.parts_count"
+    loss_categories: ["performance.*"]
+    unit: "percent"
+    target: 95.0
+  
+  - kpi_id: "oee.quality"
+    description: "OEE Quality percentage"
+    formula: "quality_ok / parts_count"
+    dependencies:
+      - "station.quality_ok"
+      - "station.parts_count"
+    loss_categories: ["quality.*"]
+    unit: "percent"
+    target: 98.5
+  
+  - kpi_id: "oee.overall"
+    description: "Overall Equipment Effectiveness"
+    formula: "availability * performance * quality"
+    dependencies:
+      - "oee.availability"
+      - "oee.performance"
+      - "oee.quality"
+    unit: "percent"
+    target: 80.0
+  
+  - kpi_id: "throughput.actual"
+    description: "Actual throughput (parts/hour)"
+    formula: "parts_count / elapsed_hours"
+    dependencies:
+      - "station.parts_count"
+    unit: "parts_per_hour"
+    target: 120.0
+  
+  - kpi_id: "mtbf"
+    description: "Mean Time Between Failures"
+    formula: "running_time / fault_count"
+    dependencies:
+      - "station.state"
+    loss_categories: ["availability.equipment_failure"]
+    unit: "hours"
+    target: 168.0  # 1 week
+  
+  - kpi_id: "mttr"
+    description: "Mean Time To Repair"
+    formula: "total_fault_duration / fault_count"
+    dependencies:
+      - "station.state"
+    loss_categories: ["availability.equipment_failure"]
+    unit: "minutes"
+    target: 30.0
+
+# Mapping Rules
+# Apply semantic mappings to OPC UA nodes
+mapping_rules:
+  # Rule 1: Match by station type
+  - rule_id: "map_by_station_type"
+    description: "Apply semantic model based on station type metadata"
+    match:
+      type: "station_type"
+    apply:
+      - lookup_station_type
+      - apply_semantic_signals
+      - calculate_loss_category
+  
+  # Rule 2: Fallback for unknown stations
+  - rule_id: "generic_station"
+    description: "Generic mapping for stations without specific type"
+    match:
+      type: "default"
+    apply:
+      - map_status_to_state
+      - preserve_raw_tags
+
+# Signal Validation Rules
+validation:
+  - rule: "state_required"
+    description: "All stations must have station.state"
+    enforce: true
+  
+  - rule: "loss_category_for_downtime"
+    description: "Non-RUNNING states must have loss_category"
+    enforce: true
+  
+  - rule: "numeric_ranges"
+    description: "Numeric values must be within defined ranges"
+    enforce: false  # Warning only
+  
+  - rule: "semantic_id_stable"
+    description: "Semantic IDs cannot change once deployed"
+    enforce: true
+
+# Output Format
+# How semantic signals are structured at runtime
+output:
+  format: "json"
+  structure:
+    semantic_id: "string"
+    value: "any"
+    unit: "string"
+    timestamp: "iso8601"
+    source_node: "string"
+    loss_category: "string|null"
+    quality: "good|bad|uncertain"
+    
+  example:
+    - semantic_id: "station.state"
+      value: "RUNNING"
+      unit: null
+      timestamp: "2025-12-15T22:30:00Z"
+      source_node: "ns=2;i=6"
+      loss_category: null
+      quality: "good"
+    
+    - semantic_id: "welding.temperature"
+      value: 456.7
+      unit: "celsius"
+      timestamp: "2025-12-15T22:30:00Z"
+      source_node: "ns=2;i=9"
+      loss_category: null
+      quality: "good"
+    
+    - semantic_id: "welding.quality_score"
+      value: 87.3
+      unit: "percent"
+      timestamp: "2025-12-15T22:30:00Z"
+      source_node: "ns=2;i=12"
+      loss_category: "quality.process_defect"
+      quality: "good"

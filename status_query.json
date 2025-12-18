@@ -1,0 +1,5 @@
+﻿{
+  "app": "shopfloor",
+  "query": "What is the current status of line A01?",
+  "use_llm": true
+}

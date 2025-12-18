@@ -1,0 +1,128 @@
+{
+  "plant_name": "Smart Manufacturing Plant",
+  "plant_id": "PLANT_001",
+  "production_lines": [
+    {
+      "line_id": "LINE_A",
+      "line_name": "Assembly Line A",
+      "description": "High-speed assembly line for electronic components",
+      "target_oee": 0.85,
+      "stations": [
+        {
+          "station_id": "ST_A1",
+          "station_name": "Loading Station",
+          "station_type": "loading",
+          "sequence": 1,
+          "description": "Automated material loading"
+        },
+        {
+          "station_id": "ST_A2",
+          "station_name": "Assembly Robot 1",
+          "station_type": "assembly",
+          "sequence": 2,
+          "description": "6-axis robot for component placement"
+        },
+        {
+          "station_id": "ST_A3",
+          "station_name": "Assembly Robot 2",
+          "station_type": "assembly",
+          "sequence": 3,
+          "description": "Precision assembly workstation"
+        },
+        {
+          "station_id": "ST_A4",
+          "station_name": "Quality Check",
+          "station_type": "inspection",
+          "sequence": 4,
+          "description": "Vision-based quality inspection"
+        },
+        {
+          "station_id": "ST_A5",
+          "station_name": "Packaging",
+          "station_type": "packaging",
+          "sequence": 5,
+          "description": "Automated packaging and labeling"
+        }
+      ]
+    },
+    {
+      "line_id": "LINE_B",
+      "line_name": "Assembly Line B",
+      "description": "Welding and assembly line for metal components",
+      "target_oee": 0.82,
+      "stations": [
+        {
+          "station_id": "ST_B1",
+          "station_name": "Loading Station",
+          "station_type": "loading",
+          "sequence": 1,
+          "description": "Material handling and loading"
+        },
+        {
+          "station_id": "ST_B2",
+          "station_name": "Welding Robot",
+          "station_type": "welding",
+          "sequence": 2,
+          "description": "Automated robotic welding"
+        },
+        {
+          "station_id": "ST_B3",
+          "station_name": "Assembly Station",
+          "station_type": "assembly",
+          "sequence": 3,
+          "description": "Final assembly operations"
+        },
+        {
+          "station_id": "ST_B4",
+          "station_name": "Testing",
+          "station_type": "testing",
+          "sequence": 4,
+          "description": "Functional and stress testing"
+        },
+        {
+          "station_id": "ST_B5",
+          "station_name": "Packaging",
+          "station_type": "packaging",
+          "sequence": 5,
+          "description": "Packaging and shipping prep"
+        }
+      ]
+    },
+    {
+      "line_id": "LINE_C",
+      "line_name": "Packaging Line C",
+      "description": "High-volume packaging line",
+      "target_oee": 0.88,
+      "stations": [
+        {
+          "station_id": "ST_C1",
+          "station_name": "Receiving",
+          "station_type": "receiving",
+          "sequence": 1,
+          "description": "Product receiving and staging"
+        },
+        {
+          "station_id": "ST_C2",
+          "station_name": "Labeling",
+          "station_type": "labeling",
+          "sequence": 2,
+          "description": "Automated labeling system"
+        },
+        {
+          "station_id": "ST_C3",
+          "station_name": "Sealing",
+          "station_type": "sealing",
+          "sequence": 3,
+          "description": "Heat sealing and verification"
+        },
+        {
+          "station_id": "ST_C4",
+          "station_name": "Palletizing",
+          "station_type": "palletizing",
+          "sequence": 4,
+          "description": "Robotic palletizing system"
+        }
+      ]
+    }
+  ]
+}

@@ -127,7 +127,8 @@ def build_operator_qna():
                                     for cit in msg['citations'][:4]:
                                         with ui.card().classes('sf-card p-2 bg-gray-50 dark:bg-gray-800'):
                                             ui.label(f"📄 {cit['doc_id']}").classes('text-xs font-bold')
-                                            ui.label(f"Pages: {cit['pages']}").classes('text-xs opacity-70')
+                                            if cit.get('pages'):
+                                                ui.label(f"Pages: {cit['pages']}").classes('text-xs opacity-70')
                                             if cit.get('score'):
                                                 ui.label(f"Score: {cit['score']:.3f}").classes('text-xs opacity-50')
                 

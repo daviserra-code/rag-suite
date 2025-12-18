@@ -66,8 +66,33 @@ def generate_answer(
     
     context_text = "\n\n".join(context_blocks) if context_blocks else "No relevant context found."
     
-    # Build prompt
-    user_prompt = f"""Context from knowledge base:
+    # Check if first passage is RUNTIME_CONTEXT (Phase A runtime injection)
+    has_runtime = (len(context_passages) > 0 and 
+                   context_passages[0].get("metadata", {}).get("doc_id") == "RUNTIME_CONTEXT")
+    
+    # Build prompt with guardrails
+    if has_runtime:
+        runtime_text = context_passages[0].get("text", "")
+        kb_context = "\n\n".join(context_blocks[1:]) if len(context_blocks) > 1 else "No additional documentation found."
+        user_prompt = f"""RUNTIME CONTEXT (Live Plant Data):
+
+{runtime_text}
+
+Knowledge Base Context:
+
+{kb_context}
+
+Question: {query}
+
+IMPORTANT GUARDRAILS:
+- Only reference line/station IDs explicitly listed in the RUNTIME CONTEXT above
+- If runtime data is unavailable, state this clearly and use knowledge base only
+- Prioritize runtime data for current status questions
+- Reference sources using [doc_id] or [RUNTIME_CONTEXT] notation
+
+Answer based on both runtime data and knowledge base:"""
+    else:
+        user_prompt = f"""Context from knowledge base:
 
 {context_text}
 

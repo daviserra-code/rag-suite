@@ -16,7 +16,7 @@ DB_NAME = os.getenv("DB_NAME", "ragdb")
 engine = create_engine(f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
 def get_oee_component_trends(line_id: str, days: int) -> Dict:
-    """Get Availability, Performance, Quality trends from database"""
+    """Get Availability, Performance, Quality trends from unified view (prefers OPC Studio data)"""
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
@@ -27,7 +27,7 @@ def get_oee_component_trends(line_id: str, days: int) -> Dict:
                     AVG(performance) * 100 as performance,
                     AVG(quality) * 100 as quality,
                     AVG(oee) * 100 as oee
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
                 GROUP BY date, shift
@@ -47,7 +47,7 @@ def get_oee_component_trends(line_id: str, days: int) -> Dict:
         return {'dates': [], 'availability': [], 'performance': [], 'quality': [], 'oee': []}
 
 def get_downtime_by_category(line_id: str, days: int) -> Dict:
-    """Get downtime minutes by loss category"""
+    """Get downtime minutes by loss category from unified events view"""
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
@@ -55,7 +55,7 @@ def get_downtime_by_category(line_id: str, days: int) -> Dict:
                     date,
                     loss_category,
                     SUM(duration_min) as total_minutes
-                FROM oee_downtime_events
+                FROM v_runtime_events
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
                 GROUP BY date, loss_category
@@ -82,7 +82,7 @@ def get_downtime_by_category(line_id: str, days: int) -> Dict:
         return {}
 
 def get_scrap_rate_trend(line_id: str, days: int) -> Dict:
-    """Get scrap rate trend"""
+    """Get scrap rate trend from unified view"""
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
@@ -94,7 +94,7 @@ def get_scrap_rate_trend(line_id: str, days: int) -> Dict:
                         THEN (SUM(scrap_units)::float / SUM(total_units_produced)::float * 100)
                         ELSE 0 
                     END as scrap_rate_pct
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
                 GROUP BY date, shift
@@ -111,7 +111,7 @@ def get_scrap_rate_trend(line_id: str, days: int) -> Dict:
         return {'dates': [], 'scrap_rate': []}
 
 def get_shift_comparison(line_id: str, days: int) -> Dict:
-    """Get OEE by shift for heatmap"""
+    """Get OEE by shift for heatmap from unified view"""
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
@@ -119,7 +119,7 @@ def get_shift_comparison(line_id: str, days: int) -> Dict:
                     date,
                     shift,
                     AVG(oee) * 100 as avg_oee
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
                 GROUP BY date, shift
@@ -154,11 +154,11 @@ def get_kpi_summary(line_id: str, days: int) -> Dict:
     """Get KPI summary values for cards"""
     try:
         with engine.connect() as conn:
-            # Get average OEE and latest shift info
+            # Get average OEE and latest shift info from unified view
             oee_result = conn.execute(text("""
                 SELECT 
                     AVG(oee) * 100 as avg_oee
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
             """), {"line_id": line_id, "days": days}).fetchone()
@@ -166,29 +166,29 @@ def get_kpi_summary(line_id: str, days: int) -> Dict:
             # Get latest shift separately
             latest_result = conn.execute(text("""
                 SELECT date, shift
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                 ORDER BY date DESC, shift DESC
                 LIMIT 1
             """), {"line_id": line_id}).fetchone()
             
-            # Get average downtime (as proxy for MTTR)
+            # Get average downtime (as proxy for MTTR) from unified events
             mttr_result = conn.execute(text("""
                 SELECT 
                     AVG(duration_min) as avg_mttr,
                     COUNT(*) as failure_count
-                FROM oee_downtime_events
+                FROM v_runtime_events
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
                   AND loss_category = 'Equipment Failure'
             """), {"line_id": line_id, "days": days}).fetchone()
             
-            # Get quality rate (proxy for FPY)
+            # Get quality rate (proxy for FPY) from unified view
             quality_result = conn.execute(text("""
                 SELECT 
                     AVG(quality) * 100 as avg_quality,
                     SUM(scrap_units) as total_scrap
-                FROM oee_line_shift
+                FROM v_runtime_kpi
                 WHERE line_id = :line_id
                   AND date >= CURRENT_DATE - INTERVAL ':days days'
             """), {"line_id": line_id, "days": days}).fetchone()

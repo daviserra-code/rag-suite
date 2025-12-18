@@ -1,0 +1,224 @@
+{
+  "plants": [
+    {
+      "id": "TORINO",
+      "name": "Torino Manufacturing Plant",
+      "location": "Turin, Italy",
+      "timezone": "Europe/Rome",
+      "lines": [
+        {
+          "id": "A01",
+          "name": "Assembly Line A01",
+          "type": "mixed_model_assembly",
+          "product_family": "Electric Powertrain",
+          "theoretical_output_per_shift": 960,
+          "ideal_cycle_time_s": 45,
+          "stations": [
+            {"id": "ST17", "name": "Component Staging", "type": "material_prep", "cycle_time_s": 38, "critical": false},
+            {"id": "ST18", "name": "Motor Assembly", "type": "assembly", "cycle_time_s": 52, "critical": true},
+            {"id": "ST19", "name": "Inverter Integration", "type": "assembly", "cycle_time_s": 48, "critical": true},
+            {"id": "ST20", "name": "Functional Test", "type": "testing", "cycle_time_s": 65, "critical": true},
+            {"id": "ST21", "name": "Quality Inspection", "type": "inspection", "cycle_time_s": 42, "critical": false},
+            {"id": "ST22", "name": "Packaging", "type": "packaging", "cycle_time_s": 35, "critical": false}
+          ]
+        },
+        {
+          "id": "A02",
+          "name": "Assembly Line A02",
+          "type": "mixed_model_assembly",
+          "product_family": "Electric Powertrain",
+          "theoretical_output_per_shift": 960,
+          "ideal_cycle_time_s": 45,
+          "stations": [
+            {"id": "ST23", "name": "Component Staging", "type": "material_prep", "cycle_time_s": 38, "critical": false},
+            {"id": "ST24", "name": "Motor Assembly", "type": "assembly", "cycle_time_s": 52, "critical": true},
+            {"id": "ST25", "name": "Inverter Integration", "type": "assembly", "cycle_time_s": 48, "critical": true},
+            {"id": "ST26", "name": "Functional Test", "type": "testing", "cycle_time_s": 65, "critical": true},
+            {"id": "ST27", "name": "Quality Inspection", "type": "inspection", "cycle_time_s": 42, "critical": false},
+            {"id": "ST28", "name": "Packaging", "type": "packaging", "cycle_time_s": 35, "critical": false}
+          ]
+        },
+        {
+          "id": "B01",
+          "name": "Battery Assembly Line B01",
+          "type": "battery_pack_assembly",
+          "product_family": "Lithium-Ion Battery Pack",
+          "theoretical_output_per_shift": 830,
+          "ideal_cycle_time_s": 52,
+          "stations": [
+            {"id": "ST31", "name": "Cell Insertion", "type": "assembly", "cycle_time_s": 48, "critical": true},
+            {"id": "ST32", "name": "Welding Station", "type": "welding", "cycle_time_s": 55, "critical": true},
+            {"id": "ST33", "name": "BMS Integration", "type": "assembly", "cycle_time_s": 50, "critical": true},
+            {"id": "ST34", "name": "Cooling System Install", "type": "assembly", "cycle_time_s": 45, "critical": false},
+            {"id": "ST35", "name": "Electrical Test", "type": "testing", "cycle_time_s": 70, "critical": true},
+            {"id": "ST36", "name": "Sealing & Packaging", "type": "packaging", "cycle_time_s": 40, "critical": false}
+          ]
+        },
+        {
+          "id": "C01",
+          "name": "Component Line C01",
+          "type": "component_manufacturing",
+          "product_family": "Stator/Rotor Components",
+          "theoretical_output_per_shift": 1200,
+          "ideal_cycle_time_s": 36,
+          "stations": [
+            {"id": "ST41", "name": "Raw Material Feed", "type": "material_prep", "cycle_time_s": 30, "critical": false},
+            {"id": "ST42", "name": "Stamping Press 1", "type": "forming", "cycle_time_s": 35, "critical": true},
+            {"id": "ST43", "name": "Stamping Press 2", "type": "forming", "cycle_time_s": 35, "critical": true},
+            {"id": "ST44", "name": "Winding Machine", "type": "winding", "cycle_time_s": 42, "critical": true},
+            {"id": "ST45", "name": "Heat Treatment", "type": "heat_treat", "cycle_time_s": 50, "critical": false},
+            {"id": "ST46", "name": "Dimensional Inspection", "type": "inspection", "cycle_time_s": 38, "critical": false}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "MILAN",
+      "name": "Milano Advanced Manufacturing Hub",
+      "location": "Milan, Italy",
+      "timezone": "Europe/Rome",
+      "lines": [
+        {
+          "id": "M10",
+          "name": "PCB Assembly Line M10",
+          "type": "electronics_assembly",
+          "product_family": "Control Boards",
+          "theoretical_output_per_shift": 1400,
+          "ideal_cycle_time_s": 31,
+          "stations": [
+            {"id": "M10-S01", "name": "Pick & Place Machine 1", "type": "smt", "cycle_time_s": 28, "critical": true},
+            {"id": "M10-S02", "name": "Pick & Place Machine 2", "type": "smt", "cycle_time_s": 28, "critical": true},
+            {"id": "M10-S03", "name": "Reflow Oven", "type": "heat_treat", "cycle_time_s": 35, "critical": true},
+            {"id": "M10-S04", "name": "AOI Inspection", "type": "inspection", "cycle_time_s": 30, "critical": false},
+            {"id": "M10-S05", "name": "Through-Hole Assembly", "type": "assembly", "cycle_time_s": 40, "critical": false},
+            {"id": "M10-S06", "name": "Functional Test", "type": "testing", "cycle_time_s": 45, "critical": true}
+          ]
+        },
+        {
+          "id": "M11",
+          "name": "PCB Assembly Line M11",
+          "type": "electronics_assembly",
+          "product_family": "Power Electronics",
+          "theoretical_output_per_shift": 1400,
+          "ideal_cycle_time_s": 31,
+          "stations": [
+            {"id": "M11-S01", "name": "Pick & Place Machine 1", "type": "smt", "cycle_time_s": 28, "critical": true},
+            {"id": "M11-S02", "name": "Pick & Place Machine 2", "type": "smt", "cycle_time_s": 28, "critical": true},
+            {"id": "M11-S03", "name": "Reflow Oven", "type": "heat_treat", "cycle_time_s": 35, "critical": true},
+            {"id": "M11-S04", "name": "AOI Inspection", "type": "inspection", "cycle_time_s": 30, "critical": false},
+            {"id": "M11-S05", "name": "Through-Hole Assembly", "type": "assembly", "cycle_time_s": 40, "critical": false},
+            {"id": "M11-S06", "name": "High-Power Test", "type": "testing", "cycle_time_s": 55, "critical": true}
+          ]
+        },
+        {
+          "id": "D01",
+          "name": "Final Drive Assembly D01",
+          "type": "mechanical_assembly",
+          "product_family": "Gearboxes & Drivetrains",
+          "theoretical_output_per_shift": 720,
+          "ideal_cycle_time_s": 60,
+          "stations": [
+            {"id": "D01-S01", "name": "Gearbox Housing Prep", "type": "material_prep", "cycle_time_s": 50, "critical": false},
+            {"id": "D01-S02", "name": "Gear Assembly", "type": "assembly", "cycle_time_s": 65, "critical": true},
+            {"id": "D01-S03", "name": "Bearing Installation", "type": "assembly", "cycle_time_s": 55, "critical": true},
+            {"id": "D01-S04", "name": "Lubrication", "type": "assembly", "cycle_time_s": 40, "critical": false},
+            {"id": "D01-S05", "name": "Torque Test", "type": "testing", "cycle_time_s": 70, "critical": true},
+            {"id": "D01-S06", "name": "Noise Test", "type": "testing", "cycle_time_s": 60, "critical": true},
+            {"id": "D01-S07", "name": "Final Inspection", "type": "inspection", "cycle_time_s": 45, "critical": false}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ROME",
+      "name": "Roma Pilot Production Facility",
+      "location": "Rome, Italy",
+      "timezone": "Europe/Rome",
+      "lines": [
+        {
+          "id": "B02",
+          "name": "Battery Cell Testing B02",
+          "type": "battery_cell_testing",
+          "product_family": "Battery Cells",
+          "theoretical_output_per_shift": 2400,
+          "ideal_cycle_time_s": 18,
+          "stations": [
+            {"id": "B02-S01", "name": "Cell Receiving", "type": "material_prep", "cycle_time_s": 12, "critical": false},
+            {"id": "B02-S02", "name": "Formation Charge", "type": "testing", "cycle_time_s": 25, "critical": true},
+            {"id": "B02-S03", "name": "Capacity Test", "type": "testing", "cycle_time_s": 22, "critical": true},
+            {"id": "B02-S04", "name": "Internal Resistance", "type": "testing", "cycle_time_s": 18, "critical": true},
+            {"id": "B02-S05", "name": "Grading & Sorting", "type": "inspection", "cycle_time_s": 15, "critical": false}
+          ]
+        },
+        {
+          "id": "C03",
+          "name": "Cable Harness Line C03",
+          "type": "cable_assembly",
+          "product_family": "High-Voltage Cables",
+          "theoretical_output_per_shift": 1800,
+          "ideal_cycle_time_s": 24,
+          "stations": [
+            {"id": "C03-S01", "name": "Wire Cutting", "type": "cutting", "cycle_time_s": 20, "critical": false},
+            {"id": "C03-S02", "name": "Connector Crimping 1", "type": "assembly", "cycle_time_s": 25, "critical": true},
+            {"id": "C03-S03", "name": "Connector Crimping 2", "type": "assembly", "cycle_time_s": 25, "critical": true},
+            {"id": "C03-S04", "name": "Sleeve Installation", "type": "assembly", "cycle_time_s": 22, "critical": false},
+            {"id": "C03-S05", "name": "Continuity Test", "type": "testing", "cycle_time_s": 28, "critical": true},
+            {"id": "C03-S06", "name": "Hi-Pot Test", "type": "testing", "cycle_time_s": 30, "critical": true}
+          ]
+        },
+        {
+          "id": "SMT1",
+          "name": "Sensor Module Line SMT1",
+          "type": "sensor_assembly",
+          "product_family": "Current/Voltage Sensors",
+          "theoretical_output_per_shift": 3200,
+          "ideal_cycle_time_s": 14,
+          "stations": [
+            {"id": "SMT1-S01", "name": "PCB Staging", "type": "material_prep", "cycle_time_s": 10, "critical": false},
+            {"id": "SMT1-S02", "name": "Component Mount", "type": "smt", "cycle_time_s": 12, "critical": true},
+            {"id": "SMT1-S03", "name": "Reflow", "type": "heat_treat", "cycle_time_s": 15, "critical": true},
+            {"id": "SMT1-S04", "name": "Calibration", "type": "testing", "cycle_time_s": 18, "critical": true},
+            {"id": "SMT1-S05", "name": "Encapsulation", "type": "packaging", "cycle_time_s": 12, "critical": false}
+          ]
+        },
+        {
+          "id": "WC01",
+          "name": "Wire Coil Line WC01",
+          "type": "coil_winding",
+          "product_family": "Motor Coils",
+          "theoretical_output_per_shift": 900,
+          "ideal_cycle_time_s": 48,
+          "stations": [
+            {"id": "WC01-S01", "name": "Wire Feed", "type": "material_prep", "cycle_time_s": 35, "critical": false},
+            {"id": "WC01-S02", "name": "Winding Machine 1", "type": "winding", "cycle_time_s": 50, "critical": true},
+            {"id": "WC01-S03", "name": "Winding Machine 2", "type": "winding", "cycle_time_s": 50, "critical": true},
+            {"id": "WC01-S04", "name": "Insulation", "type": "coating", "cycle_time_s": 42, "critical": false},
+            {"id": "WC01-S05", "name": "Electrical Test", "type": "testing", "cycle_time_s": 55, "critical": true}
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-12-15",
+    "description": "Multi-plant manufacturing model for electric vehicle powertrain components",
+    "total_plants": 3,
+    "total_lines": 15,
+    "total_stations": 93
+  },
+  "station_type_definitions": {
+    "material_prep": "Material staging, kitting, and preparation",
+    "assembly": "Manual or robotic assembly operations",
+    "welding": "Resistance, laser, or arc welding processes",
+    "smt": "Surface mount technology for electronics",
+    "forming": "Stamping, pressing, or forming operations",
+    "winding": "Coil or wire winding operations",
+    "heat_treat": "Thermal processes (reflow, curing, annealing)",
+    "coating": "Painting, insulation, or protective coating",
+    "cutting": "Cutting, trimming, or machining operations",
+    "testing": "Functional, electrical, or performance testing",
+    "inspection": "Visual, dimensional, or automated inspection",
+    "packaging": "Final packaging and labeling operations"
+  }
+}
