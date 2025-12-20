@@ -31,7 +31,7 @@ def get_production_lines_summary(days: int = 30) -> List[Dict]:
     """Get comprehensive summary for all production lines"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     line_id,
                     line_name,
@@ -44,10 +44,10 @@ def get_production_lines_summary(days: int = 30) -> List[Dict]:
                     SUM(good_units) as total_good_units,
                     MAX(date) as last_updated
                 FROM oee_line_shift
-                WHERE date >= CURRENT_DATE - INTERVAL ':days days'
+                WHERE date >= CURRENT_DATE - INTERVAL '{days} days'
                 GROUP BY line_id, line_name
                 ORDER BY avg_oee DESC
-            """), {"days": days})
+            """))
             
             return [dict(row._mapping) for row in result]
     except Exception as e:
@@ -149,16 +149,16 @@ def get_line_trend(line_id: str, days: int = 7) -> Dict:
     """Get OEE trend data for a specific line"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     date,
                     shift,
                     oee * 100 as oee
                 FROM oee_line_shift
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                 ORDER BY date, shift
-            """), {"line_id": line_id, "days": days})
+            """), {"line_id": line_id})
             
             rows = result.fetchall()
             return {

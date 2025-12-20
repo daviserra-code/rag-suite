@@ -18,7 +18,20 @@ def get_db_engine():
     DB_PASS = os.getenv("POSTGRES_PASSWORD", "mes_pass")
     
     connection_string = f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    return create_engine(connection_string)
+    
+    # Connection pooling configuration
+    pool_size = int(os.getenv("SQLALCHEMY_POOL_SIZE", "10"))
+    max_overflow = int(os.getenv("SQLALCHEMY_MAX_OVERFLOW", "20"))
+    pool_recycle = int(os.getenv("SQLALCHEMY_POOL_RECYCLE", "3600"))
+    pool_pre_ping = os.getenv("SQLALCHEMY_POOL_PRE_PING", "true").lower() == "true"
+    
+    return create_engine(
+        connection_string,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_recycle=pool_recycle,
+        pool_pre_ping=pool_pre_ping
+    )
 
 class OEETrendRequest(BaseModel):
     line_id: str

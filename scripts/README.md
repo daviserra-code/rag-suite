@@ -4,7 +4,36 @@ This directory contains production-ready automation scripts for deploying and ma
 
 ## 📁 Scripts Overview
 
-### 1. hetzner-deploy.sh
+### 1. generate_live_data.py
+**Automated live OEE data generation**
+
+**Usage:**
+```bash
+cd scripts
+POSTGRES_HOST=localhost POSTGRES_PASSWORD=your_password python3 generate_live_data.py
+```
+
+**What it does:**
+- Generates realistic OEE data for current shift (M/A/N)
+- Updates all 11 production lines
+- Creates station-level performance data (3 stations per line)
+- Uses ON CONFLICT to update existing records (no duplicates)
+- Automatically cleans up data older than 45 days
+
+**Shifts:**
+- Morning (M): 6:00-14:00
+- Afternoon (A): 14:00-22:00
+- Night (N): 22:00-6:00
+
+**Schedule:** Run hourly (top of every hour) via cron  
+**Output:** All dashboards show fresh, current data  
+**Log:** `/var/log/shopfloor-datagen.log`
+
+**Dependencies:** `python3-psycopg` (install with `apt-get install python3-psycopg`)
+
+---
+
+### 2. hetzner-deploy.sh
 **Automated deployment to Hetzner Cloud**
 
 **Usage:**
@@ -32,7 +61,7 @@ This directory contains production-ready automation scripts for deploying and ma
 
 ---
 
-### 2. backup.sh
+### 3. backup.sh
 **Automated backup of all data**
 
 **Usage:**
@@ -52,7 +81,7 @@ This directory contains production-ready automation scripts for deploying and ma
 
 ---
 
-### 3. restore.sh
+### 4. restore.sh
 **Restore from backup**
 
 **Usage:**
@@ -81,7 +110,7 @@ This directory contains production-ready automation scripts for deploying and ma
 
 ---
 
-### 4. health-check.sh
+### 5. health-check.sh
 **Monitor service health**
 
 **Usage:**
@@ -102,7 +131,7 @@ This directory contains production-ready automation scripts for deploying and ma
 
 ---
 
-### 5. setup-cron.sh
+### 6. setup-cron.sh
 **Install cron jobs**
 
 **Usage:**
@@ -111,6 +140,7 @@ This directory contains production-ready automation scripts for deploying and ma
 ```
 
 **What it installs:**
+- Hourly live data generation (top of every hour)
 - Daily backups (2 AM)
 - Health checks (every 5 minutes)
 - Weekly Docker cleanup (Sunday 3 AM)
@@ -118,6 +148,27 @@ This directory contains production-ready automation scripts for deploying and ma
 - Monthly SSL renewal check (1st of month)
 
 **Run once:** After initial deployment
+
+**Cron Jobs Installed:**
+```cron
+# Generate live OEE data every hour
+0 * * * * cd /opt/shopfloor/rag-suite/scripts && POSTGRES_HOST=localhost POSTGRES_PASSWORD=xxx python3 generate_live_data.py >> /var/log/shopfloor-datagen.log 2>&1
+
+# Daily backup at 2 AM
+0 2 * * * /opt/shopfloor/rag-suite/scripts/backup.sh >> /var/log/shopfloor-backup.log 2>&1
+
+# Health check every 5 minutes
+*/5 * * * * /opt/shopfloor/rag-suite/scripts/health-check.sh >> /var/log/shopfloor-health.log 2>&1
+
+# Weekly Docker cleanup on Sunday at 3 AM
+0 3 * * 0 docker system prune -af --volumes >> /var/log/shopfloor-cleanup.log 2>&1
+
+# Rotate logs daily at 4 AM
+0 4 * * * find /var/log -name "shopfloor-*.log" -type f -mtime +7 -delete
+
+# SSL certificate renewal check (Let's Encrypt auto-renews, but check monthly)
+0 5 1 * * sudo certbot renew --quiet
+```
 
 ---
 

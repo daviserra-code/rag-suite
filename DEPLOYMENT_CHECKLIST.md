@@ -82,7 +82,7 @@ git clone YOUR_REPO_URL .
 
 ### Step 8: Configure Production Environment
 ```bash
-cd /opt/shopfloor
+cd /opt/shopfloor/rag-suite
 cp docker-compose.prod.yml docker-compose.yml
 cp .env.prod .env
 
@@ -93,7 +93,7 @@ cat .env
 
 ### Step 9: Build Docker Images
 ```bash
-cd /opt/shopfloor
+cd /opt/shopfloor/rag-suite
 docker compose build
 
 # This will take 5-10 minutes
