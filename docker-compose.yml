@@ -156,6 +156,24 @@ services:
           cpus: '0.5'
           memory: 512M
 
+  data-simulator:
+    image: python:3.11-slim
+    container_name: shopfloor-data-sim
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ragdb
+    command: sh -c "pip install --quiet psycopg[binary]==3.2.3 && python -u continuous_data_sim.py"
+    depends_on:
+      - postgres
+    volumes:
+      - ./continuous_data_sim.py:/app/continuous_data_sim.py
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
 volumes:
   pgdata:
     driver: local

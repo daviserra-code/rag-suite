@@ -39,7 +39,7 @@ def build_live_monitoring():
         try:
             engine = get_db_engine()
             with engine.connect() as conn:
-                # Get most recent data (today or latest available)
+                # Get most recent data (latest available, looking back 7 days)
                 result = conn.execute(text("""
                     SELECT 
                         line_id, line_name,
@@ -47,7 +47,7 @@ def build_live_monitoring():
                         total_units_produced, good_units,
                         date, shift
                     FROM oee_line_shift
-                    WHERE date >= CURRENT_DATE - INTERVAL '1 day'
+                    WHERE date >= CURRENT_DATE - INTERVAL '7 days'
                     ORDER BY date DESC, shift DESC, line_id
                     LIMIT 6
                 """))

@@ -19,7 +19,7 @@ def get_oee_component_trends(line_id: str, days: int) -> Dict:
     """Get Availability, Performance, Quality trends from unified view (prefers OPC Studio data)"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     date,
                     shift,
@@ -29,10 +29,10 @@ def get_oee_component_trends(line_id: str, days: int) -> Dict:
                     AVG(oee) * 100 as oee
                 FROM v_runtime_kpi
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                 GROUP BY date, shift
                 ORDER BY date, shift
-            """), {"line_id": line_id, "days": days})
+            """), {"line_id": line_id})
             
             rows = result.fetchall()
             return {
@@ -50,17 +50,17 @@ def get_downtime_by_category(line_id: str, days: int) -> Dict:
     """Get downtime minutes by loss category from unified events view"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     date,
                     loss_category,
                     SUM(duration_min) as total_minutes
                 FROM v_runtime_events
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                 GROUP BY date, loss_category
                 ORDER BY date, loss_category
-            """), {"line_id": line_id, "days": days})
+            """), {"line_id": line_id})
             
             rows = result.fetchall()
             
@@ -85,7 +85,7 @@ def get_scrap_rate_trend(line_id: str, days: int) -> Dict:
     """Get scrap rate trend from unified view"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     date,
                     shift,
@@ -96,10 +96,10 @@ def get_scrap_rate_trend(line_id: str, days: int) -> Dict:
                     END as scrap_rate_pct
                 FROM v_runtime_kpi
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                 GROUP BY date, shift
                 ORDER BY date, shift
-            """), {"line_id": line_id, "days": days})
+            """), {"line_id": line_id})
             
             rows = result.fetchall()
             return {
@@ -114,17 +114,17 @@ def get_shift_comparison(line_id: str, days: int) -> Dict:
     """Get OEE by shift for heatmap from unified view"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            result = conn.execute(text(f"""
                 SELECT 
                     date,
                     shift,
                     AVG(oee) * 100 as avg_oee
                 FROM v_runtime_kpi
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                 GROUP BY date, shift
                 ORDER BY date, shift
-            """), {"line_id": line_id, "days": days})
+            """), {"line_id": line_id})
             
             rows = result.fetchall()
             
@@ -155,13 +155,13 @@ def get_kpi_summary(line_id: str, days: int) -> Dict:
     try:
         with engine.connect() as conn:
             # Get average OEE and latest shift info from unified view
-            oee_result = conn.execute(text("""
+            oee_result = conn.execute(text(f"""
                 SELECT 
                     AVG(oee) * 100 as avg_oee
                 FROM v_runtime_kpi
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
-            """), {"line_id": line_id, "days": days}).fetchone()
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
+            """), {"line_id": line_id}).fetchone()
             
             # Get latest shift separately
             latest_result = conn.execute(text("""
@@ -173,25 +173,25 @@ def get_kpi_summary(line_id: str, days: int) -> Dict:
             """), {"line_id": line_id}).fetchone()
             
             # Get average downtime (as proxy for MTTR) from unified events
-            mttr_result = conn.execute(text("""
+            mttr_result = conn.execute(text(f"""
                 SELECT 
                     AVG(duration_min) as avg_mttr,
                     COUNT(*) as failure_count
                 FROM v_runtime_events
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
                   AND loss_category = 'Equipment Failure'
-            """), {"line_id": line_id, "days": days}).fetchone()
+            """), {"line_id": line_id}).fetchone()
             
             # Get quality rate (proxy for FPY) from unified view
-            quality_result = conn.execute(text("""
+            quality_result = conn.execute(text(f"""
                 SELECT 
                     AVG(quality) * 100 as avg_quality,
                     SUM(scrap_units) as total_scrap
                 FROM v_runtime_kpi
                 WHERE line_id = :line_id
-                  AND date >= CURRENT_DATE - INTERVAL ':days days'
-            """), {"line_id": line_id, "days": days}).fetchone()
+                  AND date >= CURRENT_DATE - INTERVAL '{days} days'
+            """), {"line_id": line_id}).fetchone()
             
             return {
                 'avg_oee': float(oee_result[0] or 0) if oee_result else 0,
@@ -477,4 +477,4 @@ def build_kpi_dashboard():
                     ui.label(dt['reason']).classes('text-xs flex-grow')
     
     # Load initial data
-    load_kpi_data()
+    ui.timer(0.1, load_kpi_data, once=True)
