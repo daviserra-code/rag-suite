@@ -29,12 +29,10 @@ def health():
 app.mount("/static", StaticFiles(directory="apps/shopfloor_copilot/static"), name="static")
 ui.run_with(app, storage_secret="shopfloor-secret")
 
-# Build UI with page decorator
-from apps.shopfloor_copilot.ui import build_ui
-
-@ui.page('/')
-def index_page():
-    build_ui()
+# Import pages to register all @ui.page routes
+# This must happen before uvicorn.run()
+import apps.shopfloor_copilot.pages
+from apps.shopfloor_copilot.pages import legacy
 
 if __name__ == "__main__":
     import uvicorn
