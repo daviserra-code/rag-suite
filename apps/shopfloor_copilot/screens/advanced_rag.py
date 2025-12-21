@@ -352,7 +352,7 @@ def advanced_rag_screen():
     with ui.column().classes('w-full p-4 gap-4'):
         # Header
         with ui.row().classes('w-full items-center justify-between'):
-            ui.label('AI Copilot - Advanced RAG').classes('text-3xl font-bold')
+            ui.label('AI Copilot - Advanced RAG').classes('text-3xl font-bold').style('color: #f1f5f9;')
             with ui.row().classes('gap-2'):
                 ui.icon('psychology', size='lg').classes('text-primary')
                 ui.icon('translate', size='lg').classes('text-primary')
@@ -377,7 +377,7 @@ def advanced_rag_screen():
             # Document Ingestion Tab
             with ui.tab_panel(tab_ingest):
                 with ui.card().classes('w-full'):
-                    ui.label('Ingest Technical Documents').classes('text-2xl font-bold')
+                    ui.label('Ingest Technical Documents').classes('text-2xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
                     ui.markdown("""
@@ -444,7 +444,7 @@ def advanced_rag_screen():
                 
                 # Recent ingestions card content
                 with recent_ingestions_card:
-                    ui.label('Recent Ingestions').classes('text-xl font-bold')
+                    ui.label('Recent Ingestions').classes('text-xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
                     recent_ingestions = ui.column().classes('w-full gap-2')
@@ -453,7 +453,7 @@ def advanced_rag_screen():
             # Image Troubleshooting Tab
             with ui.tab_panel(tab_image):
                 with ui.card().classes('w-full'):
-                    ui.label('Image-Based Troubleshooting').classes('text-2xl font-bold')
+                    ui.label('Image-Based Troubleshooting').classes('text-2xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
                     ui.markdown("""
@@ -489,7 +489,7 @@ def advanced_rag_screen():
                     
                     # Results
                     with ui.card().classes('w-full mt-4 bg-blue-50'):
-                        ui.label('Analysis Results').classes('text-xl font-bold')
+                        ui.label('Analysis Results').classes('text-xl font-bold').style('color: #f1f5f9;')
                         ui.separator()
                         image_result = ui.column().classes('w-full gap-2')
                         with image_result:
@@ -498,7 +498,7 @@ def advanced_rag_screen():
             # Multi-Language Q&A Tab
             with ui.tab_panel(tab_multilang):
                 with ui.card().classes('w-full'):
-                    ui.label('Multi-Language Q&A').classes('text-2xl font-bold')
+                    ui.label('Multi-Language Q&A').classes('text-2xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
                     ui.markdown("""
@@ -562,7 +562,7 @@ def advanced_rag_screen():
                     
                     # Results
                     with ui.card().classes('w-full mt-4 bg-green-50'):
-                        ui.label('Answer').classes('text-xl font-bold')
+                        ui.label('Answer').classes('text-xl font-bold').style('color: #f1f5f9;')
                         ui.separator()
                         ml_result = ui.column().classes('w-full gap-2')
                         with ml_result:
@@ -571,7 +571,7 @@ def advanced_rag_screen():
             # Knowledge Base Tab
             with ui.tab_panel(tab_knowledge):
                 with ui.card().classes('w-full'):
-                    ui.label('Knowledge Base Overview').classes('text-2xl font-bold')
+                    ui.label('Knowledge Base Overview').classes('text-2xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
                     # Stats

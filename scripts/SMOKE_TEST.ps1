@@ -8,13 +8,13 @@
 # ============================================================================
 
 param(
-    [string]$ShopfloorApiUrl = $env:SHOPFLOOR_API_URL ?? "http://localhost:8010",
-    [string]$OpcStudioUrl = $env:OPC_STUDIO_URL ?? "http://localhost:8040",
-    [string]$PostgresHost = $env:POSTGRES_HOST ?? "localhost",
-    [string]$PostgresPort = $env:POSTGRES_PORT ?? "5432",
-    [string]$PostgresDb = $env:POSTGRES_DB ?? "ragdb",
-    [string]$PostgresUser = $env:POSTGRES_USER ?? "postgres",
-    [string]$PostgresPassword = $env:POSTGRES_PASSWORD ?? "postgres"
+    [string]$ShopfloorApiUrl = $(if ($env:SHOPFLOOR_API_URL) { $env:SHOPFLOOR_API_URL } else { "http://localhost:8010" }),
+    [string]$OpcStudioUrl = $(if ($env:OPC_STUDIO_URL) { $env:OPC_STUDIO_URL } else { "http://localhost:8040" }),
+    [string]$PostgresHost = $(if ($env:POSTGRES_HOST) { $env:POSTGRES_HOST } else { "localhost" }),
+    [string]$PostgresPort = $(if ($env:POSTGRES_PORT) { $env:POSTGRES_PORT } else { "5432" }),
+    [string]$PostgresDb = $(if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "ragdb" }),
+    [string]$PostgresUser = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "postgres" }),
+    [string]$PostgresPassword = $(if ($env:POSTGRES_PASSWORD) { $env:POSTGRES_PASSWORD } else { "postgres" })
 )
 
 # Colors for output

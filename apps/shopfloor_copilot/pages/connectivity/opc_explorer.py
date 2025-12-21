@@ -17,7 +17,8 @@ def opc_explorer_page():
     # Create layout shell
     content = layout_shell(
         title="OPC Explorer",
-        show_drawer=True
+        show_drawer=True,
+        theme="legacy"
     )
     
     # Render page content
@@ -25,7 +26,8 @@ def opc_explorer_page():
         create_page_header(
             title="OPC Explorer",
             subtitle="Sprint 1: UAExpert-like OPC UA browser",
-            icon="explore"
+            icon="explore",
+            theme="legacy"
         )
         
         # Render the existing OPC Explorer screen
