@@ -110,63 +110,7 @@ def layout_shell(
     # Apply dark background for dark theme pages
     if theme == "dark":
         ui.query('body').style('background: #0f172a; color: #e2e8f0;')
-        
-        # Inject global dark theme CSS for all cards and containers
-        ui.add_head_html('''
-        <style>
-            /* Dark theme for all cards */
-            .nicegui-card, .q-card {
-                background: #1e293b !important;
-                border: 1px solid #334155 !important;
-                color: #e2e8f0 !important;
-            }
-            
-            /* Dark theme for inputs and selects */
-            .q-field__control {
-                background: #1e293b !important;
-                color: #e2e8f0 !important;
-            }
-            
-            .q-field__label {
-                color: #94a3b8 !important;
-            }
-            
-            /* Dark theme for tables */
-            .q-table, .q-table__card {
-                background: #1e293b !important;
-                color: #e2e8f0 !important;
-            }
-            
-            .q-table thead th {
-                color: #f1f5f9 !important;
-                background: #0f172a !important;
-            }
-            
-            .q-table tbody td {
-                color: #e2e8f0 !important;
-                border-color: #334155 !important;
-            }
-            
-            /* Dark theme for buttons (non-colored) */
-            .q-btn:not(.bg-primary):not(.bg-secondary):not(.bg-positive):not(.bg-negative):not(.bg-warning) {
-                background: #334155 !important;
-                color: #e2e8f0 !important;
-            }
-            
-            /* Dark theme for dialogs and menus */
-            .q-menu, .q-dialog__backdrop {
-                background: rgba(15, 23, 42, 0.75) !important;
-            }
-            
-            .q-menu .q-item {
-                color: #e2e8f0 !important;
-            }
-            
-            .q-menu .q-item:hover {
-                background: #334155 !important;
-            }
-        </style>
-        ''')
+        # Note: Global dark theme CSS is now injected in theme.py to prevent FOUC
     
     # Header with logo and navigation - dark industrial style
     with ui.header().classes('text-white').style(
