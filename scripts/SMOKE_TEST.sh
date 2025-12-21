@@ -177,7 +177,7 @@ echo ""
 echo -e "${YELLOW}[Layer 1] Health Endpoints${NC}"
 echo "-----------------------------------"
 
-test_json_endpoint "$OPC_STUDIO_URL/health" "OPC Studio Health" "status"
+test_json_endpoint "$OPC_STUDIO_URL/health" "OPC Studio Health" "ok"
 test_json_endpoint "$SHOPFLOOR_API_URL/health" "Shopfloor API Health" "status"
 test_endpoint "$SHOPFLOOR_API_URL/" "Shopfloor UI Landing Page"
 
@@ -329,6 +329,13 @@ if [ "$http_code" = "200" ]; then
     else
         log_fail "Diagnostics Response Missing Required Fields"
     fi
+elif [ "$http_code" = "500" ] || [ "$http_code" = "503" ]; then
+    # Check if error is due to Ollama being unavailable
+    if echo "$diag_response" | grep -qi "ollama"; then
+        log_warn "Diagnostics Endpoint - Ollama LLM not available (service may be starting or disabled)"
+    else
+        log_fail "Diagnostics Endpoint (HTTP $http_code)"
+    fi
 else
     log_fail "Diagnostics Endpoint (HTTP $http_code)"
 fi
@@ -340,10 +347,10 @@ echo ""
 echo -e "${YELLOW}[Layer 6] Regression Tests${NC}"
 echo "-----------------------------------"
 
-test_endpoint "$SHOPFLOOR_API_URL/kpi-dashboard" "KPI Dashboard Page"
-test_endpoint "$SHOPFLOOR_API_URL/live-monitoring" "Live Monitoring Page"
-test_endpoint "$SHOPFLOOR_API_URL/opc-explorer" "OPC Explorer Page"
-test_endpoint "$SHOPFLOOR_API_URL/diagnostics" "Diagnostics Hub Page"
+test_endpoint "$SHOPFLOOR_API_URL/analytics/kpi" "KPI Dashboard Page"
+test_endpoint "$SHOPFLOOR_API_URL/operations/live" "Live Monitoring Page"
+test_endpoint "$SHOPFLOOR_API_URL/connectivity/opc-explorer" "OPC Explorer Page"
+test_endpoint "$SHOPFLOOR_API_URL/maintenance/diagnostics" "Diagnostics Hub Page"
 
 # ----------------------------------------------------------------------------
 # Summary
