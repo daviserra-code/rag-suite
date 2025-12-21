@@ -160,8 +160,9 @@ services:
     image: python:3.11-slim
     container_name: shopfloor-data-sim
     working_dir: /app
+    env_file: .env.prod
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ragdb
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/ragdb
     command: sh -c "pip install --quiet psycopg[binary]==3.2.3 && python -u continuous_data_sim.py"
     depends_on:
       - postgres
