@@ -709,11 +709,11 @@ def build_production_lines_overview():
                 ui.plotly(fig).classes('w-full')
     
     # Main Layout
-    with ui.column().classes('w-full gap-4'):
+    with ui.column().classes('w-full gap-4').style('background: #0f172a; min-height: 100vh; padding: 20px;'):
         # Header with filters
-        with ui.card().classes('sf-card'):
+        with ui.card().classes('sf-card').style('background: #1e293b; border: 1px solid #334155;'):
             with ui.row().classes('w-full items-center justify-between mb-2'):
-                ui.label('📊 Production Lines Overview').classes('text-2xl font-bold')
+                ui.label('📊 Production Lines Overview').classes('text-2xl font-bold text-gray-100')
                 
                 with ui.row().classes('gap-2'):
                     comparison_mode = app.storage.user['comparison_mode']
@@ -749,35 +749,35 @@ def build_production_lines_overview():
         comparison_display()
         
         # Lines Table
-        with ui.card().classes('sf-card w-full'):
-            ui.label('Production Lines Matrix').classes('text-lg font-bold mb-4')
+        with ui.card().classes('sf-card w-full').style('background: #1e293b; border: 1px solid #334155;'):
+            ui.label('Production Lines Matrix').classes('text-lg font-bold mb-4 text-gray-100')
             lines_table()
         
         # Legend
-        with ui.card().classes('sf-card w-full'):
-            ui.label('Performance Legend').classes('text-sm font-bold mb-2')
+        with ui.card().classes('sf-card w-full').style('background: #1e293b; border: 1px solid #334155;'):
+            ui.label('Performance Legend').classes('text-sm font-bold mb-2 text-gray-100')
             with ui.row().classes('gap-4'):
                 with ui.row().classes('items-center gap-2'):
                     ui.label('●').classes('text-green-600 dark:text-green-400 text-xl')
-                    ui.label('Excellent (≥80%)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Excellent (≥80%)').classes('text-xs text-gray-300')
                 with ui.row().classes('items-center gap-2'):
                     ui.label('●').classes('text-blue-600 dark:text-blue-400 text-xl')
-                    ui.label('Good (75-80%)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Good (75-80%)').classes('text-xs text-gray-300')
                 with ui.row().classes('items-center gap-2'):
                     ui.label('●').classes('text-yellow-600 dark:text-yellow-400 text-xl')
-                    ui.label('Needs Attention (<75%)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Needs Attention (<75%)').classes('text-xs text-gray-300')
             
-            ui.label('Real-Time Status').classes('text-sm font-bold mb-2 mt-3')
+            ui.label('Real-Time Status').classes('text-sm font-bold mb-2 mt-3 text-gray-100')
             with ui.row().classes('gap-4'):
                 with ui.row().classes('items-center gap-2'):
                     ui.label('🟢').classes('text-xl')
-                    ui.label('Running (OEE ≥70%, no recent issues)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Running (OEE ≥70%, no recent issues)').classes('text-xs text-gray-300')
                 with ui.row().classes('items-center gap-2'):
                     ui.label('🟡').classes('text-xl')
-                    ui.label('Warning (OEE <70%)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Warning (OEE <70%)').classes('text-xs text-gray-300')
                 with ui.row().classes('items-center gap-2'):
                     ui.label('🔴').classes('text-xl')
-                    ui.label('Stopped (downtime in last hour)').classes('text-xs text-gray-700 dark:text-gray-300')
+                    ui.label('Stopped (downtime in last hour)').classes('text-xs text-gray-300')
         
         # Detail view (rendered when line is selected)
         line_detail_display()
