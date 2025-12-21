@@ -132,6 +132,24 @@ def apply_shopfloor_theme(dark: bool | None = None):
             color: #e2e8f0 !important;
         }
         
+        /* Dark theme for drawer */
+        .q-drawer {
+            background: #1e293b !important;
+            transition: none !important; /* Prevent flash during navigation */
+        }
+        
+        .q-drawer .q-expansion-item__container {
+            background: transparent !important;
+        }
+        
+        .q-drawer .q-item {
+            color: #e2e8f0 !important;
+        }
+        
+        .q-drawer .q-item:hover {
+            background: #334155 !important;
+        }
+        
         /* Prevent any white flash during page transitions */
         .nicegui-content, .q-page {
             background: #0f172a !important;
