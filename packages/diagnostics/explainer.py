@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # Service URLs (from environment in production)
 import os
 OPC_STUDIO_URL = os.getenv("OPC_STUDIO_URL", "http://opc-studio:8040")
-OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://compassionate_thompson:11434")
+OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 CHROMA_URL = os.getenv("CHROMA_URL", "http://chroma:8000")
 
 
@@ -59,7 +59,7 @@ class DiagnosticsExplainer:
         self.opc_url = opc_url
         self.ollama_url = ollama_url
         self.chroma_url = chroma_url
-        self.model_name = "llama3.2:latest"
+        self.model_name = os.getenv("OLLAMA_MODEL", "llama3.2:3b")  # Default to 3b for efficiency
     
     async def explain_situation(
         self,

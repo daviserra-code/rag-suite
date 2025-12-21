@@ -167,20 +167,21 @@ Test-Endpoint -Url "$ShopfloorApiUrl/" -TestName "Shopfloor UI Landing Page"
 Write-Host "`n[Layer 2] OPC Explorer" -ForegroundColor Yellow
 Write-Host "-----------------------------------" -ForegroundColor Yellow
 
-# Test OPC browse endpoint (may fail if not connected, that's OK)
+# Test plant model endpoint
 try {
-    $browseUrl = "$OpcStudioUrl/opc/browse?nodeId=ns=0;i=85"
-    $browseResult = Invoke-RestMethod -Uri $browseUrl -Method Get -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+    $modelUrl = "$OpcStudioUrl/model"
+    $modelResult = Invoke-RestMethod -Uri $modelUrl -Method Get -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     
-    if ($browseResult.children -and $browseResult.children.Count -gt 0) {
-        Write-Pass "OPC Browse Root Node ($($browseResult.children.Count) children)"
+    if ($modelResult.ok -and $modelResult.model -and $modelResult.model.lines) {
+        $lineCount = ($modelResult.model.lines.PSObject.Properties | Measure-Object).Count
+        Write-Pass "OPC Studio Plant Model ($lineCount lines)"
         $script:passCount++
     } else {
-        Write-Warn "OPC Browse returned no children (may not be connected)"
+        Write-Warn "OPC Studio Model returned no data"
         $script:warnCount++
     }
 } catch {
-    Write-Warn "OPC Browse - $($_.Exception.Message) (may not be connected)"
+    Write-Warn "OPC Studio Model - $($_.Exception.Message)"
     $script:warnCount++
 }
 
@@ -191,18 +192,24 @@ Write-Host "`n[Layer 3] Semantic Mapping" -ForegroundColor Yellow
 Write-Host "-----------------------------------" -ForegroundColor Yellow
 
 try {
-    $snapshotUrl = "$OpcStudioUrl/semantic/snapshot"
+    $snapshotUrl = "$OpcStudioUrl/snapshot"
     $snapshot = Invoke-RestMethod -Uri $snapshotUrl -Method Get -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     
-    if ($snapshot.plant) {
+    if ($snapshot.ok -and $snapshot.data -and $snapshot.data.plant) {
         Write-Pass "Semantic Snapshot Available"
         $script:passCount++
         
-        if ($snapshot.lines -and $snapshot.lines.Count -gt 0) {
-            Write-Pass "  - Found $($snapshot.lines.Count) mapped lines"
+        if ($snapshot.data.lines) {
+            $lineCount = ($snapshot.data.lines.PSObject.Properties | Measure-Object).Count
+            Write-Pass "  - Found $lineCount mapped lines"
             $script:passCount++
             
-            $stationCount = ($snapshot.lines | ForEach-Object { $_.stations.Count } | Measure-Object -Sum).Sum
+            $stationCount = 0
+            foreach ($line in $snapshot.data.lines.PSObject.Properties.Value) {
+                if ($line.stations) {
+                    $stationCount += ($line.stations.PSObject.Properties | Measure-Object).Count
+                }
+            }
             if ($stationCount -gt 0) {
                 Write-Pass "  - Found $stationCount mapped stations"
                 $script:passCount++
@@ -290,7 +297,7 @@ $diagBody = @{
 
 try {
     $diagUrl = "$ShopfloorApiUrl/api/diagnostics/explain"
-    $diagResponse = Invoke-RestMethod -Uri $diagUrl -Method Post -Body ($diagBody | ConvertTo-Json) -ContentType "application/json" -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
+    $diagResponse = Invoke-RestMethod -Uri $diagUrl -Method Post -Body ($diagBody | ConvertTo-Json) -ContentType "application/json" -UseBasicParsing -TimeoutSec 120 -ErrorAction Stop
     
     $requiredFields = @("what", "why", "what_to_do", "checklist", "citations")
     $missingFields = $requiredFields | Where-Object { -not $diagResponse.PSObject.Properties[$_] }

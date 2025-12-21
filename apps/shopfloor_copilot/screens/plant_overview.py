@@ -2,98 +2,178 @@ from nicegui import ui, app
 from sqlalchemy import text
 from apps.shopfloor_copilot.routers.oee_analytics import get_db_engine
 from datetime import datetime, timedelta
+import asyncio
 
 def build_plant_overview(on_line_click=None):
     """Build the graphical Plant Overview page with traffic lights and live alarms"""
     
-    # Fetch latest OEE data directly from database
-    try:
-        engine = get_db_engine()
-        with engine.connect() as conn:
-            result = conn.execute(text("""
-                SELECT 
-                    line_id,
-                    line_name,
-                    COUNT(*) as shifts,
-                    MIN(date) as start_date,
-                    MAX(date) as end_date,
-                    AVG(oee) as avg_oee,
-                    AVG(availability) as avg_availability,
-                    AVG(performance) as avg_performance,
-                    AVG(quality) as avg_quality
-                FROM oee_line_shift
-                GROUP BY line_id, line_name
-                ORDER BY avg_oee DESC
-            """))
-            lines_data = [dict(row._mapping) for row in result]
-    except Exception as e:
-        print(f"Error fetching OEE data from database: {e}")
-        lines_data = []
+    # Create containers for data that will be loaded asynchronously
+    lines_container = ui.grid(columns=3).classes('w-full gap-4')
+    overall_kpi_container = ui.row().classes('gap-4')
+    alarms_container = ui.column().classes('w-full gap-2')
+    alarm_count_label = None  # Will be set later
     
-    # Calculate overall KPIs
-    if lines_data:
-        overall_oee = sum(line.get('avg_oee', 0) for line in lines_data) / len(lines_data)
-        overall_avail = sum(line.get('avg_availability', 0) for line in lines_data) / len(lines_data)
-        overall_perf = sum(line.get('avg_performance', 0) for line in lines_data) / len(lines_data)
-        overall_qual = sum(line.get('avg_quality', 0) for line in lines_data) / len(lines_data)
-    else:
-        overall_oee = overall_avail = overall_perf = overall_qual = 0
+    # Show loading state immediately
+    with lines_container:
+        for i in range(6):
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 animate-pulse'):
+                ui.skeleton().classes('h-6 w-32 mb-2')
+                ui.skeleton().classes('h-4 w-20')
     
-    # Fetch recent downtime events for live alarms
-    active_alarms = []
-    try:
-        with engine.connect() as conn:
-            # Get most recent downtime events from the last 2 hours
-            result = conn.execute(text("""
-                SELECT 
-                    e.line_id,
-                    e.description as station_id,
-                    e.loss_category,
-                    e.start_timestamp,
-                    e.start_timestamp + (e.duration_min || ' minutes')::interval as end_timestamp,
-                    e.duration_min as duration_minutes,
-                    l.line_name
-                FROM oee_downtime_events e
-                LEFT JOIN oee_line_shift l ON e.line_id = l.line_id AND e.date = l.date
-                WHERE e.date >= CURRENT_DATE - INTERVAL '1 day'
-                ORDER BY e.start_timestamp DESC
-                LIMIT 10
-            """))
-            
-            for row in result:
-                row_dict = dict(row._mapping)
-                line_id = row_dict.get('line_id', '')
-                station_id = row_dict.get('station_id', '')
-                category = row_dict.get('loss_category', 'Unknown')
-                duration_min = row_dict.get('duration_minutes', 0)
-                
-                # Determine severity based on category
-                if category in ['Equipment Failure', 'Material Shortage']:
-                    severity = 'critical'
-                elif category in ['Changeover', 'Reduced Speed', 'Quality Rework']:
-                    severity = 'warning'
-                else:
-                    severity = 'info'
-                
-                # Format time since
-                if duration_min < 60:
-                    since = f'{int(duration_min)} min'
-                else:
-                    hours = int(duration_min / 60)
-                    since = f'{hours}h {int(duration_min % 60)}m'
-                
-                active_alarms.append({
-                    'line': line_id,
-                    'station': station_id,
-                    'severity': severity,
-                    'category': category,
-                    'since': since,
-                    'duration_min': duration_min
-                })
-    except Exception as e:
-        print(f"Error fetching alarms from database: {e}")
-        # Fallback to empty list if query fails
+    # Load data asynchronously
+    async def load_data():
+        # Fetch latest OEE data directly from database
+        try:
+            engine = get_db_engine()
+            with engine.connect() as conn:
+                result = conn.execute(text("""
+                    SELECT 
+                        line_id,
+                        line_name,
+                        COUNT(*) as shifts,
+                        MIN(date) as start_date,
+                        MAX(date) as end_date,
+                        AVG(oee) as avg_oee,
+                        AVG(availability) as avg_availability,
+                        AVG(performance) as avg_performance,
+                        AVG(quality) as avg_quality
+                    FROM oee_line_shift
+                    GROUP BY line_id, line_name
+                    ORDER BY avg_oee DESC
+                """))
+                lines_data = [dict(row._mapping) for row in result]
+        except Exception as e:
+            print(f"Error fetching OEE data from database: {e}")
+            lines_data = []
+        
+        # Calculate overall KPIs
+        if lines_data:
+            overall_oee = sum(line.get('avg_oee', 0) for line in lines_data) / len(lines_data)
+            overall_avail = sum(line.get('avg_availability', 0) for line in lines_data) / len(lines_data)
+            overall_perf = sum(line.get('avg_performance', 0) for line in lines_data) / len(lines_data)
+            overall_qual = sum(line.get('avg_quality', 0) for line in lines_data) / len(lines_data)
+        else:
+            overall_oee = overall_avail = overall_perf = overall_qual = 0
+        
+        # Fetch recent downtime events for live alarms
         active_alarms = []
+        try:
+            with engine.connect() as conn:
+                # Get most recent downtime events from the last 2 hours
+                result = conn.execute(text("""
+                    SELECT 
+                        e.line_id,
+                        e.description as station_id,
+                        e.loss_category,
+                        e.start_timestamp,
+                        e.start_timestamp + (e.duration_min || ' minutes')::interval as end_timestamp,
+                        e.duration_min as duration_minutes,
+                        l.line_name
+                    FROM oee_downtime_events e
+                    LEFT JOIN oee_line_shift l ON e.line_id = l.line_id AND e.date = l.date
+                    WHERE e.date >= CURRENT_DATE - INTERVAL '1 day'
+                    ORDER BY e.start_timestamp DESC
+                    LIMIT 10
+                """))
+                
+                for row in result:
+                    row_dict = dict(row._mapping)
+                    line_id = row_dict.get('line_id', '')
+                    station_id = row_dict.get('station_id', '')
+                    category = row_dict.get('loss_category', 'Unknown')
+                    duration_min = row_dict.get('duration_minutes', 0)
+                    
+                    # Determine severity based on category
+                    if category in ['Equipment Failure', 'Material Shortage']:
+                        severity = 'critical'
+                    elif category in ['Changeover', 'Reduced Speed', 'Quality Rework']:
+                        severity = 'warning'
+                    else:
+                        severity = 'info'
+                    
+                    # Format time since
+                    if duration_min < 60:
+                        since = f'{int(duration_min)} min'
+                    else:
+                        hours = int(duration_min / 60)
+                        since = f'{hours}h {int(duration_min % 60)}m'
+                    
+                    active_alarms.append({
+                        'line': line_id,
+                        'station': station_id,
+                        'severity': severity,
+                        'category': category,
+                        'since': since,
+                        'duration_min': duration_min
+                    })
+        except Exception as e:
+            print(f"Error fetching alarms from database: {e}")
+            active_alarms = []
+        
+        # Fetch main losses for all lines in one query
+        main_losses = {}
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("""
+                    SELECT line_id, loss_category, COUNT(*) as count
+                    FROM oee_downtime_events
+                    WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+                    GROUP BY line_id, loss_category
+                    ORDER BY line_id, count DESC
+                """))
+                
+                current_line = None
+                for row in result:
+                    line_id = row[0]
+                    if line_id not in main_losses:
+                        main_losses[line_id] = row[1]  # Take first (most frequent) loss category
+        except Exception as e:
+            print(f"Error fetching main losses: {e}")
+        
+        # Update UI with loaded data
+        lines_container.clear()
+        with lines_container:
+            for line in lines_data:
+                line_id = line.get('line_id', '')
+                line_name = line.get('line_name', line_id)
+                oee = line.get('avg_oee', 0)
+                
+                # Determine status based on OEE
+                if oee >= 0.85:
+                    status = 'green'
+                    status_label = 'Running'
+                elif oee >= 0.75:
+                    status = 'yellow'
+                    status_label = 'Attention'
+                else:
+                    status = 'red'
+                    status_label = 'Alarm'
+                
+                # Get main loss category (from pre-fetched data)
+                main_loss = main_losses.get(line_id, 'Minor Stop')
+                
+                _line_card(line_id, line_name, oee, main_loss, status, status_label, on_click=on_line_click)
+        
+        # Update KPIs
+        overall_kpi_container.clear()
+        with overall_kpi_container:
+            _kpi_tile('OEE', overall_oee)
+            _kpi_tile('Availability', overall_avail)
+            _kpi_tile('Performance', overall_perf)
+            _kpi_tile('Quality', overall_qual)
+        
+        # Update alarms
+        alarms_container.clear()
+        with alarms_container:
+            if active_alarms:
+                for alarm in active_alarms:
+                    _alarm_row(alarm)
+            else:
+                ui.label('No active alarms').classes('text-gray-500 text-sm')
+        
+        # Update alarm count
+        if alarm_count_label:
+            alarm_count_label.set_text(f'{len(active_alarms)} active')
     
     with ui.column().classes('w-full h-full gap-0 bg-gray-950'):
         # Top bar - Global snapshot
@@ -102,12 +182,8 @@ def build_plant_overview(on_line_click=None):
                 ui.label('Plant Overview – Digital Twin').classes('text-2xl font-semibold text-white')
                 ui.label('Live OEE & alarms across all production lines').classes('text-sm text-gray-400')
             
-            # Overall KPIs
-            with ui.row().classes('gap-4'):
-                _kpi_tile('OEE', overall_oee)
-                _kpi_tile('Availability', overall_avail)
-                _kpi_tile('Performance', overall_perf)
-                _kpi_tile('Quality', overall_qual)
+            # Overall KPIs (will be populated asynchronously)
+            overall_kpi_container
         
         # Main content area
         with ui.row().classes('flex-1 w-full overflow-hidden bg-gray-950'):
@@ -115,38 +191,20 @@ def build_plant_overview(on_line_click=None):
             with ui.column().classes('flex-1 p-6 overflow-auto'):
                 ui.label('Plant Flow').classes('text-lg font-semibold text-white mb-3')
                 
-                # Grid of line cards
-                with ui.grid(columns=3).classes('w-full gap-4'):
-                    for line in lines_data:
-                        line_id = line.get('line_id', '')
-                        line_name = line.get('line_name', line_id)
-                        oee = line.get('avg_oee', 0)
-                        
-                        # Determine status based on OEE
-                        if oee >= 0.85:
-                            status = 'green'
-                            status_label = 'Running'
-                        elif oee >= 0.75:
-                            status = 'yellow'
-                            status_label = 'Attention'
-                        else:
-                            status = 'red'
-                            status_label = 'Alarm'
-                        
-                        # Get main loss category
-                        main_loss = _get_main_loss_for_line(line_id)
-                        
-                        _line_card(line_id, line_name, oee, main_loss, status, status_label, on_click=on_line_click)
+                # Grid of line cards (will be populated asynchronously)
+                lines_container
             
             # Right: Live alarms panel
             with ui.column().classes('w-96 border-l border-gray-800 p-6 bg-gray-900'):
                 with ui.row().classes('w-full items-center justify-between mb-4'):
                     ui.label('Live Alarms').classes('text-lg font-semibold text-white')
-                    ui.label(f'{len(active_alarms)} active').classes('text-sm text-gray-400')
+                    alarm_count_label = ui.label('Loading...').classes('text-sm text-gray-400')
                 
-                with ui.column().classes('gap-3 overflow-auto flex-1'):
-                    for alarm in active_alarms:
-                        _alarm_row(alarm)
+                # Alarms will be populated asynchronously
+                alarms_container.classes('gap-3 overflow-auto flex-1')
+    
+    # Trigger async data load
+    ui.timer(0.1, load_data, once=True)
 
 
 def _kpi_tile(label: str, value: float):

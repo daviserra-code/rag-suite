@@ -7,7 +7,11 @@ services:
     env_file: .env
     environment:
       - API_BASE=http://localhost:8010/api
-      - OLLAMA_BASE_URL=http://ollama:11434
+      # OLLAMA_BASE_URL comes from .env - different per environment
+      # Local dev: http://host.docker.internal:11434 (native Windows Ollama)
+      # Hetzner: http://ollama:11434 (Docker Ollama container)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # For local dev only, harmless on Linux
     depends_on:
       - postgres
       - chroma
@@ -131,14 +135,10 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 8G
-        reservations:
-          cpus: '1'
-          memory: 4G
+    profiles:
+      - hetzner  # Only starts on Hetzner, not locally
+    # On Hetzner: docker compose --profile hetzner up -d
+    # Locally: native Ollama runs outside Docker (faster with AMD GPU)
 
   opc-demo:
     image: python:3.11-slim
