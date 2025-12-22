@@ -104,77 +104,77 @@ def build_operator_qna():
     
     @ui.refreshable
     def chat_container():
-        """Refreshable chat message container"""
-        with ui.column().classes('w-full gap-3'):
+        """Refreshable chat message container with improved styling"""
+        with ui.column().classes('w-full gap-4'):
             for msg in app.storage.user['messages']:
                 if msg['role'] == 'user':
                     with ui.row().classes('w-full justify-end'):
-                        with ui.card().classes('sf-card bg-teal-100 dark:bg-teal-900 max-w-2xl'):
-                            ui.label(msg['content']).classes('text-sm')
+                        with ui.card().classes('bg-blue-600 text-white max-w-2xl p-4 rounded-2xl shadow-lg'):
+                            ui.label(msg['content']).classes('text-base font-medium')
                 
                 elif msg['role'] == 'assistant':
                     with ui.row().classes('w-full justify-start'):
-                        with ui.column().classes('max-w-3xl gap-2'):
-                            with ui.card().classes('sf-card'):
-                                ui.markdown(msg['content']).classes('text-sm')
+                        with ui.column().classes('max-w-3xl gap-3'):
+                            with ui.card().classes('bg-white border-2 border-gray-200 p-5 rounded-2xl shadow-md'):
+                                ui.markdown(msg['content']).classes('text-base text-gray-900 leading-relaxed')
                                 if msg.get('model'):
-                                    ui.label(f"🤖 {msg['model']}").classes('text-xs opacity-50 mt-2')
+                                    ui.label(f"🤖 {msg['model']}").classes('text-xs text-gray-600 mt-3 font-mono')
                             
-                            # Citations
+                            # Citations with better styling
                             if msg.get('citations'):
-                                ui.label('Sources:').classes('text-xs font-bold opacity-70 mt-1')
-                                with ui.row().classes('gap-2 flex-wrap'):
+                                ui.label('📚 Sources:').classes('text-sm font-bold text-gray-900 mt-2')
+                                with ui.row().classes('gap-3 flex-wrap'):
                                     for cit in msg['citations'][:4]:
-                                        with ui.card().classes('sf-card p-2 bg-gray-50 dark:bg-gray-800'):
-                                            ui.label(f"📄 {cit['doc_id']}").classes('text-xs font-bold')
+                                        with ui.card().classes('p-3 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-lg'):
+                                            ui.label(f"📄 {cit['doc_id']}").classes('text-sm font-bold text-gray-900')
                                             if cit.get('pages'):
-                                                ui.label(f"Pages: {cit['pages']}").classes('text-xs opacity-70')
+                                                ui.label(f"Pages: {cit['pages']}").classes('text-xs text-gray-700')
                                             if cit.get('score'):
-                                                ui.label(f"Score: {cit['score']:.3f}").classes('text-xs opacity-50')
+                                                ui.label(f"Relevance: {cit['score']:.1%}").classes('text-xs text-blue-600 font-semibold')
                 
                 elif msg['role'] == 'error':
                     with ui.row().classes('w-full justify-center'):
-                        with ui.card().classes('sf-card bg-red-100 dark:bg-red-900'):
-                            ui.label(msg['content']).classes('text-sm text-red-800 dark:text-red-200')
+                        with ui.card().classes('bg-red-50 border-2 border-red-300 p-4 rounded-lg'):
+                            ui.label(msg['content']).classes('text-base text-red-800 font-medium')
     
     # Main layout
-    with ui.row().classes('w-full gap-4 h-full'):
-        # Left sidebar - Filters
-        with ui.column().classes('w-72 gap-2'):
-            with ui.card().classes('sf-card'):
-                ui.label('🔧 MES Context').classes('text-lg font-bold mb-4')
+    with ui.row().classes('w-full gap-6 h-full p-4'):
+        # Left sidebar - Filters with better styling
+        with ui.column().classes('w-80 gap-4'):
+            with ui.card().classes('p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200'):
+                ui.label('🔧 MES Context Filters').classes('text-xl font-bold text-gray-900 mb-4')
                 
                 ui.select(
                     ['P01', 'P02'], 
                     label='Plant',
                     on_change=lambda e: update_filter('plant', e.value)
-                ).classes('w-full')
+                ).classes('w-full').props('outlined dense bg-color=white').style('background: white; color: #111827;')
                 
                 ui.select(
                     ['M10', 'B02', 'C03', 'D01', 'SMT1', 'WC01'], 
                     label='Line',
                     on_change=lambda e: update_filter('line', e.value)
-                ).classes('w-full')
+                ).classes('w-full mt-3').props('outlined dense bg-color=white').style('background: white; color: #111827;')
                 
                 ui.select(
                     ['S110', 'S120', 'S130', 'S140'], 
                     label='Station',
                     on_change=lambda e: update_filter('station', e.value)
-                ).classes('w-full')
+                ).classes('w-full mt-3').props('outlined dense bg-color=white').style('background: white; color: #111827;')
                 
                 ui.select(
                     ['T1', 'T2', 'T3'], 
                     label='Shift (Turno)',
                     on_change=lambda e: update_filter('turno', e.value)
-                ).classes('w-full')
+                ).classes('w-full mt-3').props('outlined dense bg-color=white').style('background: white; color: #111827;')
                 
-                ui.button('Clear Filters', icon='clear', on_click=lambda: [
+                ui.button('Clear All Filters', icon='clear', on_click=lambda: [
                     update_filter(k, None) for k in app.storage.user['filters'].keys()
-                ]).classes('sf-btn secondary w-full mt-2')
+                ]).classes('w-full mt-4 bg-gray-700 text-white hover:bg-gray-800').props('no-caps')
             
-            # Suggested questions
-            with ui.card().classes('sf-card'):
-                ui.label('💡 Suggestions').classes('text-sm font-bold mb-3')
+            # Suggested questions with better styling
+            with ui.card().classes('p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200'):
+                ui.label('💡 Quick Questions').classes('text-lg font-bold text-gray-900 mb-4')
                 suggestions = [
                     'Show me OEE trend for Line M10',
                     'What are the safety procedures?',
@@ -186,33 +186,35 @@ def build_operator_qna():
                         suggestion, 
                         icon='arrow_forward',
                         on_click=lambda s=suggestion: use_suggestion(s)
-                    ).classes('sf-btn ghost justify-between w-full mb-2 text-left').props('flat')
+                    ).classes('w-full mb-2 text-left bg-white hover:bg-green-100 text-gray-900 justify-start').props('no-caps flat')
         
-        # Right - Chat interface
-        with ui.column().classes('flex-grow gap-2 h-full'):
-            # Header
-            with ui.card().classes('sf-card'):
+        # Right - Chat interface with improved design
+        with ui.column().classes('flex-grow gap-4 h-full'):
+            # Header with better styling
+            with ui.card().classes('p-4 bg-gradient-to-r from-blue-600 to-indigo-600'):
                 with ui.row().classes('w-full justify-between items-center'):
-                    ui.label('💬 Operator Assistant').classes('text-lg font-bold')
-                    ui.button('Clear Chat', icon='delete', on_click=clear_chat).classes('sf-btn secondary')
+                    with ui.row().classes('items-center gap-3'):
+                        ui.icon('smart_toy', size='lg').classes('text-white')
+                        ui.label('💬 AI Operator Assistant').classes('text-2xl font-bold text-white')
+                    ui.button('Clear Chat', icon='delete', on_click=clear_chat).classes('bg-white text-blue-600 hover:bg-gray-100').props('no-caps')
             
-            # Chat messages (scrollable)
-            with ui.scroll_area().classes('flex-grow border border-gray-200 dark:border-gray-700 rounded-lg p-4'):
+            # Chat messages with better scroll area styling
+            with ui.scroll_area().classes('flex-grow border-2 border-gray-300 rounded-xl p-6 bg-gray-50'):
                 chat_container()
             
-            # Input area
-            with ui.card().classes('sf-card'):
+            # Input area with modern styling
+            with ui.card().classes('p-4 bg-white border-2 border-blue-200'):
                 ui_elements['query_input'] = ui.textarea(
-                    placeholder='Ask a question about work instructions, procedures, safety...'
-                ).classes('w-full').props('autogrow outlined rows=2')
+                    placeholder='📝 Ask me about work instructions, procedures, safety, troubleshooting...'
+                ).classes('w-full text-gray-900').props('outlined rows=3 bg-color=white').style('background: white; color: #111827;')
                 
                 # Handle enter key (Ctrl+Enter to send, Enter for new line)
                 ui_elements['query_input'].on('keydown.ctrl.enter', handle_send)
                 
-                with ui.row().classes('w-full justify-end gap-2 mt-2'):
-                    ui.label('Ctrl+Enter to send').classes('text-xs opacity-50')
+                with ui.row().classes('w-full justify-between items-center mt-3'):
+                    ui.label('⌨️ Ctrl+Enter to send').classes('text-sm text-gray-600')
                     ui.button(
-                        'Send', 
+                        'Send Message', 
                         icon='send',
                         on_click=handle_send
-                    ).classes('sf-btn')
+                    ).classes('bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 text-base').props('no-caps')

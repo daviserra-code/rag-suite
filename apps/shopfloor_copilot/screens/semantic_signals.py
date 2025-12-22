@@ -79,10 +79,10 @@ class SemanticSignalsScreen:
         self.signals_container.clear()
         
         with self.signals_container:
-            ui.label(f"Semantic Signals ({len(self.semantic_signals)})").classes("text-xl font-bold mb-4")
+            ui.label(f"Semantic Signals ({len(self.semantic_signals)}) ").classes("text-xl font-bold text-gray-900 mb-4")
             
             if not self.semantic_signals:
-                ui.label("No semantic signals available").classes("text-gray-400 italic")
+                ui.label("No semantic signals available - Check OPC Studio connection").classes("text-orange-600 italic text-base")
                 return
             
             # Group by station
@@ -145,14 +145,14 @@ class SemanticSignalsScreen:
             card_class += " bg-white border"
         
         with ui.element('div').classes(card_class):
-            # Semantic ID
-            ui.label(semantic_id).classes("text-xs font-mono text-gray-600")
+            # Semantic ID with better color
+            ui.label(semantic_id).classes("text-sm font-mono text-gray-900 font-semibold")
             
-            # Value
+            # Value with better visibility
             value_text = f"{value}"
             if unit:
                 value_text += f" {unit}"
-            ui.label(value_text).classes("text-lg font-bold")
+            ui.label(value_text).classes("text-xl font-bold text-gray-900")
             
             # Loss category badge
             if loss_category:
@@ -171,10 +171,12 @@ class SemanticSignalsScreen:
         self.kpis_container.clear()
         
         with self.kpis_container:
-            ui.label(f"Derived KPIs ({len(self.kpis)})").classes("text-xl font-bold mb-4")
+            ui.label(f"Derived KPIs ({len(self.kpis)})").classes("text-xl font-bold text-gray-900 mb-4")
             
             if not self.kpis:
-                ui.label("No KPIs calculated").classes("text-gray-400 italic")
+                with ui.card().classes("bg-yellow-50 border-l-4 border-yellow-500 p-4"):
+                    ui.label("⚠️ No KPIs calculated yet").classes("text-yellow-800 font-semibold")
+                    ui.label("KPIs will appear once semantic signals are processed").classes("text-sm text-yellow-700 mt-1")
                 return
             
             # Render KPI cards
@@ -197,20 +199,20 @@ class SemanticSignalsScreen:
         
         card_color = "bg-green-50 border-green-500" if target_met else "bg-red-50 border-red-500"
         
-        with ui.card().classes(f"{card_color} border-l-4"):
-            ui.label(kpi_id).classes("text-sm font-mono text-gray-600")
+        with ui.card().classes(f"{card_color} border-l-4 p-4"):
+            ui.label(kpi_id).classes("text-base font-mono text-gray-900 font-bold")
             
             value_text = f"{value:.1f}"
             if unit:
                 value_text += f" {unit}"
-            ui.label(value_text).classes("text-2xl font-bold")
+            ui.label(value_text).classes("text-3xl font-bold text-gray-900")
             
             if target is not None:
                 target_text = f"Target: {target:.1f} {unit}"
-                ui.label(target_text).classes("text-xs text-gray-500")
+                ui.label(target_text).classes("text-sm text-gray-800 font-semibold")
             
             if description:
-                ui.label(description).classes("text-xs text-gray-600 mt-1")
+                ui.label(description).classes("text-sm text-gray-800 mt-2")
     
     async def render_station_details(
         self,

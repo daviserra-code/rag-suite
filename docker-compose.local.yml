@@ -56,6 +56,8 @@ services:
       - ACTIVE_PLANT=TORINO
     depends_on:
       - postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8040:8040"
       - "4840:4840"
@@ -79,6 +81,7 @@ services:
           cpus: '0.5'
           memory: 1G
 
+  # postgres - running on alternate port to avoid conflict with local instance  
   postgres:
     image: postgres:16
     container_name: shopfloor-postgres
@@ -87,7 +90,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: ragdb
     ports:
-      - "15432:5432"
+      - "15432:5432"  # Changed to 15432 to avoid conflict
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped

@@ -161,17 +161,48 @@ class DiagnosticsExplainer:
                 return None
             
             lines = snapshot.get('data', {}).get('lines', {})
+            # Case-insensitive and fuzzy matching for station IDs
+            station_id_upper = station_id.upper()
+            
             for line_id, line_data in lines.items():
-                if station_id in line_data.get('stations', {}):
-                    # Found the station - get its semantic signals
+                stations = line_data.get('stations', {})
+                # Try exact match first
+                if station_id in stations:
                     async with httpx.AsyncClient(timeout=10.0) as client:
                         response = await client.get(
                             f"{self.opc_url}/semantic/signals/{line_id}/{station_id}"
                         )
                         response.raise_for_status()
                         return response.json()
+                
+                # Try case-insensitive match
+                for sid in stations.keys():
+                    if sid.upper() == station_id_upper:
+                        async with httpx.AsyncClient(timeout=10.0) as client:
+                            response = await client.get(
+                                f"{self.opc_url}/semantic/signals/{line_id}/{sid}"
+                            )
+                            response.raise_for_status()
+                            return response.json()
             
-            logger.warning(f"Station {station_id} not found in any line")
+            # If still not found, try partial match
+            for line_id, line_data in lines.items():
+                stations = line_data.get('stations', {})
+                for sid in stations.keys():
+                    if station_id_upper in sid.upper() or sid.upper() in station_id_upper:
+                        logger.info(f"Fuzzy matched {station_id} to {sid}")
+                        async with httpx.AsyncClient(timeout=10.0) as client:
+                            response = await client.get(
+                                f"{self.opc_url}/semantic/signals/{line_id}/{sid}"
+                            )
+                            response.raise_for_status()
+                            return response.json()
+            
+            # List available stations for better error message
+            available_stations = []
+            for line_data in lines.values():
+                available_stations.extend(line_data.get('stations', {}).keys())
+            logger.warning(f"Station {station_id} not found. Available stations: {available_stations[:10]}")
             return None
         
         except Exception as e:

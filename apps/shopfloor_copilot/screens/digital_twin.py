@@ -47,30 +47,30 @@ def digital_twin_screen():
         
         with container:
             if not baseline:
-                ui.label('No baseline data available.').classes('text-grey-6 italic')
+                ui.label('No baseline data available - Check database connection').classes('text-orange-600 italic text-base font-semibold')
                 return None
             
-            with ui.card().classes('w-full'):
-                ui.label('Current Production Baseline (Last 30 Days)').classes('text-xl font-bold')
+            with ui.card().classes('w-full p-4 border-2 border-gray-200'):
+                ui.label('Current Production Baseline (Last 30 Days)').classes('text-2xl font-bold text-gray-900 mb-3')
                 ui.separator()
                 
-                # Table header
-                with ui.row().classes('w-full font-bold bg-grey-2 p-2'):
-                    ui.label('Line').classes('w-32')
-                    ui.label('Avg OEE').classes('w-24 text-right')
-                    ui.label('Avg Units/Shift').classes('w-32 text-right')
-                    ui.label('Total Units').classes('w-32 text-right')
-                    ui.label('Shifts').classes('w-24 text-right')
+                # Table header with better colors
+                with ui.row().classes('w-full font-bold bg-blue-100 p-3 rounded'):
+                    ui.label('Line').classes('w-32 text-gray-900')
+                    ui.label('Avg OEE').classes('w-24 text-right text-gray-900')
+                    ui.label('Avg Units/Shift').classes('w-32 text-right text-gray-900')
+                    ui.label('Total Units').classes('w-32 text-right text-gray-900')
+                    ui.label('Shifts').classes('w-24 text-right text-gray-900')
                 
                 for line in baseline:
-                    with ui.row().classes('w-full items-center p-2 border-t'):
-                        ui.label(line.line_name).classes('w-32 font-medium')
+                    with ui.row().classes('w-full items-center p-3 border-t border-gray-300'):
+                        ui.label(line.line_name).classes('w-32 font-semibold text-gray-900')
                         oee_pct = float(line.avg_oee or 0) * 100
                         color = 'green' if oee_pct >= 80 else 'orange' if oee_pct >= 60 else 'red'
-                        ui.badge(f'{oee_pct:.1f}%', color=color).classes('w-24')
-                        ui.label(f'{float(line.avg_units_per_shift or 0):,.0f}').classes('w-32 text-right')
-                        ui.label(f'{line.total_units:,}').classes('w-32 text-right')
-                        ui.label(f'{line.shifts_worked}').classes('w-24 text-right')
+                        ui.badge(f'{oee_pct:.1f}%', color=color).classes('w-24 text-base font-bold')
+                        ui.label(f'{float(line.avg_units_per_shift or 0):,.0f}').classes('w-32 text-right text-gray-900 font-medium')
+                        ui.label(f'{line.total_units:,}').classes('w-32 text-right text-gray-900 font-medium')
+                        ui.label(f'{line.shifts_worked}').classes('w-24 text-right text-gray-900 font-medium')
         
         return baseline
     

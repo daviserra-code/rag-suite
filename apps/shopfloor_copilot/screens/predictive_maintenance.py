@@ -42,9 +42,11 @@ def build_predictive_maintenance():
             
             # Build query filters
             severity_clause = "" if severity == 'all' else f"AND severity = '{severity}'"
-            status_clause = "AND current_status = 'active'" if status == 'active' else (
-                "" if status == 'all' else f"AND current_status = '{status}'"
-            )
+            status_clause = "" if status == 'all' else f"AND current_status = '{status}'"
+            
+            # Override status filter - if 'active' selected, only show active
+            if status == 'active':
+                status_clause = "AND current_status = 'active'"
             
             with engine.connect() as conn:
                 # Get active alerts

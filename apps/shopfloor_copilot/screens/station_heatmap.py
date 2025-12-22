@@ -26,6 +26,9 @@ def build_station_heatmap():
     
     chart_container = ui.column().classes('w-full')
     
+    # Connect filter change event
+    time_range.on_value_change(lambda e: load_heatmap_data(e.value))
+    
     def load_heatmap_data(days: int = 7):
         """Load and display station heatmap"""
         chart_container.clear()
@@ -33,8 +36,8 @@ def build_station_heatmap():
         try:
             engine = get_db_engine()
             with engine.connect() as conn:
-                # Get average OEE per station for the period
-                query = text("""
+                # Execute with proper parameter binding
+                result = conn.execute(text(f"""
                     SELECT 
                         line_id,
                         line_name,
@@ -47,13 +50,10 @@ def build_station_heatmap():
                         COUNT(*) as shifts,
                         SUM(CASE WHEN main_issue IS NOT NULL THEN 1 ELSE 0 END) as issue_count
                     FROM oee_station_shift
-                    WHERE date >= CURRENT_DATE - INTERVAL ':days days'
+                    WHERE date >= CURRENT_DATE - INTERVAL '{days} days'
                     GROUP BY line_id, line_name, station_id, station_name
                     ORDER BY line_id, station_id
-                """)
-                # Replace the days parameter in the SQL string
-                query_str = str(query).replace(':days', str(days))
-                result = conn.execute(text(query_str))
+                """))
                 
                 stations = [dict(row._mapping) for row in result]
             
@@ -146,9 +146,6 @@ def build_station_heatmap():
     
     # Initial load
     load_heatmap_data(7)
-    
-    # Update on time range change
-    time_range.on_value_change(lambda e: load_heatmap_data(e.value))
 
 
 def _stat_card(label: str, value, icon: str, color: str):

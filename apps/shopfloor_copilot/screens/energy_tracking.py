@@ -96,30 +96,30 @@ def energy_tracking_screen():
             return
         
         with container:
-            with ui.card().classes('flex-1 bg-yellow-50'):
-                with ui.column().classes('gap-1'):
-                    ui.label(f'{stats.total_energy:,.0f} kWh').classes('text-3xl font-bold text-yellow-800')
-                    ui.label('Total Energy Consumed').classes('text-sm text-grey-7')
-                    ui.label(f'Last {days} days').classes('text-xs text-grey-6')
+            with ui.card().classes('flex-1 bg-yellow-50 p-4 border-2 border-yellow-300'):
+                with ui.column().classes('gap-2'):
+                    ui.label(f'{stats.total_energy:,.0f} kWh').classes('text-4xl font-bold text-yellow-900')
+                    ui.label('Total Energy Consumed').classes('text-base font-semibold text-gray-900')
+                    ui.label(f'Last {days} days').classes('text-sm text-gray-800')
             
-            with ui.card().classes('flex-1 bg-green-50'):
-                with ui.column().classes('gap-1'):
-                    ui.label(f'{stats.energy_per_unit:.4f} kWh').classes('text-3xl font-bold text-green-800')
-                    ui.label('Energy per Unit').classes('text-sm text-grey-7')
-                    ui.label('Average efficiency').classes('text-xs text-grey-6')
+            with ui.card().classes('flex-1 bg-green-50 p-4 border-2 border-green-300'):
+                with ui.column().classes('gap-2'):
+                    ui.label(f'{stats.energy_per_unit:.4f} kWh').classes('text-4xl font-bold text-green-900')
+                    ui.label('Energy per Unit').classes('text-base font-semibold text-gray-900')
+                    ui.label('Average efficiency').classes('text-sm text-gray-800')
             
-            with ui.card().classes('flex-1 bg-orange-50'):
-                with ui.column().classes('gap-1'):
-                    ui.label(f'{stats.max_peak_power:.1f} kW').classes('text-3xl font-bold text-orange-800')
-                    ui.label('Peak Power Demand').classes('text-sm text-grey-7')
-                    ui.label('Maximum recorded').classes('text-xs text-grey-6')
+            with ui.card().classes('flex-1 bg-orange-50 p-4 border-2 border-orange-300'):
+                with ui.column().classes('gap-2'):
+                    ui.label(f'{stats.max_peak_power:.1f} kW').classes('text-4xl font-bold text-orange-900')
+                    ui.label('Peak Power Demand').classes('text-base font-semibold text-gray-900')
+                    ui.label('Maximum recorded').classes('text-sm text-gray-800')
             
-            with ui.card().classes('flex-1 bg-blue-50'):
-                with ui.column().classes('gap-1'):
+            with ui.card().classes('flex-1 bg-blue-50 p-4 border-2 border-blue-300'):
+                with ui.column().classes('gap-2'):
                     co2_saved = (float(stats.total_energy or 0) * 0.0004)  # Assuming efficiency improvements
-                    ui.label(f'{co2_saved:.1f} kg').classes('text-3xl font-bold text-blue-800')
-                    ui.label('CO₂ Reduction Potential').classes('text-sm text-grey-7')
-                    ui.label('vs. baseline').classes('text-xs text-grey-6')
+                    ui.label(f'{co2_saved:.1f} kg').classes('text-4xl font-bold text-blue-900')
+                    ui.label('CO₂ Reduction Potential').classes('text-base font-semibold text-gray-900')
+                    ui.label('vs. baseline').classes('text-sm text-gray-800')
     
     def load_line_energy_comparison(container, days):
         """Load energy comparison by production line."""

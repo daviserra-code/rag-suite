@@ -28,27 +28,25 @@ class ReportsScreen:
     def render(self):
         """Render the reports screen"""
         
-        with ui.column().classes('w-full gap-6'):
-            # Header
-            with ui.row().classes('w-full items-center justify-between'):
-                ui.label('📊 Reports').classes('text-2xl font-bold text-teal-600')
+        with ui.column().classes('w-full gap-6 p-4'):
+            # Header with better styling
+            with ui.row().classes('w-full items-center justify-between mb-4'):
+                ui.label('📊 Executive Reports').classes('text-3xl font-bold text-gray-900')
                 
-                with ui.row().classes('gap-2'):
+                with ui.row().classes('gap-3'):
                     ui.button('📥 Download Last', 
-                             on_click=self.download_last_report,
-                             color='teal').props('outline').classes('text-sm')
+                             on_click=self.download_last_report).classes('bg-teal-600 text-white hover:bg-teal-700').props('no-caps')
                     ui.button('🔄 Refresh', 
-                             on_click=self.refresh_data,
-                             color='teal').props('flat').classes('text-sm')
+                             on_click=self.refresh_data).classes('bg-blue-600 text-white hover:bg-blue-700').props('no-caps')
             
-            # Report Configuration Card
-            with ui.card().classes('w-full p-6'):
-                ui.label('Report Configuration').classes('text-lg font-semibold mb-4')
+            # Report Configuration Card with improved styling
+            with ui.card().classes('w-full p-6 bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-200'):
+                ui.label('Report Configuration').classes('text-xl font-bold text-gray-900 mb-4')
                 
                 with ui.row().classes('w-full gap-6 items-start'):
-                    # Report Type Selection
+                    # Report Type Selection with better text
                     with ui.column().classes('flex-1 gap-4'):
-                        ui.label('Report Type').classes('text-sm font-medium text-gray-600')
+                        ui.label('Report Type').classes('text-base font-semibold text-gray-900')
                         
                         with ui.column().classes('gap-2'):
                             ui.radio(
@@ -96,16 +94,16 @@ class ReportsScreen:
                 self.progress_container = ui.row().classes('w-full justify-center mt-4').style('display: none;')
                 with self.progress_container:
                     ui.spinner(size='lg', color='teal')
-                    ui.label('Generating report...').classes('ml-4 text-gray-600')
+                    ui.label('Generating report...').classes('ml-4 text-gray-900 font-semibold')
             
-            # Scheduled Reports Card
-            with ui.card().classes('w-full p-6'):
-                ui.label('Scheduled Reports').classes('text-lg font-semibold mb-4')
+            # Scheduled Reports Card with improved styling
+            with ui.card().classes('w-full p-6 bg-white border-2 border-gray-200'):
+                ui.label('Scheduled Reports').classes('text-xl font-bold text-gray-900 mb-4')
                 
                 with ui.column().classes('w-full gap-4'):
                     # Email Configuration
                     with ui.row().classes('w-full gap-4 items-center'):
-                        ui.label('Email Recipients:').classes('text-sm font-medium text-gray-600 w-32')
+                        ui.label('Email Recipients:').classes('text-base font-semibold text-gray-900 w-32')
                         self.email_input = ui.input(
                             placeholder='manager@company.com, director@company.com',
                             value=os.getenv('REPORT_EMAILS', '')
@@ -114,8 +112,8 @@ class ReportsScreen:
                                  on_click=self.save_email_config,
                                  color='teal').props('flat')
                     
-                    # Schedule Configuration
-                    ui.label('Report Schedules').classes('text-sm font-medium text-gray-600 mt-4')
+                    # Schedule Configuration with better text
+                    ui.label('Report Schedules').classes('text-base font-semibold text-gray-900 mt-4')
                     
                     schedules = [
                         {'type': 'Daily', 'time': '06:00', 'enabled': True, 'recipients': 3},
@@ -124,16 +122,16 @@ class ReportsScreen:
                         {'type': 'Quarterly', 'time': '1st day 09:00', 'enabled': False, 'recipients': 12}
                     ]
                     
-                    with ui.column().classes('w-full gap-2 mt-2'):
+                    with ui.column().classes('w-full gap-3 mt-3'):
                         for schedule in schedules:
-                            with ui.row().classes('w-full items-center p-3 bg-gray-50 rounded-lg gap-4'):
+                            with ui.row().classes('w-full items-center p-4 bg-gray-50 rounded-lg gap-4 border border-gray-200'):
                                 ui.switch(value=schedule['enabled']).props('color=teal')
                                 
-                                with ui.column().classes('flex-1 gap-0'):
-                                    ui.label(f"{schedule['type']} Report").classes('font-medium text-sm')
-                                    ui.label(f"⏰ {schedule['time']}").classes('text-xs text-gray-500')
+                                with ui.column().classes('flex-1 gap-1'):
+                                    ui.label(f"{schedule['type']} Report").classes('font-semibold text-base text-gray-900')
+                                    ui.label(f"⏰ {schedule['time']}").classes('text-sm text-gray-800')
                                 
-                                ui.label(f"👥 {schedule['recipients']} recipients").classes('text-sm text-gray-600')
+                                ui.label(f"👥 {schedule['recipients']} recipients").classes('text-sm text-gray-900 font-medium')
                                 
                                 ui.button(icon='settings', on_click=lambda: ui.notify('Schedule editor coming soon!')).props('flat dense')
             

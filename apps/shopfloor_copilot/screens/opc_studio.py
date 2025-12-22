@@ -267,7 +267,18 @@ def opc_studio_screen():
     # Scenario Builder (Template-Based)
     with ui.card().classes('w-full mb-4'):
         ui.label('🎬 Scenario Builder').classes('text-lg font-semibold mb-2')
-        ui.label('Apply realistic scenario templates with cascading impacts').classes('text-sm text-gray-600 mb-2')
+        ui.label('Apply realistic scenario templates with cascading impacts').classes('text-sm text-gray-900 mb-2')
+        
+        # Help/Instructions Card
+        with ui.card().classes('bg-blue-50 border-l-4 border-blue-500 p-4 mb-4'):
+            ui.label('📖 How to Use:').classes('font-bold text-blue-900 mb-2')
+            with ui.column().classes('gap-1 text-sm text-blue-900'):
+                ui.label('1. Click "Load Templates" to fetch available scenarios')
+                ui.label('2. Select a Line ID and Station ID (e.g., A01, ST18)')
+                ui.label('3. Choose a scenario template from the dropdown')
+                ui.label('4. Optionally adjust severity level (minor/moderate/major/critical)')
+                ui.label('5. Click "Apply Template Scenario" to inject the event into OPC Studio')
+                ui.label('💡 Tip: Scenarios simulate real production events with cascading impacts')
         
         # Fetch templates
         templates_data = []

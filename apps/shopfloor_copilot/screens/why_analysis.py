@@ -85,7 +85,7 @@ def why_analysis_screen():
         # Introduction card
         with ui.card().classes('w-full p-4 bg-blue-50 border-l-4 border-blue-500'):
             ui.label('📘 What is 5 Whys Analysis?').classes('text-lg font-bold mb-2')
-            ui.label('The 5 Whys is an iterative interrogative technique used to explore cause-and-effect relationships. By asking "Why?" repeatedly (typically 5 times), you can drill down to the root cause of a problem.').classes('text-sm mb-2')
+            ui.label('The 5 Whys is an iterative interrogative technique used to explore cause-and-effect relationships. By asking "Why?" repeatedly (typically 5 times), you can drill down to the root cause of a problem.').classes('text-sm text-gray-900 mb-2')
             ui.label('💡 Tip: The number 5 is not fixed - continue asking why until you reach the root cause.').classes('text-xs text-blue-700')
         
         # Two-column layout
@@ -361,7 +361,7 @@ def why_analysis_screen():
                         with ui.card().classes('w-full p-8 text-center'):
                             ui.icon('history', size='xl').classes('text-gray-400 mb-2')
                             ui.label('No analysis history yet').classes('text-gray-500')
-                            ui.label('Start your first 5 Whys analysis to see it here').classes('text-sm text-gray-400')
+                            ui.label('Start your first 5 Whys analysis to see it here').classes('text-sm text-gray-900')
                         return
                     
                     for analysis in analyses:

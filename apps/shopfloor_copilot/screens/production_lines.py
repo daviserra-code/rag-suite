@@ -212,6 +212,8 @@ def build_production_lines_overview():
             app.storage.user['selected_lines_compare'] = []
         lines_table.refresh()
         comparison_display.refresh()
+        # Refresh header to update button text
+        summary_cards.refresh()
     
     def toggle_line_selection(line_id: str):
         """Toggle line selection for comparison"""

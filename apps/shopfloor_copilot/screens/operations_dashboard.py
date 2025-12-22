@@ -32,11 +32,15 @@ def build_operations_dashboard(selected_line: str = None):
     
     # Create containers for dynamic content
     line_selector_container = ui.row().classes('w-full gap-2 mb-4')
-    content_container = ui.column().classes('w-full gap-4')
+    
+    @ui.refreshable
+    def content_container():
+        """Refreshable content container for line data"""
+        with ui.column().classes('w-full gap-4'):
+            ui.label('Select a production line to view details').classes('text-gray-400')
     
     def load_line_data(line_id: str):
         """Load and display data for selected line"""
-        content_container.clear()
         
         # Fetch line data
         try:
@@ -106,25 +110,28 @@ def build_operations_dashboard(selected_line: str = None):
             loss_data = []
             recent_issues = []
         
-        with content_container:
-            if not line_data:
-                ui.label('No data available for this line').classes('text-gray-400')
-                return
-            
-            line_dict = dict(line_data._mapping)
-            line_name = line_dict.get('line_name', line_id)
-            
-            # Top section: Real-time status and KPIs
-            with ui.row().classes('w-full gap-4'):
-                # Current shift KPIs
-                with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
-                    ui.label(f'{line_name} - Current Shift Performance').classes('text-lg font-semibold text-white mb-4')
-                    
-                    with ui.grid(columns=4).classes('w-full gap-4'):
-                        _kpi_card('OEE', line_dict.get('oee', 0), 'speed', 'teal')
-                        _kpi_card('Availability', line_dict.get('availability', 0), 'bolt', 'blue')
-                        _kpi_card('Performance', line_dict.get('performance', 0), 'trending_up', 'green')
-                        _kpi_card('Quality', line_dict.get('quality', 0), 'verified', 'purple')
+        # Rebuild the content container with new data
+        @content_container
+        def display_line_content():
+            with ui.column().classes('w-full gap-4'):
+                if not line_data:
+                    ui.label('No data available for this line').classes('text-gray-400')
+                    return
+                
+                line_dict = dict(line_data._mapping)
+                line_name = line_dict.get('line_name', line_id)
+                
+                # Top section: Real-time status and KPIs
+                with ui.row().classes('w-full gap-4'):
+                    # Current shift KPIs
+                    with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
+                        ui.label(f'{line_name} - Current Shift Performance').classes('text-lg font-semibold text-white mb-4')
+                        
+                        with ui.grid(columns=4).classes('w-full gap-4'):
+                            _kpi_card('OEE', line_dict.get('oee', 0), 'speed', 'teal')
+                            _kpi_card('Availability', line_dict.get('availability', 0), 'bolt', 'blue')
+                            _kpi_card('Performance', line_dict.get('performance', 0), 'trending_up', 'green')
+                            _kpi_card('Quality', line_dict.get('quality', 0), 'verified', 'purple')
                 
                 # Quick stats
                 with ui.card().classes('w-80 bg-gray-800 border border-gray-700 p-6'):
@@ -142,43 +149,43 @@ def build_operations_dashboard(selected_line: str = None):
                         with ui.row().classes('justify-between'):
                             ui.label('Last 7 Days').classes('text-sm text-gray-400')
                             ui.label(f"{line_dict.get('date', 'N/A')}").classes('text-sm text-gray-300')
-            
-            # Middle section: Station performance and Top losses
-            with ui.row().classes('w-full gap-4'):
-                # Station Performance
-                with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
-                    ui.label('Station Performance (7-day avg)').classes('text-lg font-semibold text-white mb-4')
-                    
-                    if station_data:
-                        with ui.column().classes('gap-3 w-full'):
-                            for station in station_data:
-                                station_dict = dict(station._mapping)
-                                station_id = station_dict.get('station_id', '')
-                                oee = station_dict.get('avg_oee', 0)
-                                pct = round(oee * 100)
-                                
-                                # Color based on performance
-                                if oee >= 0.85:
-                                    bar_color = 'bg-green-500'
-                                elif oee >= 0.75:
-                                    bar_color = 'bg-yellow-400'
-                                else:
-                                    bar_color = 'bg-red-500'
-                                
-                                with ui.row().classes('items-center gap-3 w-full'):
-                                    ui.label(station_id).classes('text-sm text-white w-24')
-                                    with ui.element('div').classes('flex-1 h-6 bg-gray-700 rounded-full overflow-hidden'):
-                                        with ui.element('div').classes(f'{bar_color} h-6 rounded-full transition-all flex items-center justify-end pr-2').style(f'width: {pct}%'):
-                                            if pct > 20:
-                                                ui.label(f'{pct}%').classes('text-xs font-semibold text-white')
-                                    if pct <= 20:
-                                        ui.label(f'{pct}%').classes('text-xs text-gray-400 w-12')
-                    else:
-                        ui.label('No station data available').classes('text-sm text-gray-400')
                 
-                # Top Losses
-                with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
-                    ui.label('Top Losses (Last 7 Days)').classes('text-lg font-semibold text-white mb-4')
+                # Middle section: Station performance and Top losses
+                with ui.row().classes('w-full gap-4'):
+                    # Station Performance
+                    with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
+                        ui.label('Station Performance (7-day avg)').classes('text-lg font-semibold text-white mb-4')
+                        
+                        if station_data:
+                            with ui.column().classes('gap-3 w-full'):
+                                for station in station_data:
+                                    station_dict = dict(station._mapping)
+                                    station_id = station_dict.get('station_id', '')
+                                    oee = station_dict.get('avg_oee', 0)
+                                    pct = round(oee * 100)
+                                
+                                    # Color based on performance
+                                    if oee >= 0.85:
+                                        bar_color = 'bg-green-500'
+                                    elif oee >= 0.75:
+                                        bar_color = 'bg-yellow-400'
+                                    else:
+                                        bar_color = 'bg-red-500'
+                                    
+                                    with ui.row().classes('items-center gap-3 w-full'):
+                                        ui.label(station_id).classes('text-sm text-white w-24')
+                                        with ui.element('div').classes('flex-1 h-6 bg-gray-700 rounded-full overflow-hidden'):
+                                            with ui.element('div').classes(f'{bar_color} h-6 rounded-full transition-all flex items-center justify-end pr-2').style(f'width: {pct}%'):
+                                                if pct > 20:
+                                                    ui.label(f'{pct}%').classes('text-xs font-semibold text-white')
+                                        if pct <= 20:
+                                            ui.label(f'{pct}%').classes('text-xs text-gray-400 w-12')
+                        else:
+                            ui.label('No station data available').classes('text-sm text-gray-400')
+                    
+                    # Top Losses
+                    with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
+                        ui.label('Top Losses (Last 7 Days)').classes('text-lg font-semibold text-white mb-4')
                     
                     if loss_data:
                         total_loss_time = sum(dict(loss._mapping).get('total_minutes', 0) for loss in loss_data)
@@ -200,44 +207,43 @@ def build_operations_dashboard(selected_line: str = None):
                                     
                                     with ui.element('div').classes('w-full h-2 bg-gray-700 rounded-full overflow-hidden'):
                                         ui.element('div').classes('bg-red-500 h-2 rounded-full').style(f'width: {pct}%')
-                    else:
                         ui.label('No loss data available').classes('text-sm text-gray-400')
-            
-            # Bottom section: Recent issues and Quick actions
-            with ui.row().classes('w-full gap-4'):
-                # Recent Issues
-                with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
-                    ui.label('Recent Issues (Last 24h)').classes('text-lg font-semibold text-white mb-4')
-                    
-                    if recent_issues:
-                        with ui.column().classes('gap-2 max-h-96 overflow-auto'):
-                            for issue in recent_issues:
-                                issue_dict = dict(issue._mapping) if hasattr(issue, '_mapping') else dict(zip(['station_id', 'loss_category', 'duration_minutes', 'start_timestamp'], issue))
-                                station = issue_dict.get('station_id', '')
-                                category = issue_dict.get('loss_category', '')
-                                duration = issue_dict.get('duration_minutes', 0)
-                                
-                                # Severity color
-                                if category in ['Equipment Failure', 'Material Shortage']:
-                                    severity_color = 'bg-red-500'
-                                elif category in ['Changeover', 'Reduced Speed']:
-                                    severity_color = 'bg-yellow-400'
-                                else:
-                                    severity_color = 'bg-blue-400'
-                                
-                                with ui.card().classes('bg-gray-900 border border-gray-700 p-3'):
-                                    with ui.row().classes('items-center gap-3 w-full'):
-                                        ui.element('div').classes(f'h-3 w-3 rounded-full {severity_color}')
-                                        
-                                        with ui.column().classes('flex-1 gap-0'):
-                                            ui.label(f'{station} - {category}').classes('text-sm font-semibold text-white')
-                                            ui.label(f'{duration:.0f} minutes').classes('text-xs text-gray-400')
-                    else:
-                        ui.label('No recent issues').classes('text-sm text-gray-400')
                 
-                # Quick Actions
-                with ui.card().classes('w-80 bg-gray-800 border border-gray-700 p-6'):
-                    ui.label('Quick Actions').classes('text-lg font-semibold text-white mb-4')
+                # Bottom section: Recent issues and Quick actions
+                with ui.row().classes('w-full gap-4'):
+                    # Recent Issues
+                    with ui.card().classes('flex-1 bg-gray-800 border border-gray-700 p-6'):
+                        ui.label('Recent Issues (Last 24h)').classes('text-lg font-semibold text-white mb-4')
+                        
+                        if recent_issues:
+                            with ui.column().classes('gap-2 max-h-96 overflow-auto'):
+                                for issue in recent_issues:
+                                    issue_dict = dict(issue._mapping) if hasattr(issue, '_mapping') else dict(zip(['station_id', 'loss_category', 'duration_minutes', 'start_timestamp'], issue))
+                                    station = issue_dict.get('station_id', '')
+                                    category = issue_dict.get('loss_category', '')
+                                    duration = issue_dict.get('duration_minutes', 0)
+                                    
+                                    # Severity color
+                                    if category in ['Equipment Failure', 'Material Shortage']:
+                                        severity_color = 'bg-red-500'
+                                    elif category in ['Changeover', 'Reduced Speed']:
+                                        severity_color = 'bg-yellow-400'
+                                    else:
+                                        severity_color = 'bg-blue-400'
+                                    
+                                    with ui.card().classes('bg-gray-900 border border-gray-700 p-3'):
+                                        with ui.row().classes('items-center gap-3 w-full'):
+                                            ui.element('div').classes(f'h-3 w-3 rounded-full {severity_color}')
+                                            
+                                            with ui.column().classes('flex-1 gap-0'):
+                                                ui.label(f'{station} - {category}').classes('text-sm font-semibold text-white')
+                                                ui.label(f'{duration:.0f} minutes').classes('text-xs text-gray-400')
+                        else:
+                            ui.label('No recent issues').classes('text-sm text-gray-400')
+                    
+                    # Quick Actions
+                    with ui.card().classes('w-80 bg-gray-800 border border-gray-700 p-6'):
+                        ui.label('Quick Actions').classes('text-lg font-semibold text-white mb-4')
                     
                     def export_line_report():
                         """Export current line data to CSV"""
@@ -270,6 +276,9 @@ def build_operations_dashboard(selected_line: str = None):
                         ui.button('Request Maintenance', icon='build').classes('w-full bg-yellow-600 hover:bg-yellow-700 text-white').props('no-caps')
                         ui.button('View Detailed Analytics', icon='analytics').classes('w-full bg-teal-600 hover:bg-teal-700 text-white').props('no-caps')
                         ui.button('Export Report', icon='download', on_click=export_line_report).classes('w-full bg-gray-700 hover:bg-gray-600 text-white').props('no-caps')
+        
+        # Refresh the content container
+        display_line_content.refresh()
     
     # Build line selector buttons
     with line_selector_container:
@@ -286,6 +295,9 @@ def build_operations_dashboard(selected_line: str = None):
                 line_name,
                 on_click=lambda lid=line_id: load_line_data(lid)
             ).classes(f'{btn_classes} px-4 py-2').props('no-caps')
+    
+    # Initialize the content container
+    content_container()
     
     # Load initial data
     load_line_data(selected_line)

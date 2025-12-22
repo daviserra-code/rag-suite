@@ -16,7 +16,8 @@ class OPCExplorerScreen:
     
     def __init__(self):
         self.connected = False
-        self.endpoint_url = "opc.tcp://opc-demo:4850/demo/server"
+        # Updated endpoint - use localhost for local development
+        self.endpoint_url = "opc.tcp://opc-demo:4850"
         self.current_node = "i=85"  # Objects folder
         self.watchlist_items = []
         
@@ -49,7 +50,7 @@ class OPCExplorerScreen:
     async def connect(self):
         """Connect to OPC UA server"""
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(
                     f"{OPC_API}/opcua/connect",
                     json={"endpoint_url": self.endpoint_url, "timeout": 10}
@@ -57,14 +58,19 @@ class OPCExplorerScreen:
                 data = resp.json()
                 
                 if data.get("ok"):
-                    ui.notify("Connected successfully!", type="positive")
+                    ui.notify("✅ Connected successfully to OPC UA server!", type="positive", position="top", timeout=3000)
                     self.connected = True
                     await self.check_status()
                     await self.browse_node(self.current_node)
                 else:
-                    ui.notify(f"Connection failed: {data}", type="negative")
+                    error_msg = data.get("error", "Unknown error")
+                    ui.notify(f"❌ Connection failed: {error_msg}", type="negative", position="top", timeout=5000)
+                    ui.notify("💡 Tip: Check if opc-studio and opc-demo services are running", type="info", position="top", timeout=5000)
+        except httpx.TimeoutException:
+            ui.notify("⏱️ Connection timeout - OPC Studio service may be unavailable", type="warning", position="top", timeout=5000)
         except Exception as e:
-            ui.notify(f"Connection error: {str(e)}", type="negative")
+            ui.notify(f"⚠️ Connection error: {str(e)}", type="negative", position="top", timeout=5000)
+            ui.notify("Check Docker services: docker compose ps", type="info", position="top", timeout=3000)
     
     async def disconnect(self):
         """Disconnect from OPC UA server"""

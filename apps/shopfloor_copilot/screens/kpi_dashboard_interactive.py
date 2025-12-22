@@ -430,27 +430,28 @@ def build_kpi_dashboard():
                 ui.plotly(fig_shifts).classes('w-full')
     
     # Main layout
-    with ui.column().classes('w-full gap-4'):
-        # Filters
-        with ui.card().classes('sf-card'):
-            with ui.row().classes('w-full items-center gap-4'):
-                ui.label('📊 KPI Dashboard').classes('text-lg font-bold')
-                
+    with ui.column().classes('w-full gap-6 p-4'):
+        # Header and Filters with improved styling
+        with ui.card().classes('w-full p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200'):
+            with ui.row().classes('w-full items-center justify-between mb-4'):
+                ui.label('📊 KPI Analytics Dashboard').classes('text-3xl font-bold text-gray-900')
+                ui.button('Refresh', icon='refresh', on_click=load_kpi_data).classes('bg-blue-600 text-white hover:bg-blue-700')
+            
+            ui.label('🎯 Filters').classes('text-xl font-bold text-gray-900 mb-3')
+            with ui.row().classes('w-full items-center gap-6'):
                 ui.select(
                     ['M10', 'B02', 'C03', 'D01', 'SMT1', 'WC01'],
                     value=app.storage.user['kpi_line'],
-                    label='Line',
+                    label='Production Line',
                     on_change=lambda e: update_line(e.value)
-                ).classes('w-32')
+                ).classes('w-48').props('outlined dense bg-color=white').style('background: white; color: #111827;')
                 
                 ui.select(
                     [7, 14, 30],
                     value=app.storage.user['kpi_days'],
-                    label='Days',
+                    label='Time Period (days)',
                     on_change=lambda e: update_days(e.value)
-                ).classes('w-32')
-                
-                ui.button('Refresh', icon='refresh', on_click=load_kpi_data).classes('sf-btn')
+                ).classes('w-48').props('outlined dense bg-color=white').style('background: white; color: #111827;')
         
         # KPI Cards
         kpi_cards()
@@ -458,9 +459,9 @@ def build_kpi_dashboard():
         # Charts
         charts_container()
         
-        # Recent Downtimes
-        with ui.card().classes('sf-card'):
-            ui.label('Recent Downtimes').classes('text-sm font-bold mb-3')
+        # Recent Downtimes with better styling
+        with ui.card().classes('w-full p-6 border-2 border-gray-200'):
+            ui.label('Recent Downtimes').classes('text-xl font-bold text-gray-900 mb-4')
             
             # Mock downtime data
             downtimes = [
@@ -470,11 +471,11 @@ def build_kpi_dashboard():
             ]
             
             for dt in downtimes:
-                with ui.row().classes('w-full items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded mb-2'):
-                    ui.label(dt['time']).classes('text-xs w-16 opacity-70')
-                    ui.label(dt['station']).classes('text-xs w-12 font-bold')
-                    ui.label(dt['duration']).classes('text-xs w-16 text-orange-600 dark:text-orange-400 font-bold')
-                    ui.label(dt['reason']).classes('text-xs flex-grow')
+                with ui.row().classes('w-full items-center gap-4 p-3 bg-gray-50 rounded-lg mb-2 border border-gray-200'):
+                    ui.label(dt['time']).classes('text-sm w-20 text-gray-800 font-medium')
+                    ui.label(dt['station']).classes('text-sm w-16 font-bold text-gray-900')
+                    ui.label(dt['duration']).classes('text-sm w-20 text-orange-700 font-bold')
+                    ui.label(dt['reason']).classes('text-sm flex-grow text-gray-900')
     
     # Load initial data
     ui.timer(0.1, load_kpi_data, once=True)

@@ -327,62 +327,62 @@ def build_ticket_insights():
         
         if not sprint:
             with ui.column().classes('w-full items-center justify-center p-8'):
-                ui.icon('inbox', size='xl').classes('text-gray-300 mb-4')
-                ui.label('No active sprint found').classes('text-lg text-gray-500')
-                ui.label('Configure Jira connection or create a sprint').classes('text-sm text-gray-400')
+                ui.icon('inbox', size='xl').classes('text-gray-400 mb-4')
+                ui.label('No active sprint found').classes('text-xl font-semibold text-gray-900')
+                ui.label('Configure Jira connection or create a sprint').classes('text-base text-gray-800')
             return
         
-        # Sprint header
-        with ui.card().classes('sf-card mb-4'):
+        # Sprint header with better styling
+        with ui.card().classes('w-full p-6 bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 mb-4'):
             with ui.row().classes('w-full items-center justify-between'):
-                ui.label(f"🎯 {sprint.get('name', 'Current Sprint')}").classes('text-xl font-bold')
+                ui.label(f"🎯 {sprint.get('name', 'Current Sprint')}").classes('text-2xl font-bold text-gray-900')
                 
                 # Sprint dates
                 start_date = sprint.get('startDate', '')
                 end_date = sprint.get('endDate', '')
                 if start_date and end_date:
-                    ui.label(f"{start_date[:10]} → {end_date[:10]}").classes('text-sm text-gray-500')
+                    ui.label(f"{start_date[:10]} → {end_date[:10]}").classes('text-base font-semibold text-gray-800')
         
-        # Stats cards
-        with ui.row().classes('w-full gap-4 mb-4'):
+        # Stats cards with better contrast
+        with ui.row().classes('w-full gap-4 mb-6'):
             # Total
-            with ui.card().classes('sf-card flex-1 bg-gradient-to-br from-teal-500 to-teal-600'):
-                ui.label(str(stats.get('total', 0))).classes('text-4xl font-bold text-white')
-                ui.label('Total Issues').classes('text-sm text-white opacity-90')
+            with ui.card().classes('flex-1 p-6 bg-gradient-to-br from-teal-600 to-teal-700 border-2 border-teal-800'):
+                ui.label(str(stats.get('total', 0))).classes('text-5xl font-bold text-white')
+                ui.label('Total Issues').classes('text-base font-medium text-white opacity-95')
             
             # To Do
-            with ui.card().classes('sf-card flex-1 bg-gradient-to-br from-gray-500 to-gray-600'):
-                ui.label(str(stats.get('todo', 0))).classes('text-4xl font-bold text-white')
-                ui.label('To Do').classes('text-sm text-white opacity-90')
+            with ui.card().classes('flex-1 p-6 bg-gradient-to-br from-gray-600 to-gray-700 border-2 border-gray-800'):
+                ui.label(str(stats.get('todo', 0))).classes('text-5xl font-bold text-white')
+                ui.label('To Do').classes('text-base font-medium text-white opacity-95')
             
             # In Progress
-            with ui.card().classes('sf-card flex-1 bg-gradient-to-br from-blue-500 to-blue-600'):
-                ui.label(str(stats.get('in_progress', 0))).classes('text-4xl font-bold text-white')
-                ui.label('In Progress').classes('text-sm text-white opacity-90')
+            with ui.card().classes('flex-1 p-6 bg-gradient-to-br from-blue-600 to-blue-700 border-2 border-blue-800'):
+                ui.label(str(stats.get('in_progress', 0))).classes('text-5xl font-bold text-white')
+                ui.label('In Progress').classes('text-base font-medium text-white opacity-95')
             
             # Done
-            with ui.card().classes('sf-card flex-1 bg-gradient-to-br from-green-500 to-green-600'):
-                ui.label(str(stats.get('done', 0))).classes('text-4xl font-bold text-white')
-                ui.label('Done').classes('text-sm text-white opacity-90')
+            with ui.card().classes('flex-1 p-6 bg-gradient-to-br from-green-600 to-green-700 border-2 border-green-800'):
+                ui.label(str(stats.get('done', 0))).classes('text-5xl font-bold text-white')
+                ui.label('Done').classes('text-base font-medium text-white opacity-95')
             
             # Blocked
-            with ui.card().classes('sf-card flex-1 bg-gradient-to-br from-red-500 to-red-600'):
-                ui.label(str(stats.get('blocked', 0))).classes('text-4xl font-bold text-white')
-                ui.label('Blocked').classes('text-sm text-white opacity-90 flex items-center gap-1')
+            with ui.card().classes('flex-1 p-6 bg-gradient-to-br from-red-600 to-red-700 border-2 border-red-800'):
+                ui.label(str(stats.get('blocked', 0))).classes('text-5xl font-bold text-white')
+                ui.label('Blocked').classes('text-base font-medium text-white opacity-95')
         
-        # Progress bar
+        # Progress bar with better styling
         total = stats.get('total', 1)
         done_pct = (stats.get('done', 0) / total * 100) if total > 0 else 0
         in_progress_pct = (stats.get('in_progress', 0) / total * 100) if total > 0 else 0
         
-        with ui.card().classes('sf-card'):
-            ui.label('Sprint Progress').classes('text-sm font-bold mb-2')
-            with ui.row().classes('w-full h-8 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden'):
+        with ui.card().classes('w-full p-6 border-2 border-gray-200'):
+            ui.label('Sprint Progress').classes('text-xl font-bold text-gray-900 mb-4')
+            with ui.row().classes('w-full h-10 bg-gray-200 rounded-lg overflow-hidden shadow-inner'):
                 ui.element('div').classes('h-full bg-green-500').style(f'width: {done_pct}%')
                 ui.element('div').classes('h-full bg-blue-500').style(f'width: {in_progress_pct}%')
-            with ui.row().classes('w-full justify-between mt-2'):
-                ui.label(f'{done_pct:.0f}% Complete').classes('text-xs text-gray-600')
-                ui.label(f'{in_progress_pct:.0f}% In Progress').classes('text-xs text-gray-600')
+            with ui.row().classes('w-full justify-between mt-3'):
+                ui.label(f'{done_pct:.0f}% Complete').classes('text-base font-semibold text-gray-900')
+                ui.label(f'{in_progress_pct:.0f}% In Progress').classes('text-base font-semibold text-gray-900')
     
     @ui.refreshable
     def issues_list():
@@ -392,11 +392,11 @@ def build_ticket_insights():
         
         if not issues:
             with ui.column().classes('w-full items-center justify-center p-8'):
-                ui.icon('task', size='lg').classes('text-gray-300')
-                ui.label('No issues found').classes('text-sm text-gray-500')
+                ui.icon('task', size='lg').classes('text-gray-400')
+                ui.label('No issues found').classes('text-base font-semibold text-gray-900')
             return
         
-        ui.label(f'📋 {len(issues)} Sprint Issues').classes('text-lg font-bold mb-3')
+        ui.label(f'📋 {len(issues)} Sprint Issues').classes('text-xl font-bold text-gray-900 mb-4')
         
         for issue in issues[:15]:  # Show first 15
             fields = issue.get('fields', {})
@@ -428,10 +428,10 @@ def build_ticket_insights():
                             ui.badge(status).classes(f'bg-{status_color}-100 text-{status_color}-800 text-xs')
                             ui.badge(priority).classes('bg-orange-100 text-orange-800 text-xs')
                         
-                        ui.label(summary).classes('text-sm')
+                        ui.label(summary).classes('text-sm font-medium text-gray-900')
                         
                         assignee = fields.get('assignee', {}).get('displayName', 'Unassigned')
-                        ui.label(f'👤 {assignee}').classes('text-xs text-gray-500')
+                        ui.label(f'👤 {assignee}').classes('text-sm text-gray-800 font-medium')
     
     @ui.refreshable
     def ai_insights_panel():
@@ -442,32 +442,32 @@ def build_ticket_insights():
         
         if not patterns and not blockers:
             with ui.column().classes('w-full items-center justify-center p-8'):
-                ui.icon('psychology', size='lg').classes('text-gray-300')
-                ui.label('Analyzing ticket patterns...').classes('text-sm text-gray-500')
+                ui.icon('psychology', size='lg').classes('text-gray-400')
+                ui.label('Analyzing ticket patterns...').classes('text-base font-semibold text-gray-900')
             return
         
         # Patterns
         if patterns:
-            ui.label('🧠 AI Insights').classes('text-lg font-bold mb-3')
+            ui.label('🧠 AI Insights').classes('text-xl font-bold text-gray-900 mb-4')
             
             for pattern in patterns:
                 severity = pattern.get('severity', 'info')
                 bg_color = 'blue' if severity == 'info' else 'orange' if severity == 'warning' else 'red'
                 
-                with ui.card().classes(f'sf-card bg-{bg_color}-50 border-l-4 border-{bg_color}-500'):
-                    ui.label(pattern.get('type', '')).classes('text-xs font-bold text-gray-600 mb-1')
-                    ui.label(pattern.get('insight', '')).classes('text-sm')
+                with ui.card().classes(f'p-4 bg-{bg_color}-50 border-l-4 border-{bg_color}-500'):
+                    ui.label(pattern.get('type', '')).classes('text-sm font-bold text-gray-900 mb-2')
+                    ui.label(pattern.get('insight', '')).classes('text-base text-gray-900')
         
         # Blockers
         if blockers:
-            ui.label('🚫 Blocked Issues').classes('text-lg font-bold mb-3 mt-4')
+            ui.label('🚫 Blocked Issues').classes('text-xl font-bold text-gray-900 mb-4 mt-6')
             
             for blocker in blockers:
-                with ui.card().classes('sf-card bg-red-50 border-l-4 border-red-500'):
+                with ui.card().classes('p-4 bg-red-50 border-l-4 border-red-500'):
                     with ui.row().classes('w-full items-center justify-between'):
-                        ui.label(blocker.get('key', '')).classes('text-sm font-bold text-red-600')
-                        ui.label(f"{blocker.get('age_days', 0)} days").classes('text-xs text-gray-500')
-                    ui.label(blocker.get('summary', '')).classes('text-sm mt-1')
+                        ui.label(blocker.get('key', '')).classes('text-base font-bold text-red-700')
+                        ui.label(f"{blocker.get('age_days', 0)} days").classes('text-sm text-gray-900 font-medium')
+                    ui.label(blocker.get('summary', '')).classes('text-base text-gray-900 mt-2')
     
     async def refresh_data():
         """Refresh all dashboard data"""
@@ -541,16 +541,16 @@ def build_ticket_insights():
             with ui.column().classes('w-80 gap-4'):
                 ai_insights_panel()
         
-        # Connection status
-        with ui.card().classes('sf-card bg-blue-50'):
+        # Connection status with better styling
+        with ui.card().classes('w-full p-6 bg-blue-50 border-2 border-blue-200'):
             mode = 'Demo Mode' if app.storage.user.get('ticket_use_mock', False) else 'Live Jira Connection'
             icon = '🎭' if app.storage.user.get('ticket_use_mock', False) else '🔗'
-            ui.label(f'{icon} {mode}').classes('text-sm font-bold mb-2')
+            ui.label(f'{icon} {mode}').classes('text-xl font-bold text-gray-900 mb-3')
             
             if app.storage.user.get('ticket_use_mock', False):
-                ui.label('Using sample data for demonstration. Toggle "Demo Mode" off and configure Jira credentials to connect to your real instance.').classes('text-xs text-gray-600')
+                ui.label('Using sample data for demonstration. Toggle "Demo Mode" off and configure Jira credentials to connect to your real instance.').classes('text-base text-gray-900')
             else:
-                ui.label('Set ATLASSIAN_HOST, ATLASSIAN_EMAIL, and ATLASSIAN_TOKEN in your .env file').classes('text-xs text-gray-600')
+                ui.label('Set ATLASSIAN_HOST, ATLASSIAN_EMAIL, and ATLASSIAN_TOKEN in your .env file').classes('text-base text-gray-900')
     
     # Initial data load - run synchronously on first render
     ui.timer(0.1, lambda: asyncio.create_task(refresh_data()), once=True)

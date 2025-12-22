@@ -40,25 +40,25 @@ def shift_handover_screen():
                     ).fetchone()
                     latest_date = latest_date_result[0].strftime('%Y-%m-%d') if latest_date_result[0] else datetime.now().strftime('%Y-%m-%d')
                 
-                date_input = ui.input('Date (leave empty for all)', value='').classes('w-64').props('clearable')
+                date_input = ui.input('Date (leave empty for all)', value='').classes('w-64 text-gray-900').props('clearable outlined dense bg-color=white')
                 
                 line_filter = ui.select(
                     ['All'] + lines,
                     label='Production Line',
                     value='All'
-                ).classes('w-48').style('background: white;')
+                ).classes('w-48').props('outlined dense bg-color=white').style('color: #111827; background: white;')
                 
                 shift_filter = ui.select(
                     ['All', 'M', 'A', 'N'],
                     label='Shift',
                     value='All'
-                ).classes('w-32').style('background: white;')
+                ).classes('w-32').props('outlined dense bg-color=white').style('color: #111827; background: white;')
                 
                 status_filter = ui.select(
                     ['All', 'submitted', 'draft'],
                     label='Status',
                     value='All'
-                ).classes('w-32').style('background: white;')
+                ).classes('w-32').props('outlined dense bg-color=white').style('color: #111827; background: white;')
                 
                 ui.button('Apply', icon='filter_list', on_click=lambda: load_handovers())
         
@@ -190,8 +190,8 @@ def shift_handover_screen():
             shift_name = shift_names.get(shift, shift)
             
             status_colors = {
-                'submitted': 'bg-green-100 border-green-500',
-                'draft': 'bg-orange-100 border-orange-500'
+                'submitted': 'bg-white border-green-500',
+                'draft': 'bg-white border-orange-500'
             }
             
             with ui.card().classes(f'w-full border-l-4 {status_colors.get(status, "border-gray-500")}'):
@@ -201,22 +201,22 @@ def shift_handover_screen():
                         with ui.row().classes('items-center gap-2'):
                             ui.label(f'{line_id} - {shift_name} Shift').classes('text-xl font-bold')
                             ui.badge(status.upper(), color='green' if status == 'submitted' else 'orange')
-                        ui.label(f"{shift_date.strftime('%A, %B %d, %Y')}").classes('text-sm text-gray-600')
-                        ui.label(f"Created by: {created_by}").classes('text-xs text-gray-500')
+                        ui.label(f"{shift_date.strftime('%A, %B %d, %Y')}").classes('text-sm text-gray-900')
+                        ui.label(f"Created by: {created_by}").classes('text-xs text-gray-800')
                     
                     # Metrics
                     with ui.row().classes('gap-4'):
                         with ui.column().classes('items-center'):
                             ui.label(f"{oee*100:.1f}%").classes('text-2xl font-bold text-blue-600')
-                            ui.label('OEE').classes('text-xs text-gray-600')
+                            ui.label('OEE').classes('text-xs text-gray-900 font-semibold')
                         
                         with ui.column().classes('items-center'):
                             ui.label(str(total_prod)).classes('text-2xl font-bold text-green-600')
-                            ui.label('Units').classes('text-xs text-gray-600')
+                            ui.label('Units').classes('text-xs text-gray-900 font-semibold')
                         
                         with ui.column().classes('items-center'):
                             ui.label(str(int(downtime))).classes('text-2xl font-bold text-red-600')
-                            ui.label('Min Down').classes('text-xs text-gray-600')
+                            ui.label('Min Down').classes('text-xs text-gray-900 font-semibold')
                 
                 # Summary
                 with ui.expansion('Summary & Details', icon='description').classes('w-full'):
@@ -246,8 +246,8 @@ def shift_handover_screen():
                                 ui.badge(severity.upper(), color=severity_colors.get(severity, 'gray'))
                                 
                                 with ui.column().classes('flex-1'):
-                                    ui.label(issue_type).classes('font-semibold')
-                                    ui.label(description).classes('text-sm text-gray-700')
+                                    ui.label(issue_type).classes('font-semibold text-gray-900')
+                                    ui.label(description).classes('text-sm text-gray-900')
                                     
                                     if issue_status == 'resolved':
                                         ui.label(f'✓ Resolved by {resolved_by}').classes('text-xs text-green-600')
