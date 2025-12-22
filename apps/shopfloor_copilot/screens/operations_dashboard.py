@@ -34,7 +34,7 @@ def build_operations_dashboard(selected_line: str = None):
     line_selector_container = ui.row().classes('w-full gap-2 mb-4')
     
     @ui.refreshable
-    def content_container():
+    def content_container(sender=None):
         """Refreshable content container for line data"""
         with ui.column().classes('w-full gap-4'):
             ui.label('Select a production line to view details').classes('text-gray-400')
