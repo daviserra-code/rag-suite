@@ -278,7 +278,7 @@ def build_operations_dashboard(selected_line: str = None):
                         ui.button('Export Report', icon='download', on_click=export_line_report).classes('w-full bg-gray-700 hover:bg-gray-600 text-white').props('no-caps')
         
         # Refresh the content container
-        display_line_content.refresh()
+        content_container.refresh()
     
     # Build line selector buttons
     with line_selector_container:
