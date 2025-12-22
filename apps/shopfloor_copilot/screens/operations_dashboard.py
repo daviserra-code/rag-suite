@@ -112,7 +112,7 @@ def build_operations_dashboard(selected_line: str = None):
         
         # Rebuild the content container with new data
         @content_container
-        def display_line_content():
+        def display_line_content(sender=None):
             with ui.column().classes('w-full gap-4'):
                 if not line_data:
                     ui.label('No data available for this line').classes('text-gray-400')
