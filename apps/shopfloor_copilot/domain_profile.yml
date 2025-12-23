@@ -144,6 +144,22 @@ profiles:
       include_approval_status: true
       reasoning_style: "audit_ready"
       output_template: "aerospace"
+    
+    profile_expectations:
+      # Aerospace & Defence: Strictest compliance expectations
+      zero_output_requires_authorization: true
+      reduced_speed_requires_justification: true
+      critical_station_requires_evidence: true
+      dry_run_must_be_declared: true
+      unauthorized_stop_is_violation: true
+      missing_serial_binding_is_blocking: true
+      
+      # Thresholds for violations
+      zero_output_duration_threshold_minutes: 5
+      speed_reduction_threshold_percent: 10
+      critical_stations:
+        - "ST18"  # Final assembly
+        - "ST20"  # Quality gate
 
   # ==========================================================================
   # PHARMA / PROCESS PROFILE
@@ -285,6 +301,21 @@ profiles:
       include_batch_context: true
       reasoning_style: "gmp_compliant"
       output_template: "pharma"
+    
+    profile_expectations:
+      # Pharma / Process: GMP compliance and batch context
+      zero_output_requires_batch_context: true
+      reduced_speed_requires_deviation: true
+      environmental_excursion_is_blocking: true
+      missing_batch_record_is_violation: true
+      unauthorized_parameter_change_is_blocking: true
+      
+      # Thresholds
+      zero_output_duration_threshold_minutes: 10
+      speed_reduction_threshold_percent: 15
+      environmental_limits:
+        temperature_max_c: 25
+        humidity_max_percent: 60
 
   # ==========================================================================
   # AUTOMOTIVE / DISCRETE PROFILE
@@ -408,6 +439,18 @@ profiles:
       include_oee_impact: true
       reasoning_style: "lean_focused"
       output_template: "automotive"
+    
+    profile_expectations:
+      # Automotive / Discrete: Permissive, throughput-focused
+      zero_output_allowed_during_startup: true
+      zero_output_allowed_during_changeover: true
+      reduced_speed_common_during_rampup: true
+      minor_stops_expected_in_normal_operation: true
+      
+      # Violations only for severe conditions
+      zero_output_duration_threshold_minutes: 30  # Much longer grace period
+      speed_reduction_threshold_percent: 30  # Only flag major reductions
+      blocking_only_for_safety: true
 
 # ============================================================================
 # MIGRATION MAPPING (Sprint 1-3 Compatibility)

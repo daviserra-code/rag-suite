@@ -107,6 +107,20 @@ class DiagnosticsExplainer:
                 # Get all signals for the line
                 semantic_signals = await self._fetch_line_semantic_signals(equipment_id)
             
+            # Step 2.5: Evaluate profile expectations (BEFORE LLM)
+            # This is deterministic and rule-based
+            expectation_result = None
+            if profile:
+                from packages.diagnostics.expectation_evaluator import evaluate_profile_expectations
+                expectation_result = evaluate_profile_expectations(
+                    runtime_snapshot=snapshot,
+                    semantic_signals=semantic_signals,
+                    profile=profile
+                )
+                logger.info(f"Expectation evaluation: severity={expectation_result.severity}, "
+                          f"violations={len(expectation_result.violated_expectations)}, "
+                          f"blocking={len(expectation_result.blocking_conditions)}")
+            
             # Step 3: Identify active loss_category with profile-aware filtering
             loss_context = self._extract_loss_context(
                 semantic_signals,
@@ -123,7 +137,7 @@ class DiagnosticsExplainer:
                 profile=profile
             )
             
-            # Step 5: Build structured prompt with profile context
+            # Step 5: Build structured prompt with profile context and expectations
             prompt = self._build_diagnostic_prompt(
                 snapshot=snapshot,
                 semantic_signals=semantic_signals,
@@ -131,7 +145,8 @@ class DiagnosticsExplainer:
                 rag_results=rag_results,
                 scope=scope,
                 equipment_id=equipment_id,
-                profile=profile
+                profile=profile,
+                expectation_result=expectation_result
             )
             
             # Step 6: Call LLM with profile-aware system prompt
@@ -141,7 +156,7 @@ class DiagnosticsExplainer:
             # Step 7: Parse and structure response
             structured_response = self._parse_llm_response(llm_response)
             
-            # Step 8: Add metadata including profile info
+            # Step 8: Add metadata including profile info and expectations
             structured_response['metadata'] = {
                 'scope': scope,
                 'equipment_id': equipment_id,
@@ -151,7 +166,11 @@ class DiagnosticsExplainer:
                 'loss_categories': [lc['category'] for lc in loss_context.get('active_losses', [])],
                 'rag_documents': len(rag_results),
                 'domain_profile': profile.display_name if profile else 'None',
-                'reasoning_priority': profile.reason_taxonomy.diagnostic_priority_order if profile else []
+                'reasoning_priority': profile.reason_taxonomy.diagnostic_priority_order if profile else [],
+                'expectation_violations': expectation_result.violated_expectations if expectation_result else [],
+                'blocking_conditions': expectation_result.blocking_conditions if expectation_result else [],
+                'requires_confirmation': expectation_result.requires_human_confirmation if expectation_result else False,
+                'severity': expectation_result.severity if expectation_result else 'normal'
             }
             
             return structured_response
@@ -495,16 +514,17 @@ class DiagnosticsExplainer:
         rag_results: List[Dict],
         scope: str,
         equipment_id: str,
-        profile = None
+        profile = None,
+        expectation_result = None
     ) -> str:
         """
         Build the structured diagnostic prompt.
         
         Sprint 4: Profile-aware prompt construction (EXPLICIT context)
-        - Adjusts tone based on profile (formal/pragmatic)
-        - Includes profile-specific emphasis (compliance/quality/throughput)
-        - Adapts output format to domain requirements
-        - Profile passed explicitly, NOT loaded from global state
+        Sprint 4.5: Expectation-aware prompt (LLM explains, not decides)
+        - Includes expectation violations as deterministic context
+        - LLM receives judgment, then explains
+        - Escalation tone based on blocking conditions
         """
         
         # Sprint 4: Use explicit profile context
@@ -529,6 +549,7 @@ class DiagnosticsExplainer:
         
         # Format snapshot data
         from .prompt_templates import format_snapshot_for_prompt, format_loss_context, format_retrieved_knowledge, DIAGNOSTIC_PROMPT_TEMPLATE
+        from .expectation_evaluator import format_expectation_violations
         
         snapshot_formatted = format_snapshot_for_prompt(snapshot, scope, equipment_id)
         
@@ -538,7 +559,14 @@ class DiagnosticsExplainer:
         # Format RAG results
         rag_formatted = format_retrieved_knowledge(rag_results)
         
-        # Build full prompt
+        # Format expectation violations (Sprint 4.5)
+        expectations_formatted = ""
+        if expectation_result:
+            expectations_formatted = format_expectation_violations(expectation_result)
+            if expectation_result.escalation_tone:
+                expectations_formatted = "\n⚠️  ESCALATION REQUIRED\n" + expectations_formatted
+        
+        # Build full prompt with expectations
         prompt = DIAGNOSTIC_PROMPT_TEMPLATE.format(
             snapshot_data=snapshot_formatted,
             loss_context=loss_context_formatted,
@@ -548,6 +576,11 @@ class DiagnosticsExplainer:
             plant_name=snapshot.get('plant', 'Unknown'),
             timestamp=datetime.utcnow().isoformat()
         )
+        
+        # Append expectations AFTER standard prompt
+        if expectations_formatted:
+            prompt += f"\n\n{expectations_formatted}\n\n"
+            prompt += "IMPORTANT: The above expectation violations were determined by profile-specific rules. "\n            prompt += "Your role is to EXPLAIN these violations in context, NOT to re-judge them."
         
         return prompt
     

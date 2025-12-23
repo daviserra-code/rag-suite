@@ -87,6 +87,55 @@ class DiagnosticsBehavior:
 
 
 @dataclass
+class ProfileExpectations:
+    """Domain-specific expectations and escalation rules"""
+    # Binary expectations (True = requires escalation/authorization)
+    zero_output_requires_authorization: bool = False
+    zero_output_requires_batch_context: bool = False
+    zero_output_allowed_during_startup: bool = False
+    zero_output_allowed_during_changeover: bool = False
+    
+    reduced_speed_requires_justification: bool = False
+    reduced_speed_requires_deviation: bool = False
+    reduced_speed_common_during_rampup: bool = False
+    
+    critical_station_requires_evidence: bool = False
+    dry_run_must_be_declared: bool = False
+    unauthorized_stop_is_violation: bool = False
+    missing_serial_binding_is_blocking: bool = False
+    environmental_excursion_is_blocking: bool = False
+    missing_batch_record_is_violation: bool = False
+    unauthorized_parameter_change_is_blocking: bool = False
+    minor_stops_expected_in_normal_operation: bool = False
+    blocking_only_for_safety: bool = False
+    
+    # Thresholds
+    zero_output_duration_threshold_minutes: int = 15
+    speed_reduction_threshold_percent: int = 20
+    
+    # Lists
+    critical_stations: List[str] = None
+    environmental_limits: Dict[str, float] = None
+    
+    def __post_init__(self):
+        if self.critical_stations is None:
+            self.critical_stations = []
+        if self.environmental_limits is None:
+            self.environmental_limits = {}
+
+
+@dataclass
+class ExpectationResult:
+    """Result of profile expectation evaluation"""
+    violated_expectations: List[str]
+    warnings: List[str]
+    blocking_conditions: List[str]
+    requires_human_confirmation: bool
+    severity: str  # normal | warning | critical
+    escalation_tone: bool  # True if diagnostics should use escalation language
+
+
+@dataclass
 class DomainProfile:
     """Complete domain profile"""
     name: str
@@ -99,6 +148,7 @@ class DomainProfile:
     rag_preferences: RAGPreferences
     ui_emphasis: UIEmphasis
     diagnostics_behavior: DiagnosticsBehavior
+    profile_expectations: ProfileExpectations
 
 
 class DomainProfileManager:
@@ -230,6 +280,31 @@ class DomainProfileManager:
             output_template=diag_data.get('output_template', 'automotive')
         )
         
+        # Profile expectations
+        expect_data = data.get('profile_expectations', {})
+        profile_expectations = ProfileExpectations(
+            zero_output_requires_authorization=expect_data.get('zero_output_requires_authorization', False),
+            zero_output_requires_batch_context=expect_data.get('zero_output_requires_batch_context', False),
+            zero_output_allowed_during_startup=expect_data.get('zero_output_allowed_during_startup', False),
+            zero_output_allowed_during_changeover=expect_data.get('zero_output_allowed_during_changeover', False),
+            reduced_speed_requires_justification=expect_data.get('reduced_speed_requires_justification', False),
+            reduced_speed_requires_deviation=expect_data.get('reduced_speed_requires_deviation', False),
+            reduced_speed_common_during_rampup=expect_data.get('reduced_speed_common_during_rampup', False),
+            critical_station_requires_evidence=expect_data.get('critical_station_requires_evidence', False),
+            dry_run_must_be_declared=expect_data.get('dry_run_must_be_declared', False),
+            unauthorized_stop_is_violation=expect_data.get('unauthorized_stop_is_violation', False),
+            missing_serial_binding_is_blocking=expect_data.get('missing_serial_binding_is_blocking', False),
+            environmental_excursion_is_blocking=expect_data.get('environmental_excursion_is_blocking', False),
+            missing_batch_record_is_violation=expect_data.get('missing_batch_record_is_violation', False),
+            unauthorized_parameter_change_is_blocking=expect_data.get('unauthorized_parameter_change_is_blocking', False),
+            minor_stops_expected_in_normal_operation=expect_data.get('minor_stops_expected_in_normal_operation', False),
+            blocking_only_for_safety=expect_data.get('blocking_only_for_safety', False),
+            zero_output_duration_threshold_minutes=expect_data.get('zero_output_duration_threshold_minutes', 15),
+            speed_reduction_threshold_percent=expect_data.get('speed_reduction_threshold_percent', 20),
+            critical_stations=expect_data.get('critical_stations', []),
+            environmental_limits=expect_data.get('environmental_limits', {})
+        )
+        
         return DomainProfile(
             name=name,
             display_name=data.get('display_name', name),
@@ -240,7 +315,8 @@ class DomainProfileManager:
             reason_taxonomy=reason_taxonomy,
             rag_preferences=rag_preferences,
             ui_emphasis=ui_emphasis,
-            diagnostics_behavior=diagnostics_behavior
+            diagnostics_behavior=diagnostics_behavior,
+            profile_expectations=profile_expectations
         )
     
     def get_active_profile(self) -> DomainProfile:
