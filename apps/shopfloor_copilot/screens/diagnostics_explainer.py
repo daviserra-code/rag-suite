@@ -60,10 +60,10 @@ class DiagnosticsExplainerScreen:
                     # Equipment ID input
                     with ui.column().classes('flex-1'):
                         ui.label('Equipment ID').classes('text-sm font-medium mb-1')
-                        equipment_input = ui.input(
+                        self.equipment_input = ui.input(
                             placeholder='e.g., ST18 or A01',
                             value=''
-                        ).classes('w-full').on('change', lambda e: self._on_equipment_change(e.value))
+                        ).classes('w-full').on('input', lambda e: self._on_equipment_change(e.value))
                     
                     # Explain button
                     explain_button = ui.button(
@@ -151,6 +151,9 @@ class DiagnosticsExplainerScreen:
         """Load an example diagnostic request."""
         self.scope = scope
         self.equipment_id = equipment_id
+        # Update the input field value
+        if hasattr(self, 'equipment_input'):
+            self.equipment_input.value = equipment_id
         self._explain_situation()
     
     async def _explain_situation(self):
