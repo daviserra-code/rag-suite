@@ -1,0 +1,32 @@
+﻿UI Color Enhancement Report
+Generated: 2025-12-23 09:48:16
+
+Summary:
+--------
+Files processed: 0
+Total replacements: 0
+
+Color Replacements Applied:
+---------------------------
+  border-gray-200 â†’ border-slate-700   bg-grey-2 â†’ bg-slate-800   border-gray-300 â†’ border-slate-600   text-grey-4 â†’ text-slate-300   text-gray-800 â†’ text-slate-100   text-grey-5 â†’ text-slate-300   text-gray-400 â†’ text-slate-300   text-gray-900 â†’ text-white   text-gray-500 â†’ text-slate-300   bg-gray-100 â†’ bg-slate-700   text-gray-600 â†’ text-slate-200   text-grey-7 â†’ text-slate-200   bg-gray-50 â†’ bg-slate-800   bg-grey-3 â†’ bg-slate-700   bg-gray-200 â†’ bg-slate-600   text-gray-700 â†’ text-slate-100   bg-white dark:bg- â†’ bg-slate-800 dark:bg-   text-grey-8 â†’ text-slate-100   text-grey-6 â†’ text-slate-300   bg-grey-1 â†’ bg-slate-800   text-grey-9 â†’ text-white -join "
+"
+
+Guidelines:
+-----------
+- All grey text colors have been replaced with slate variants
+- Background colors updated for dark theme consistency
+- Text contrast improved for WCAG AA compliance
+- See docs/UI_STYLE_GUIDE.md for full documentation
+
+Testing:
+--------
+1. Launch application and verify all pages
+2. Check text readability in dark theme
+3. Ensure no grey-on-white text remains
+4. Verify status colors (green/red/yellow) are visible
+5. Test on target display hardware if available
+
+Files Updated:
+--------------
+  - apps\shopfloor_copilot\theme.py (20 changes)   - apps\shopfloor_copilot\ui.py (1 changes)   - apps\shopfloor_copilot\ui_shell.py (6 changes)   - apps\shopfloor_copilot\screens\advanced_rag.py (18 changes)   - apps\shopfloor_copilot\screens\answer_citations.py (8 changes)   - apps\shopfloor_copilot\screens\comparative_analytics.py (18 changes)   - apps\shopfloor_copilot\screens\diagnostics_explainer.py (8 changes)   - apps\shopfloor_copilot\screens\digital_twin.py (31 changes)   - apps\shopfloor_copilot\screens\energy_tracking.py (19 changes)   - apps\shopfloor_copilot\screens\kpi_dashboard_interactive.py (9 changes)   - apps\shopfloor_copilot\screens\live_monitoring.py (7 changes)   - apps\shopfloor_copilot\screens\mobile_operator.py (4 changes)   - apps\shopfloor_copilot\screens\opc_explorer.py (9 changes)   - apps\shopfloor_copilot\screens\opc_studio.py (13 changes)   - apps\shopfloor_copilot\screens\operations_dashboard.py (12 changes)   - apps\shopfloor_copilot\screens\operator_qna_interactive.py (15 changes)   - apps\shopfloor_copilot\screens\plant_overview.py (11 changes)   - apps\shopfloor_copilot\screens\predictive_maintenance.py (5 changes)   - apps\shopfloor_copilot\screens\production_lines.py (42 changes)   - apps\shopfloor_copilot\screens\qna_filters.py (5 changes)   - apps\shopfloor_copilot\screens\reports.py (17 changes)   - apps\shopfloor_copilot\screens\root_cause_analysis.py (12 changes)   - apps\shopfloor_copilot\screens\semantic_signals.py (12 changes)   - apps\shopfloor_copilot\screens\shift_handover.py (34 changes)   - apps\shopfloor_copilot\screens\station_heatmap.py (4 changes)   - apps\shopfloor_copilot\screens\ticket_insights.py (26 changes)   - apps\shopfloor_copilot\screens\why_analysis.py (17 changes) -join "
+"
