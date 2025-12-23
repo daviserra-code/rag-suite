@@ -51,7 +51,7 @@ class DiagnosticsExplainerScreen:
                     # Scope selector
                     with ui.column().classes('flex-none'):
                         ui.label('Scope').classes('text-sm font-medium mb-1')
-                        scope_select = ui.select(
+                        self.scope_select = ui.select(
                             ['station', 'line'],
                             value='station',
                             on_change=lambda e: self._on_scope_change(e.value)
@@ -63,7 +63,7 @@ class DiagnosticsExplainerScreen:
                         self.equipment_input = ui.input(
                             placeholder='e.g., ST18 or A01',
                             value=''
-                        ).classes('w-full').on('input', lambda e: self._on_equipment_change(e.value))
+                        ).classes('w-full')
                     
                     # Explain button
                     explain_button = ui.button(
@@ -143,23 +143,26 @@ class DiagnosticsExplainerScreen:
         """Handle scope selection change."""
         self.scope = value
     
-    def _on_equipment_change(self, value):
-        """Handle equipment ID input change."""
-        self.equipment_id = value.strip()
-    
     def _load_example(self, scope, equipment_id):
         """Load an example diagnostic request."""
-        self.scope = scope
-        self.equipment_id = equipment_id
-        # Update the input field value
+        # Update the UI elements
+        if hasattr(self, 'scope_select'):
+            self.scope_select.value = scope
         if hasattr(self, 'equipment_input'):
             self.equipment_input.value = equipment_id
         self._explain_situation()
     
     async def _explain_situation(self):
         """Request diagnostic explanation from API."""
-        if not self.equipment_id:
+        # Get current values from UI elements
+        equipment_id = self.equipment_input.value.strip() if hasattr(self, 'equipment_input') else ""
+        scope = self.scope_select.value if hasattr(self, 'scope_select') else self.scope
+        
+        logger.info(f"_explain_situation called - scope: {scope}, equipment_id: '{equipment_id}'")
+        
+        if not equipment_id:
             ui.notify('Please enter an equipment ID', type='warning')
+            logger.warning(f"Validation failed - equipment_id is empty")
             return
         
         try:
@@ -168,14 +171,14 @@ class DiagnosticsExplainerScreen:
             self.output_container.classes(add='hidden')
             
             # Call API
-            logger.info(f"Requesting diagnostic: {self.scope} {self.equipment_id}")
+            logger.info(f"Requesting diagnostic: {scope} {equipment_id}")
             
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
                     f"{SHOPFLOOR_API}/api/diagnostics/explain",
                     json={
-                        "scope": self.scope,
-                        "id": self.equipment_id
+                        "scope": scope,
+                        "id": equipment_id
                     }
                 )
                 
