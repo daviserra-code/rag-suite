@@ -64,7 +64,8 @@ class DiagnosticsExplainer:
     async def explain_situation(
         self,
         scope: str,
-        equipment_id: str
+        equipment_id: str,
+        profile = None  # DomainProfile context
     ) -> Dict[str, Any]:
         """
         Generate structured, explainable diagnostic for a line or station.
@@ -72,6 +73,7 @@ class DiagnosticsExplainer:
         Args:
             scope: "line" or "station"
             equipment_id: Line ID (e.g., "A01") or Station ID (e.g., "ST18")
+            profile: Domain profile context (explicit, not global)
         
         Returns:
             Structured diagnostic with 4 sections:
@@ -81,6 +83,15 @@ class DiagnosticsExplainer:
             - what_to_check_next: Actionable checklist
         """
         try:
+            # Step 0: Load profile context if not provided (explicit, not global)
+            if profile is None:
+                try:
+                    from apps.shopfloor_copilot.domain_profiles import get_active_profile
+                    profile = get_active_profile()
+                    logger.info(f"Using domain profile: {profile.display_name}")
+                except Exception as e:
+                    logger.warning(f"Could not load profile: {e}")
+                    profile = None
             # Step 1: Fetch semantic snapshot (authoritative truth)
             logger.info(f"Fetching semantic snapshot for {scope} {equipment_id}")
             snapshot = await self._fetch_semantic_snapshot()
@@ -96,35 +107,41 @@ class DiagnosticsExplainer:
                 # Get all signals for the line
                 semantic_signals = await self._fetch_line_semantic_signals(equipment_id)
             
-            # Step 3: Identify active loss_category
-            loss_context = self._extract_loss_context(semantic_signals, scope)
+            # Step 3: Identify active loss_category with profile-aware filtering
+            loss_context = self._extract_loss_context(
+                semantic_signals,
+                scope,
+                profile=profile
+            )
             
-            # Step 4: Query RAG knowledge base
+            # Step 4: Query RAG knowledge base with profile context
             logger.info(f"Querying RAG for {scope} {equipment_id}")
             rag_results = await self._query_rag(
                 equipment_id=equipment_id,
                 loss_categories=[lc['category'] for lc in loss_context.get('active_losses', [])],
-                scope=scope
+                scope=scope,
+                profile=profile
             )
             
-            # Step 5: Build structured prompt
+            # Step 5: Build structured prompt with profile context
             prompt = self._build_diagnostic_prompt(
                 snapshot=snapshot,
                 semantic_signals=semantic_signals,
                 loss_context=loss_context,
                 rag_results=rag_results,
                 scope=scope,
-                equipment_id=equipment_id
+                equipment_id=equipment_id,
+                profile=profile
             )
             
-            # Step 6: Call LLM
+            # Step 6: Call LLM with profile-aware system prompt
             logger.info("Calling LLM for diagnostic generation")
-            llm_response = await self._call_llm(prompt)
+            llm_response = await self._call_llm(prompt, profile=profile)
             
             # Step 7: Parse and structure response
             structured_response = self._parse_llm_response(llm_response)
             
-            # Step 8: Add metadata
+            # Step 8: Add metadata including profile info
             structured_response['metadata'] = {
                 'scope': scope,
                 'equipment_id': equipment_id,
@@ -132,7 +149,9 @@ class DiagnosticsExplainer:
                 'plant': snapshot.get('plant', 'Unknown'),
                 'model': self.model_name,
                 'loss_categories': [lc['category'] for lc in loss_context.get('active_losses', [])],
-                'rag_documents': len(rag_results)
+                'rag_documents': len(rag_results),
+                'domain_profile': profile.display_name if profile else 'None',
+                'reasoning_priority': profile.reason_taxonomy.diagnostic_priority_order if profile else []
             }
             
             return structured_response
@@ -233,15 +252,35 @@ class DiagnosticsExplainer:
             logger.error(f"Failed to fetch line semantic signals: {e}")
             return None
     
-    def _extract_loss_context(self, semantic_signals: Optional[Dict], scope: str) -> Dict:
-        """Extract active loss categories from semantic signals."""
+    def _extract_loss_context(
+        self,
+        semantic_signals: Optional[Dict],
+        scope: str,
+        profile = None
+    ) -> Dict:
+        """
+        Extract active loss categories from semantic signals.
+        
+        Sprint 4: Profile-aware reason filtering
+        - Only evaluates reasons in enabled categories
+        - Evaluates in profile-specified priority order
+        """
         if not semantic_signals:
             return {
                 'active_losses': [],
                 'availability_affected': False,
                 'performance_affected': False,
-                'quality_affected': False
+                'quality_affected': False,
+                'reasoning_order': []
             }
+        
+        # Get enabled categories and priority order from profile
+        enabled_categories = None
+        priority_order = []
+        if profile:
+            enabled_categories = set(profile.reason_taxonomy.enabled)
+            priority_order = profile.reason_taxonomy.diagnostic_priority_order
+            logger.info(f"Profile-aware evaluation order: {priority_order}")
         
         active_losses = []
         
@@ -277,41 +316,72 @@ class DiagnosticsExplainer:
         performance_affected = any(l['category'].startswith('performance.') for l in active_losses)
         quality_affected = any(l['category'].startswith('quality.') for l in active_losses)
         
+        # Sprint 4: Filter losses by enabled categories
+        if enabled_categories:
+            filtered_losses = []
+            for loss in active_losses:
+                # Extract reason category from loss_category (e.g., 'equipment' from 'availability.equipment_failure')
+                loss_cat = loss['category'].split('.')[-1]  # e.g., 'equipment_failure'
+                # Map to universal category
+                for category in ['equipment', 'material', 'process', 'quality', 'documentation', 'people', 'tooling', 'logistics', 'environmental']:
+                    if category in loss_cat:
+                        if category in enabled_categories:
+                            filtered_losses.append(loss)
+                        break
+            logger.info(f"Filtered {len(active_losses)} losses to {len(filtered_losses)} based on enabled categories")
+            active_losses = filtered_losses
+        
+        # Sprint 4: Sort losses by priority order
+        if priority_order and active_losses:
+            # Create priority map (lower index = higher priority)
+            priority_map = {cat: idx for idx, cat in enumerate(priority_order)}
+            
+            def get_priority(loss):
+                loss_cat = loss['category'].split('.')[-1]
+                for category in priority_order:
+                    if category in loss_cat:
+                        return priority_map.get(category, 999)
+                return 999
+            
+            active_losses.sort(key=get_priority)
+            logger.info(f"Sorted losses by priority: {[l['category'] for l in active_losses]}")
+        
         return {
             'active_losses': active_losses,
             'availability_affected': availability_affected,
             'performance_affected': performance_affected,
-            'quality_affected': quality_affected
+            'quality_affected': quality_affected,
+            'reasoning_order': priority_order
         }
     
     async def _query_rag(
         self,
         equipment_id: str,
         loss_categories: List[str],
-        scope: str
+        scope: str,
+        profile = None
     ) -> List[Dict]:
         """
         Query Chroma for relevant procedures and documentation.
         
-        Sprint 4: Profile-aware RAG retrieval
-        - Prioritizes sources based on active domain profile
+        Sprint 4: Profile-aware RAG retrieval (EXECUTIVE, not cosmetic)
+        - Filters by profile priority_sources BEFORE scoring
         - Applies source-specific weights to ranking
-        - Filters by profile priority_sources
+        - Only retrieves documents relevant to active profile
+        - Behavioral change: Same query returns different docs per profile
         """
         if not CHROMA_AVAILABLE:
             logger.warning("Chroma client not available")
             return []
         
         try:
-            # Sprint 4: Get active profile for RAG preferences
-            try:
-                from apps.shopfloor_copilot.domain_profiles import get_active_profile
-                profile = get_active_profile()
+            # Sprint 4: Use explicit profile context (not global)
+            if profile:
                 priority_sources = profile.rag_preferences.priority_sources
                 search_weights = profile.rag_preferences.search_weights
-                logger.info(f"Using profile: {profile.display_name}, priority sources: {priority_sources}")
-            except Exception as e:
-                logger.warning(f"Could not load domain profile, using defaults: {e}")
+                logger.info(f"RAG using profile: {profile.display_name}, priority sources: {priority_sources}")
+            else:
+                logger.warning("No profile context - using defaults")
                 priority_sources = ["work_instructions", "sop", "maintenance_log"]
                 search_weights = {}
             
@@ -424,21 +494,21 @@ class DiagnosticsExplainer:
         loss_context: Dict,
         rag_results: List[Dict],
         scope: str,
-        equipment_id: str
+        equipment_id: str,
+        profile = None
     ) -> str:
         """
         Build the structured diagnostic prompt.
         
-        Sprint 4: Profile-aware prompt construction
+        Sprint 4: Profile-aware prompt construction (EXPLICIT context)
         - Adjusts tone based on profile (formal/pragmatic)
         - Includes profile-specific emphasis (compliance/quality/throughput)
         - Adapts output format to domain requirements
+        - Profile passed explicitly, NOT loaded from global state
         """
         
-        # Sprint 4: Get active profile for diagnostics behavior
-        try:
-            from apps.shopfloor_copilot.domain_profiles import get_active_profile
-            profile = get_active_profile()
+        # Sprint 4: Use explicit profile context
+        if profile:
             diag_behavior = profile.diagnostics_behavior
             
             # Build profile-aware system prompt
@@ -450,8 +520,9 @@ class DiagnosticsExplainer:
             self._current_profile = profile
             
             logger.info(f"Diagnostics tone: {diag_behavior.tone}, emphasis: {diag_behavior.emphasis}")
-        except Exception as e:
-            logger.warning(f"Could not load profile for diagnostics, using defaults: {e}")
+            logger.info(f"Reasoning priority order: {profile.reason_taxonomy.diagnostic_priority_order}")
+        else:
+            logger.warning("No profile context - using default prompts")
             from .prompt_templates import SYSTEM_PROMPT
             self._current_system_prompt = SYSTEM_PROMPT
             self._current_profile = None
@@ -480,18 +551,24 @@ class DiagnosticsExplainer:
         
         return prompt
     
-    async def _call_llm(self, prompt: str) -> str:
+    async def _call_llm(self, prompt: str, profile = None) -> str:
         """
         Call Ollama LLM with the diagnostic prompt.
         
-        Sprint 4: Uses profile-aware system prompt
+        Sprint 4: Uses profile-aware system prompt (explicit parameter)
         """
         try:
-            # Use profile-aware system prompt if available
-            system_prompt = getattr(self, '_current_system_prompt', None)
-            if not system_prompt:
-                from .prompt_templates import SYSTEM_PROMPT
-                system_prompt = SYSTEM_PROMPT
+            # Use profile-aware system prompt
+            if profile:
+                from .prompt_templates import build_profile_aware_system_prompt
+                system_prompt = build_profile_aware_system_prompt(profile)
+                logger.info(f"Using {profile.display_name} system prompt")
+            else:
+                # Fallback to stored or default
+                system_prompt = getattr(self, '_current_system_prompt', None)
+                if not system_prompt:
+                    from .prompt_templates import SYSTEM_PROMPT
+                    system_prompt = SYSTEM_PROMPT
             
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(

@@ -78,10 +78,20 @@ async def explain_situation(request: ExplainRequest):
                 detail=f"Invalid scope: {request.scope}. Must be 'line' or 'station'."
             )
         
-        # Generate diagnostic explanation
+        # Sprint 4: Load active profile and pass explicitly
+        try:
+            from apps.shopfloor_copilot.domain_profiles import get_active_profile
+            profile = get_active_profile()
+            logger.info(f"Using domain profile: {profile.display_name}")
+        except Exception as e:
+            logger.warning(f"Could not load profile: {e}")
+            profile = None
+        
+        # Generate diagnostic explanation with explicit profile context
         result = await explainer.explain_situation(
             scope=request.scope,
-            equipment_id=request.id
+            equipment_id=request.id,
+            profile=profile
         )
         
         # Check for errors

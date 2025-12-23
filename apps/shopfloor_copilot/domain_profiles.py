@@ -57,6 +57,7 @@ class ProcessConstraints:
 class ReasonTaxonomy:
     """Reason categorization configuration"""
     enabled: List[str]  # Level 1 categories enabled for this profile
+    diagnostic_priority_order: List[str]  # Evaluation order for diagnostics
     subcategories: Dict[str, List[str]]  # Level 2 subcategories per category
 
 
@@ -200,6 +201,7 @@ class DomainProfileManager:
         taxonomy_data = data.get('reason_taxonomy', {})
         reason_taxonomy = ReasonTaxonomy(
             enabled=taxonomy_data.get('enabled', []),
+            diagnostic_priority_order=taxonomy_data.get('diagnostic_priority_order', taxonomy_data.get('enabled', [])),
             subcategories=taxonomy_data.get('subcategories', {})
         )
         

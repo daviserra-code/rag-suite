@@ -57,6 +57,15 @@ profiles:
         - people
         - tooling
       
+      diagnostic_priority_order:
+        - documentation
+        - tooling
+        - people
+        - material
+        - equipment
+        - quality
+        - process
+      
       subcategories:
         equipment:
           - breakdown
@@ -188,6 +197,15 @@ profiles:
         - people
         - environmental
       
+      diagnostic_priority_order:
+        - quality
+        - material
+        - documentation
+        - environmental
+        - equipment
+        - process
+        - people
+      
       subcategories:
         equipment:
           - validation_expired
@@ -313,6 +331,14 @@ profiles:
         - quality
         - people
         - logistics
+      
+      diagnostic_priority_order:
+        - equipment
+        - material
+        - process
+        - logistics
+        - quality
+        - people
       
       subcategories:
         equipment:
