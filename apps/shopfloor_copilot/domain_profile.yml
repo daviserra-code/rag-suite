@@ -1,0 +1,476 @@
+# Domain Profile Configuration
+# Sprint 4 — Material Intelligence & Domain Profiles
+# Single product, single codebase, configuration-driven behavior
+
+# Active profile (can be switched at runtime)
+active_profile: aerospace_defence
+
+# ============================================================================
+# AEROSPACE & DEFENCE PROFILE
+# Reference domain for strictest compliance and material traceability
+# ============================================================================
+profiles:
+  aerospace_defence:
+    display_name: "Aerospace & Defence"
+    description: "Strictest compliance, serial-level traceability, certification-first"
+    
+    material_model:
+      identification: serial          # serial | lot
+      genealogy_depth: deep           # shallow | deep
+      revision_required: true
+      expiry_management: conditional
+      traceability_level: serial      # serial | lot | batch | none
+      material_mandatory_fields:
+        - part_number
+        - revision
+        - serial_number
+        - specification
+        - supplier
+        - certificate_reference
+    
+    equipment_model:
+      certification_required: true
+      tooling_calibration_required: true
+      maintenance_log_mandatory: true
+      qualification_tracking: true
+      calibration_mandatory_fields:
+        - calibration_date
+        - next_calibration_date
+        - certificate_number
+        - calibrated_by
+    
+    process_constraints:
+      deviation_required_for_exceptions: true
+      operator_certification_required: true
+      documentation_signoff_required: true
+      work_instruction_mandatory: true
+      quality_gate_enforcement: strict
+      change_control_required: true
+    
+    reason_taxonomy:
+      enabled:
+        - equipment
+        - material
+        - process
+        - quality
+        - documentation
+        - people
+        - tooling
+      
+      subcategories:
+        equipment:
+          - breakdown
+          - calibration_expired
+          - certification_missing
+          - maintenance_overdue
+        material:
+          - wrong_revision
+          - certificate_missing
+          - expired
+          - quarantine
+          - shortage
+          - serial_mismatch
+        process:
+          - deviation_not_approved
+          - work_instruction_outdated
+          - parameter_out_of_spec
+        quality:
+          - inspection_failed
+          - non_conformance
+          - rework_required
+        documentation:
+          - missing_signature
+          - outdated_procedure
+          - missing_approval
+          - missing_traceability
+        people:
+          - operator_not_certified
+          - training_expired
+          - absence
+        tooling:
+          - out_of_calibration
+          - damaged
+          - missing
+          - wrong_revision
+    
+    rag_preferences:
+      priority_sources:
+        - deviations
+        - work_instructions
+        - drawings
+        - quality_records
+        - specifications
+        - certificates
+      
+      search_weights:
+        deviations: 1.5
+        work_instructions: 1.3
+        drawings: 1.2
+        quality_records: 1.2
+        specifications: 1.1
+        certificates: 1.1
+        default: 1.0
+    
+    ui_emphasis:
+      primary_views:
+        - diagnostics
+        - genealogy
+        - compliance_status
+        - material_tracking
+      
+      warning_thresholds:
+        calibration_warning_days: 30
+        certification_warning_days: 60
+        material_expiry_warning_days: 90
+      
+      color_coding:
+        critical: "#dc2626"  # Red
+        warning: "#f59e0b"   # Amber
+        compliant: "#10b981" # Green
+    
+    diagnostics_behavior:
+      tone: "formal"
+      emphasis: "compliance_first"
+      include_documentation_refs: true
+      include_approval_status: true
+      reasoning_style: "audit_ready"
+      output_template: "aerospace"
+
+  # ==========================================================================
+  # PHARMA / PROCESS PROFILE
+  # Batch-centric, GMP compliance, validation-driven
+  # ==========================================================================
+  pharma_process:
+    display_name: "Pharma / Process"
+    description: "Batch traceability, GMP compliance, validation-driven"
+    
+    material_model:
+      identification: lot             # serial | lot
+      genealogy_depth: deep           # shallow | deep
+      revision_required: true
+      expiry_management: mandatory
+      traceability_level: batch       # serial | lot | batch | none
+      material_mandatory_fields:
+        - part_number
+        - lot_number
+        - batch_number
+        - expiry_date
+        - supplier
+        - coa_reference           # Certificate of Analysis
+    
+    equipment_model:
+      certification_required: true
+      tooling_calibration_required: true
+      maintenance_log_mandatory: true
+      qualification_tracking: true
+      validation_status_required: true
+      calibration_mandatory_fields:
+        - calibration_date
+        - next_calibration_date
+        - validation_status
+    
+    process_constraints:
+      deviation_required_for_exceptions: true
+      operator_certification_required: true
+      documentation_signoff_required: true
+      work_instruction_mandatory: true
+      quality_gate_enforcement: strict
+      change_control_required: true
+      batch_record_mandatory: true
+    
+    reason_taxonomy:
+      enabled:
+        - equipment
+        - material
+        - process
+        - quality
+        - documentation
+        - people
+        - environmental
+      
+      subcategories:
+        equipment:
+          - validation_expired
+          - calibration_expired
+          - cleaning_incomplete
+          - maintenance_overdue
+        material:
+          - lot_expired
+          - coa_missing
+          - quarantine
+          - shortage
+          - wrong_lot
+          - sterility_breach
+        process:
+          - deviation_not_approved
+          - sop_not_followed
+          - parameter_out_of_spec
+          - hold_time_exceeded
+        quality:
+          - batch_release_failed
+          - inspection_failed
+          - test_out_of_spec
+          - stability_issue
+        documentation:
+          - batch_record_incomplete
+          - missing_signature
+          - sop_outdated
+          - missing_approval
+        people:
+          - training_expired
+          - gmp_certification_missing
+          - absence
+        environmental:
+          - cleanroom_out_of_spec
+          - temperature_excursion
+          - humidity_out_of_range
+    
+    rag_preferences:
+      priority_sources:
+        - sops
+        - batch_records
+        - deviations
+        - validation_protocols
+        - quality_records
+        - coas
+      
+      search_weights:
+        sops: 1.5
+        batch_records: 1.4
+        deviations: 1.3
+        validation_protocols: 1.2
+        quality_records: 1.2
+        coas: 1.1
+        default: 1.0
+    
+    ui_emphasis:
+      primary_views:
+        - batch_genealogy
+        - compliance_status
+        - quality_dashboard
+        - environmental_monitoring
+      
+      warning_thresholds:
+        expiry_warning_days: 30
+        validation_warning_days: 90
+        calibration_warning_days: 30
+      
+      color_coding:
+        critical: "#dc2626"  # Red
+        warning: "#f59e0b"   # Amber
+        compliant: "#10b981" # Green
+    
+    diagnostics_behavior:
+      tone: "formal"
+      emphasis: "quality_first"
+      include_documentation_refs: true
+      include_batch_context: true
+      reasoning_style: "gmp_compliant"
+      output_template: "pharma"
+
+  # ==========================================================================
+  # AUTOMOTIVE / DISCRETE PROFILE
+  # Lot-based, throughput-driven, lean-focused
+  # ==========================================================================
+  automotive_discrete:
+    display_name: "Automotive / Discrete"
+    description: "Lot traceability, throughput optimization, lean manufacturing"
+    
+    material_model:
+      identification: lot             # serial | lot
+      genealogy_depth: shallow        # shallow | deep
+      revision_required: true
+      expiry_management: conditional
+      traceability_level: lot         # serial | lot | batch | none
+      material_mandatory_fields:
+        - part_number
+        - lot_number
+        - quantity
+        - supplier
+    
+    equipment_model:
+      certification_required: false
+      tooling_calibration_required: true
+      maintenance_log_mandatory: false
+      qualification_tracking: false
+      calibration_mandatory_fields:
+        - calibration_date
+        - next_calibration_date
+    
+    process_constraints:
+      deviation_required_for_exceptions: false
+      operator_certification_required: false
+      documentation_signoff_required: false
+      work_instruction_mandatory: false
+      quality_gate_enforcement: moderate
+      change_control_required: false
+    
+    reason_taxonomy:
+      enabled:
+        - equipment
+        - material
+        - process
+        - quality
+        - people
+        - logistics
+      
+      subcategories:
+        equipment:
+          - breakdown
+          - tooling_failure
+          - maintenance
+          - setup_changeover
+        material:
+          - shortage
+          - wrong_part
+          - supplier_delay
+          - quality_issue
+        process:
+          - cycle_time_exceeded
+          - rework
+          - parameter_drift
+        quality:
+          - defect_detected
+          - scrap
+          - rework_required
+        people:
+          - absence
+          - training_gap
+          - efficiency_loss
+        logistics:
+          - upstream_starvation
+          - downstream_blocking
+          - goods_receipt_delay
+    
+    rag_preferences:
+      priority_sources:
+        - work_instructions
+        - downtime_patterns
+        - quality_issues
+        - supplier_performance
+        - maintenance_logs
+      
+      search_weights:
+        downtime_patterns: 1.4
+        work_instructions: 1.2
+        quality_issues: 1.2
+        supplier_performance: 1.1
+        maintenance_logs: 1.1
+        default: 1.0
+    
+    ui_emphasis:
+      primary_views:
+        - oee_dashboard
+        - downtime_analysis
+        - material_flow
+        - quality_trends
+      
+      warning_thresholds:
+        downtime_threshold_min: 5
+        quality_threshold_pct: 95
+        oee_warning_threshold: 75
+      
+      color_coding:
+        critical: "#dc2626"  # Red
+        warning: "#f59e0b"   # Amber
+        ok: "#10b981"        # Green
+    
+    diagnostics_behavior:
+      tone: "pragmatic"
+      emphasis: "throughput_first"
+      include_documentation_refs: false
+      include_oee_impact: true
+      reasoning_style: "lean_focused"
+      output_template: "automotive"
+
+# ============================================================================
+# MIGRATION MAPPING (Sprint 1-3 Compatibility)
+# Maps existing loss_category taxonomy to new reason_taxonomy
+# ============================================================================
+migration:
+  loss_category_to_reason:
+    # Availability losses
+    "availability.equipment_failure": 
+      reason_category: equipment
+      reason_subcategory: breakdown
+    "availability.tooling_failure":
+      reason_category: tooling
+      reason_subcategory: damaged
+    "availability.material_shortage":
+      reason_category: material
+      reason_subcategory: shortage
+    "availability.operator_absence":
+      reason_category: people
+      reason_subcategory: absence
+    "availability.upstream_starvation":
+      reason_category: logistics
+      reason_subcategory: upstream_starvation
+    "availability.downstream_blocking":
+      reason_category: logistics
+      reason_subcategory: downstream_blocking
+    "availability.setup_changeover":
+      reason_category: equipment
+      reason_subcategory: setup_changeover
+    
+    # Performance losses
+    "performance.reduced_speed":
+      reason_category: process
+      reason_subcategory: parameter_drift
+    "performance.minor_stops":
+      reason_category: equipment
+      reason_subcategory: breakdown
+    "performance.idling":
+      reason_category: process
+      reason_subcategory: cycle_time_exceeded
+    
+    # Quality losses
+    "quality.process_defect":
+      reason_category: quality
+      reason_subcategory: defect_detected
+    "quality.reduced_yield":
+      reason_category: quality
+      reason_subcategory: scrap
+    "quality.startup_scrap":
+      reason_category: quality
+      reason_subcategory: scrap
+
+# ============================================================================
+# REASON TAXONOMY UNIVERSAL CATEGORIES (Level 1)
+# Valid across all domains, profile determines which are enabled
+# ============================================================================
+reason_taxonomy_universal:
+  equipment:
+    description: "Equipment-related issues (machines, tools, fixtures)"
+    oee_impact: availability
+    
+  material:
+    description: "Material availability, quality, or specification issues"
+    oee_impact: availability
+    
+  process:
+    description: "Process parameters, procedures, or control issues"
+    oee_impact: performance
+    
+  quality:
+    description: "Quality defects, inspection failures, or non-conformance"
+    oee_impact: quality
+    
+  documentation:
+    description: "Missing, outdated, or incomplete documentation"
+    oee_impact: availability
+    
+  people:
+    description: "Operator-related issues (absence, training, certification)"
+    oee_impact: availability
+    
+  tooling:
+    description: "Tooling-specific issues (calibration, damage, availability)"
+    oee_impact: availability
+    
+  logistics:
+    description: "Material flow, upstream/downstream dependencies"
+    oee_impact: availability
+    
+  environmental:
+    description: "Environmental conditions (cleanroom, temperature, humidity)"
+    oee_impact: availability

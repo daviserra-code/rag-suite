@@ -68,6 +68,12 @@ MACRO_CATEGORIES = {
             {"name": "Mobile Operator", "route": "/advanced/mobile", "icon": "phone_android", "description": "Mobile-optimized view"},
         ]
     },
+    "Settings": {
+        "icon": "settings",
+        "pages": [
+            {"name": "Domain Profiles", "route": "/settings/profiles", "icon": "domain", "description": "Sprint 4: Profile management"},
+        ]
+    },
 }
 
 

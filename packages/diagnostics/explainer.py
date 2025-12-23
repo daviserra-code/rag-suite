@@ -290,16 +290,35 @@ class DiagnosticsExplainer:
         loss_categories: List[str],
         scope: str
     ) -> List[Dict]:
-        """Query Chroma for relevant procedures and documentation."""
+        """
+        Query Chroma for relevant procedures and documentation.
+        
+        Sprint 4: Profile-aware RAG retrieval
+        - Prioritizes sources based on active domain profile
+        - Applies source-specific weights to ranking
+        - Filters by profile priority_sources
+        """
         if not CHROMA_AVAILABLE:
             logger.warning("Chroma client not available")
             return []
         
         try:
+            # Sprint 4: Get active profile for RAG preferences
+            try:
+                from apps.shopfloor_copilot.domain_profiles import get_active_profile
+                profile = get_active_profile()
+                priority_sources = profile.rag_preferences.priority_sources
+                search_weights = profile.rag_preferences.search_weights
+                logger.info(f"Using profile: {profile.display_name}, priority sources: {priority_sources}")
+            except Exception as e:
+                logger.warning(f"Could not load domain profile, using defaults: {e}")
+                priority_sources = ["work_instructions", "sop", "maintenance_log"]
+                search_weights = {}
+            
             # Build search query
             query_parts = [equipment_id]
             
-            # Add loss category keywords
+            # Add loss category keywords (backward compatible with legacy loss_category)
             for category in loss_categories:
                 # Extract specific loss type (e.g., "equipment_failure" from "availability.equipment_failure")
                 if '.' in category:
@@ -311,33 +330,88 @@ class DiagnosticsExplainer:
             # Use existing Chroma client infrastructure
             collection = get_collection("shopfloor_docs")
             
-            # Query with metadata filter
+            # Sprint 4: Build metadata filter based on profile priority sources
+            # Map profile source names to doc_types in Chroma
+            source_mapping = {
+                'work_instructions': 'work_instruction',
+                'work_instruction': 'work_instruction',
+                'sops': 'sop',
+                'sop': 'sop',
+                'deviations': 'deviation',
+                'deviation': 'deviation',
+                'drawings': 'drawing',
+                'drawing': 'drawing',
+                'quality_records': 'quality_record',
+                'specifications': 'specification',
+                'certificates': 'certificate',
+                'batch_records': 'batch_record',
+                'validation_protocols': 'validation_protocol',
+                'coas': 'coa',
+                'downtime_patterns': 'downtime_pattern',
+                'supplier_performance': 'supplier_data',
+                'maintenance_logs': 'maintenance_log',
+                'maintenance_log': 'maintenance_log'
+            }
+            
+            # Build metadata filter from priority sources
+            doc_types = []
+            for source in priority_sources:
+                source_lower = source.lower()
+                if source_lower in source_mapping:
+                    doc_types.append(source_mapping[source_lower])
+            
+            # Fallback to defaults if no valid mappings
+            if not doc_types:
+                doc_types = ['work_instruction', 'sop', 'maintenance_log']
+            
+            # Query with profile-aware metadata filter
+            where_clause = {
+                "$or": [{"doc_type": dt} for dt in doc_types]
+            }
+            
+            logger.info(f"RAG query: '{query_text}' with doc_types: {doc_types}")
+            
             results = collection.query(
                 query_texts=[query_text],
-                n_results=5,
-                where={
-                    "$or": [
-                        {"doc_type": "work_instruction"},
-                        {"doc_type": "sop"},
-                        {"doc_type": "maintenance_log"}
-                    ]
-                }
+                n_results=10,  # Get more results to apply weighting
+                where=where_clause
             )
             
-            # Format results
+            # Format results with profile-aware weighting
             documents = results.get('documents', [[]])[0]
             metadatas = results.get('metadatas', [[]])[0]
             distances = results.get('distances', [[]])[0]
             
-            return [
-                {
-                    'document': doc,
-                    'metadata': meta,
-                    'score': 1.0 - dist  # Convert distance to similarity
-                }
-                for doc, meta, dist in zip(documents, metadatas, distances)
-                if dist < 1.5  # Filter by similarity threshold
-            ]
+            weighted_results = []
+            for doc, meta, dist in zip(documents, metadatas, distances):
+                if dist < 1.5:  # Base similarity threshold
+                    # Get doc_type and apply profile weight
+                    doc_type = meta.get('doc_type', 'default')
+                    
+                    # Reverse map to profile source name for weight lookup
+                    profile_source = next(
+                        (k for k, v in source_mapping.items() if v == doc_type),
+                        'default'
+                    )
+                    
+                    # Apply profile weight (higher weight = better ranking)
+                    weight = search_weights.get(profile_source, 1.0)
+                    weighted_score = (1.0 - dist) * weight
+                    
+                    weighted_results.append({
+                        'document': doc,
+                        'metadata': meta,
+                        'score': weighted_score,
+                        'base_score': 1.0 - dist,
+                        'weight': weight,
+                        'source_type': profile_source
+                    })
+            
+            # Sort by weighted score (highest first)
+            weighted_results.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Return top 5 after weighting
+            return weighted_results[:5]
         
         except Exception as e:
             logger.error(f"RAG query failed: {e}")
@@ -352,9 +426,39 @@ class DiagnosticsExplainer:
         scope: str,
         equipment_id: str
     ) -> str:
-        """Build the structured diagnostic prompt."""
+        """
+        Build the structured diagnostic prompt.
+        
+        Sprint 4: Profile-aware prompt construction
+        - Adjusts tone based on profile (formal/pragmatic)
+        - Includes profile-specific emphasis (compliance/quality/throughput)
+        - Adapts output format to domain requirements
+        """
+        
+        # Sprint 4: Get active profile for diagnostics behavior
+        try:
+            from apps.shopfloor_copilot.domain_profiles import get_active_profile
+            profile = get_active_profile()
+            diag_behavior = profile.diagnostics_behavior
+            
+            # Build profile-aware system prompt
+            from .prompt_templates import build_profile_aware_system_prompt
+            system_prompt = build_profile_aware_system_prompt(profile)
+            
+            # Store for LLM call
+            self._current_system_prompt = system_prompt
+            self._current_profile = profile
+            
+            logger.info(f"Diagnostics tone: {diag_behavior.tone}, emphasis: {diag_behavior.emphasis}")
+        except Exception as e:
+            logger.warning(f"Could not load profile for diagnostics, using defaults: {e}")
+            from .prompt_templates import SYSTEM_PROMPT
+            self._current_system_prompt = SYSTEM_PROMPT
+            self._current_profile = None
         
         # Format snapshot data
+        from .prompt_templates import format_snapshot_for_prompt, format_loss_context, format_retrieved_knowledge, DIAGNOSTIC_PROMPT_TEMPLATE
+        
         snapshot_formatted = format_snapshot_for_prompt(snapshot, scope, equipment_id)
         
         # Format loss context
@@ -377,15 +481,25 @@ class DiagnosticsExplainer:
         return prompt
     
     async def _call_llm(self, prompt: str) -> str:
-        """Call Ollama LLM with the diagnostic prompt."""
+        """
+        Call Ollama LLM with the diagnostic prompt.
+        
+        Sprint 4: Uses profile-aware system prompt
+        """
         try:
+            # Use profile-aware system prompt if available
+            system_prompt = getattr(self, '_current_system_prompt', None)
+            if not system_prompt:
+                from .prompt_templates import SYSTEM_PROMPT
+                system_prompt = SYSTEM_PROMPT
+            
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
                     f"{self.ollama_url}/api/generate",
                     json={
                         "model": self.model_name,
                         "prompt": prompt,
-                        "system": SYSTEM_PROMPT,
+                        "system": system_prompt,
                         "stream": False,
                         "options": {
                             "temperature": 0.3,  # Lower temperature for factual output
