@@ -14,6 +14,7 @@ from .connectivity import opc_explorer, semantic_signals, opc_studio
 from .intelligence import copilot, qna, filters, citations
 from .analytics import kpi, reports, energy
 from .advanced import twin, tickets, mobile
+from .settings import profiles
 
 __all__ = [
     'landing',
@@ -25,4 +26,5 @@ __all__ = [
     'copilot', 'qna', 'filters', 'citations',
     'kpi', 'reports', 'energy',
     'twin', 'tickets', 'mobile',
+    'profiles',
 ]

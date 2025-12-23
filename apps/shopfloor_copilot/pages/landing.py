@@ -91,6 +91,22 @@ def landing_page():
         ui.label('Shopfloor Copilot').classes('text-3xl font-semibold mb-1').style('color: #e2e8f0;')
         ui.label('Manufacturing execution · Real-time OEE monitoring').classes('text-base mb-6').style('color: #64748b;')
         
+        # Sprint 4 Banner - NEW!
+        with ui.card().classes('w-full mb-6').style(
+            'background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); '
+            'border: 2px solid #60a5fa; '
+            'box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);'
+        ).on('click', lambda: ui.navigate.to('/settings/profiles')):
+            with ui.row().classes('w-full items-center gap-4 p-4 cursor-pointer'):
+                ui.icon('rocket_launch', size='3rem').classes('text-white')
+                with ui.column().classes('flex-grow gap-1'):
+                    with ui.row().classes('items-center gap-2'):
+                        ui.label('🚀 NEW: Sprint 4 — Domain Profiles').classes('text-xl font-bold text-white')
+                        ui.badge('LIVE', color='green').classes('text-sm')
+                    ui.label('Switch between Aerospace & Defence, Pharma, and Automotive profiles').classes('text-sm text-blue-100')
+                    ui.label('Material Intelligence · Reason Taxonomy · Profile-Aware AI').classes('text-xs text-blue-200')
+                ui.icon('arrow_forward', size='lg').classes('text-white')
+        
         # Search bar - dark themed
         search_input = ui.input(
             placeholder='Search lines, stations, features…',
@@ -168,6 +184,7 @@ def get_category_color(category_name: str) -> str:
         "Intelligence": "#8b5cf6",     # violet
         "Analytics": "#10b981",        # emerald
         "Advanced": "#6b7280",         # gray
+        "Settings": "#ef4444",         # red - Sprint 4
     }
     return colors.get(category_name, "#3b82f6")
 
@@ -182,6 +199,7 @@ def get_category_state(category_name: str) -> str:
         "Intelligence": "#8b5cf6",     # violet - AI active
         "Analytics": "#10b981",        # green - running
         "Advanced": "#6b7280",         # gray - idle
+        "Settings": "#ef4444",         # red - new/important
     }
     return states.get(category_name, "#6b7280")
 
