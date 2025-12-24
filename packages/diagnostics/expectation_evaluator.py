@@ -176,11 +176,25 @@ def _extract_runtime_metrics(semantic_signals: Optional[Dict]) -> Dict[str, Any]
         'has_work_order': False,
         'has_maintenance_log': False,
         'is_declared_dry_run': False,
-        'has_serial_binding': False
+        'has_serial_binding': False,
+        # Material evidence (STEP 2)
+        'material_context': None
     }
     
     if not semantic_signals:
         return metrics
+    
+    # Extract material_context if present (STEP 2)
+    if 'material_context' in semantic_signals:
+        mat_ctx = semantic_signals['material_context']
+        metrics['material_context'] = mat_ctx
+        
+        # Update flags based on material evidence
+        metrics['has_serial_binding'] = mat_ctx.get('active_serial') is not None
+        metrics['has_batch_context'] = mat_ctx.get('active_lot') is not None
+        metrics['has_work_order'] = mat_ctx.get('work_order') is not None
+        metrics['is_declared_dry_run'] = mat_ctx.get('dry_run_authorization', False)
+        metrics['has_deviation_record'] = mat_ctx.get('deviation_id') is not None
     
     # Extract from semantic signals
     signals = semantic_signals.get('semantic_signals', [])

@@ -1,0 +1,27 @@
+{
+  "station_id": "ST18",
+  "line_id": "A01",
+  "cycle_time_sec": 52,
+  "good_count": 0,
+  "scrap_count": 0,
+  "is_critical": true,
+  "speed_actual": 0,
+  "speed_status": "reduced",
+  "semantic_signals": [
+    {
+      "semantic_id": "ST18_good_count",
+      "value": 0,
+      "station_id": "ST18"
+    },
+    {
+      "semantic_id": "ST18_speed_status",
+      "value": "reduced",
+      "station_id": "ST18"
+    },
+    {
+      "semantic_id": "ST18_cycle_time",
+      "value": 52,
+      "station_id": "ST18"
+    }
+  ]
+}

@@ -21,6 +21,8 @@ from .prompt_templates import (
     format_retrieved_knowledge
 )
 
+logger = logging.getLogger(__name__)
+
 # Use existing RAG infrastructure
 try:
     from packages.core_rag.chroma_client import get_collection
@@ -28,8 +30,6 @@ try:
 except ImportError:
     CHROMA_AVAILABLE = False
     logger.warning("Chroma client not available - RAG retrieval disabled")
-
-logger = logging.getLogger(__name__)
 
 # Service URLs (from environment in production)
 import os
@@ -580,7 +580,8 @@ class DiagnosticsExplainer:
         # Append expectations AFTER standard prompt
         if expectations_formatted:
             prompt += f"\n\n{expectations_formatted}\n\n"
-            prompt += "IMPORTANT: The above expectation violations were determined by profile-specific rules. "\n            prompt += "Your role is to EXPLAIN these violations in context, NOT to re-judge them."
+            prompt += "IMPORTANT: The above expectation violations were determined by profile-specific rules. "
+            prompt += "Your role is to EXPLAIN these violations in context, NOT to re-judge them."
         
         return prompt
     

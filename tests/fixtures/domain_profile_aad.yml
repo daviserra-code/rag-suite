@@ -1,0 +1,69 @@
+name: aerospace_defence
+display_name: Aerospace & Defence
+description: Strict control for aerospace and defence manufacturing
+
+material_model:
+  primary_unit: "assembly"
+  tracks_genealogy: true
+  tracks_serial_numbers: true
+  tracks_batches: false
+
+equipment_model:
+  primary_unit: "station"
+  hierarchical: true
+  downtime_classification: "reason_code"
+
+process_constraints:
+  zero_tolerance_quality: true
+  requires_authorization: true
+  strict_traceability: true
+  safety_critical: true
+
+reason_taxonomy:
+  use_custom_taxonomy: false
+  default_taxonomy: "standard"
+
+rag_preferences:
+  include_compliance_docs: true
+  include_quality_docs: true
+
+ui_emphasis:
+  highlight_deviations: true
+  show_authorization_status: true
+
+diagnostics_behavior:
+  explain_root_cause: true
+  suggest_corrective_action: true
+  include_compliance_context: true
+
+profile_expectations:
+  # STRICT RULES FOR AEROSPACE
+  zero_output_requires_authorization: true
+  zero_output_allowed_during_startup: false
+  zero_output_requires_batch_context: false
+  
+  reduced_speed_requires_justification: true
+  reduced_speed_requires_deviation: false
+  reduced_speed_common_during_rampup: false
+  
+  critical_station_requires_evidence: true
+  dry_run_must_be_declared: true
+  unauthorized_stop_is_violation: true
+  missing_serial_binding_is_blocking: true
+  environmental_excursion_is_blocking: false
+  missing_batch_record_is_violation: false
+  unauthorized_parameter_change_is_blocking: true
+  minor_stops_expected_in_normal_operation: false
+  blocking_only_for_safety: false
+  
+  # Thresholds
+  zero_output_duration_threshold_minutes: 15
+  speed_reduction_threshold_percent: 20
+  
+  # Critical stations
+  critical_stations:
+    - "ST18"
+    - "ST19"
+    - "ST20"
+  
+  environmental_limits: {}
