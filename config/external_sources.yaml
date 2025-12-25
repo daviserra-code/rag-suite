@@ -1,0 +1,128 @@
+# External Context Providers Configuration - Sprint 7
+# All providers are DISABLED by default
+#
+# Core Principle:
+#   External systems enrich context.
+#   They never drive decisions directly.
+
+# SAP ERP Integration
+sap:
+  enabled: false  # Set to true to enable SAP integration
+  connection:
+    type: "RFC"  # or "ODATA", "REST"
+    host: "sap.example.com"
+    client: "100"
+    system_id: "PRD"
+    # Credentials should be provided via environment variables:
+    # SAP_USERNAME, SAP_PASSWORD
+  timeout_seconds: 30
+  retry_attempts: 3
+  cache_ttl_seconds: 300  # Cache responses for 5 minutes
+  description: "SAP ERP/S4HANA integration for work orders, BOMs, quality data"
+
+# PLM (Product Lifecycle Management) Integration  
+plm:
+  enabled: false  # Set to true to enable PLM integration
+  connection:
+    type: "REST"  # or "SOAP", "ODATA"
+    base_url: "https://plm.example.com/api/v1"
+    # Credentials should be provided via environment variables:
+    # PLM_API_KEY or PLM_USERNAME, PLM_PASSWORD
+  timeout_seconds: 30
+  retry_attempts: 3
+  cache_ttl_seconds: 600  # Cache responses for 10 minutes
+  description: "PLM integration for engineering data, BOMs, drawings, ECOs"
+
+# QMS (Quality Management System) Integration
+qms:
+  enabled: false  # Set to true to enable QMS integration
+  connection:
+    type: "REST"  # or "SOAP"
+    base_url: "https://qms.example.com/api/v2"
+    # Credentials should be provided via environment variables:
+    # QMS_API_KEY or QMS_USERNAME, QMS_PASSWORD
+  timeout_seconds: 30
+  retry_attempts: 3
+  cache_ttl_seconds: 180  # Cache responses for 3 minutes (quality data changes frequently)
+  description: "QMS integration for NCRs, CAPAs, quality holds, calibration records"
+
+# CMMS (Computerized Maintenance Management System) Integration
+cmms:
+  enabled: false  # Set to true to enable CMMS integration
+  connection:
+    type: "REST"  # or "SOAP", "ODATA"
+    base_url: "https://cmms.example.com/api"
+    # Credentials should be provided via environment variables:
+    # CMMS_API_KEY or CMMS_USERNAME, CMMS_PASSWORD
+  timeout_seconds: 30
+  retry_attempts: 3
+  cache_ttl_seconds: 300  # Cache responses for 5 minutes
+  description: "CMMS integration for maintenance records, work orders, spare parts, OEE"
+
+# External OPC UA Server Integration
+opcua:
+  enabled: false  # Set to true to enable external OPC UA integration
+  connection:
+    type: "OPCUA"
+    endpoint_url: "opc.tcp://plc.example.com:4840"
+    security_mode: "SignAndEncrypt"  # or "Sign", "None"
+    security_policy: "Basic256Sha256"
+    # Credentials should be provided via environment variables:
+    # OPCUA_USERNAME, OPCUA_PASSWORD
+  timeout_seconds: 10
+  retry_attempts: 2
+  cache_ttl_seconds: 5  # Cache responses for 5 seconds (real-time data)
+  description: "External OPC UA server integration for PLC data, sensors, real-time process values"
+
+# Integration Behavior Settings
+integration_behavior:
+  # If provider fails, continue without external context
+  fail_gracefully: true
+  
+  # Log provider failures for debugging
+  log_failures: true
+  
+  # Maximum time to wait for all providers (in seconds)
+  max_total_wait: 5
+  
+  # Providers can be queried in parallel
+  parallel_queries: true
+  
+  # Which providers to prioritize if parallel is false
+  priority_order:
+    - qms      # Quality context is highest priority
+    - sap      # Material/work order context
+    - cmms     # Maintenance context
+    - plm      # Engineering context
+    - opcua    # Real-time data
+
+# Caching Strategy
+caching:
+  enabled: true
+  backend: "memory"  # or "redis" for distributed caching
+  max_cache_size_mb: 100
+  eviction_policy: "LRU"  # Least Recently Used
+
+# Security
+security:
+  # All credentials should be in environment variables, never in config files
+  require_https: true
+  validate_certificates: true
+  
+  # Encrypt cached data
+  encrypt_cache: false
+  
+  # Audit all external system queries
+  audit_enabled: true
+  audit_log_path: "logs/external_integration_audit.log"
+
+# Monitoring
+monitoring:
+  # Track provider performance metrics
+  metrics_enabled: true
+  
+  # Alert if provider response time exceeds threshold
+  response_time_threshold_ms: 1000
+  
+  # Alert if provider failure rate exceeds threshold
+  failure_rate_threshold_percent: 10
