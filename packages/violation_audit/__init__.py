@@ -408,6 +408,148 @@ class ViolationPersistence:
         except Exception as e:
             logger.error(f"Failed to get violation {violation_id}: {e}")
             return None
+    
+    def get_violation_timeline(self, violation_id: uuid.UUID) -> Dict[str, Any]:
+        """
+        Get full timeline for a violation including all acknowledgments.
+        
+        Returns:
+            {
+                'violation': {...},
+                'acknowledgments': [...],
+                'state': 'OPEN' | 'ACKNOWLEDGED' | 'JUSTIFIED' | 'RESOLVED'
+            }
+        """
+        try:
+            conn = psycopg2.connect(self.connection_string)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Get violation
+            cursor.execute("""
+                SELECT * FROM violations WHERE id = %s
+            """, (str(violation_id),))
+            
+            violation = cursor.fetchone()
+            
+            if not violation:
+                cursor.close()
+                conn.close()
+                return None
+            
+            # Get all acknowledgments
+            cursor.execute("""
+                SELECT * FROM violation_ack
+                WHERE violation_id = %s
+                ORDER BY ts ASC
+            """, (str(violation_id),))
+            
+            acks = [dict(row) for row in cursor.fetchall()]
+            
+            cursor.close()
+            conn.close()
+            
+            # Determine state
+            state = self._compute_violation_state(dict(violation), acks)
+            
+            return {
+                'violation': dict(violation),
+                'acknowledgments': acks,
+                'state': state,
+                'ack_count': len(acks)
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get timeline for {violation_id}: {e}")
+            return None
+    
+    def _compute_violation_state(self, violation: Dict, acks: List[Dict]) -> str:
+        """
+        Compute current state of a violation based on ts_end and acknowledgments.
+        
+        State logic:
+        - RESOLVED: ts_end is set
+        - JUSTIFIED: has 'justified' ack and ts_end is NULL
+        - ACKNOWLEDGED: has 'acknowledged' ack and ts_end is NULL
+        - OPEN: no acks and ts_end is NULL
+        """
+        if violation.get('ts_end'):
+            return 'RESOLVED'
+        
+        if not acks:
+            return 'OPEN'
+        
+        # Check for justified state
+        for ack in reversed(acks):  # Most recent first
+            if ack['ack_type'] == 'justified':
+                return 'JUSTIFIED'
+            elif ack['ack_type'] == 'acknowledged':
+                return 'ACKNOWLEDGED'
+        
+        return 'OPEN'
+    
+    def acknowledge_violation(
+        self,
+        violation_id: uuid.UUID,
+        ack_by: str,
+        comment: Optional[str] = None
+    ) -> bool:
+        """
+        Acknowledge a violation (user has seen it).
+        
+        This is a convenience wrapper for add_acknowledgment.
+        """
+        ack_id = self.add_acknowledgment(
+            violation_id=violation_id,
+            ack_by=ack_by,
+            ack_type='acknowledged',
+            comment=comment
+        )
+        return ack_id is not None
+    
+    def justify_violation(
+        self,
+        violation_id: uuid.UUID,
+        ack_by: str,
+        comment: str,
+        evidence_ref: Optional[str] = None
+    ) -> bool:
+        """
+        Justify a violation (temporary acceptance with reason).
+        
+        Requires a comment explaining the justification.
+        """
+        if not comment:
+            logger.error("Justification requires a comment")
+            return False
+        
+        ack_id = self.add_acknowledgment(
+            violation_id=violation_id,
+            ack_by=ack_by,
+            ack_type='justified',
+            comment=comment,
+            evidence_ref=evidence_ref
+        )
+        return ack_id is not None
+    
+    def resolve_violation(
+        self,
+        violation_id: uuid.UUID,
+        ack_by: str,
+        comment: Optional[str] = None
+    ) -> bool:
+        """
+        Resolve a violation (close it).
+        
+        This should only be called when the underlying condition is fixed.
+        Adds a 'resolved' acknowledgment and sets ts_end.
+        """
+        ack_id = self.add_acknowledgment(
+            violation_id=violation_id,
+            ack_by=ack_by,
+            ack_type='resolved',
+            comment=comment
+        )
+        return ack_id is not None
 
 
 # Global singleton instance

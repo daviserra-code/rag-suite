@@ -1,9 +1,18 @@
 import os
+import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from nicegui import ui
-from apps.shopfloor_copilot.routers import ask, ingest, export, kpi, oee_analytics, realtime, diagnostics
+from apps.shopfloor_copilot.routers import ask, ingest, export, kpi, oee_analytics, realtime, diagnostics, violations
+
+# Configure logging at startup
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+logger.info("🚀 Shopfloor Copilot starting with INFO logging level")
 
 app = FastAPI(title="Shopfloor Copilot", version="0.3.0")
 
@@ -20,6 +29,7 @@ app.include_router(kpi.router, prefix="/api")
 app.include_router(oee_analytics.router, prefix="/api")
 app.include_router(realtime.router, prefix="/api")
 app.include_router(diagnostics.router)
+app.include_router(violations.router)
 
 @app.get("/health")
 def health():

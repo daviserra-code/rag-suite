@@ -7,6 +7,7 @@ services:
     env_file: .env
     environment:
       - API_BASE=http://localhost:8010/api
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ragdb
       # OLLAMA_BASE_URL comes from .env - different per environment
       # Local dev: http://host.docker.internal:11434 (native Windows Ollama)
       # Hetzner: http://ollama:11434 (Docker Ollama container)

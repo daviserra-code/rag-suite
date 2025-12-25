@@ -12,6 +12,8 @@ import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 import httpx
+import os
+import psycopg
 
 from .prompt_templates import (
     SYSTEM_PROMPT,
@@ -27,15 +29,17 @@ logger = logging.getLogger(__name__)
 try:
     from packages.core_rag.chroma_client import get_collection
     CHROMA_AVAILABLE = True
-except ImportError:
+    logger.info("✅ Chroma client imported successfully")
+except ImportError as e:
     CHROMA_AVAILABLE = False
-    logger.warning("Chroma client not available - RAG retrieval disabled")
+    logger.error(f"❌ Chroma client import failed: {e}")
 
 # Service URLs (from environment in production)
 import os
 OPC_STUDIO_URL = os.getenv("OPC_STUDIO_URL", "http://opc-studio:8040")
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 CHROMA_URL = os.getenv("CHROMA_URL", "http://chroma:8000")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@postgres:5432/ragdb")
 
 
 class DiagnosticsExplainer:
@@ -103,9 +107,22 @@ class DiagnosticsExplainer:
             if scope == "station":
                 # Get semantic signals for specific station
                 semantic_signals = await self._fetch_station_semantic_signals(equipment_id)
+                
+                # Step 2.1: Inject material context for station
+                if semantic_signals:
+                    material_context = await self._fetch_material_context(equipment_id, profile)
+                    semantic_signals['material_context'] = material_context
+                    logger.info(f"Material context for {equipment_id}: evidence_present={material_context.get('evidence_present')}")
             else:  # line scope
                 # Get all signals for the line
                 semantic_signals = await self._fetch_line_semantic_signals(equipment_id)
+                
+                # Step 2.1: Inject material context for all stations in line
+                if semantic_signals and 'stations' in semantic_signals:
+                    for station_id in semantic_signals['stations'].keys():
+                        material_context = await self._fetch_material_context(station_id, profile)
+                        semantic_signals['stations'][station_id]['material_context'] = material_context
+                        logger.info(f"Material context for {station_id}: evidence_present={material_context.get('evidence_present')}")
             
             # Step 2.5: Evaluate profile expectations (BEFORE LLM)
             # This is deterministic and rule-based
@@ -172,6 +189,46 @@ class DiagnosticsExplainer:
                 'requires_confirmation': expectation_result.requires_human_confirmation if expectation_result else False,
                 'severity': expectation_result.severity if expectation_result else 'normal'
             }
+            
+            # Step 9: Persist violation to database (HOTFIX STEP 2)
+            if expectation_result and (expectation_result.violated_expectations or expectation_result.blocking_conditions):
+                try:
+                    from packages.violation_audit import ViolationPersistence
+                    violation_persistence = ViolationPersistence()
+                    
+                    # Extract plant, line from snapshot
+                    plant = snapshot.get('data', {}).get('plant', 'PLANT')
+                    line = 'UNKNOWN'
+                    
+                    # Determine line from snapshot if station scope
+                    if scope == "station":
+                        lines = snapshot.get('data', {}).get('lines', {})
+                        for line_id, line_data in lines.items():
+                            if equipment_id in line_data.get('stations', {}):
+                                line = line_id
+                                break
+                    else:
+                        line = equipment_id
+                    
+                    # Get material context for persistence
+                    material_ctx = semantic_signals.get('material_context') if semantic_signals else None
+                    
+                    violation_id = violation_persistence.upsert_violation(
+                        profile=profile.display_name if profile else 'Unknown',
+                        plant=plant,
+                        line=line,
+                        station=equipment_id,
+                        expectation_result=expectation_result,
+                        material_context=material_ctx,
+                        snapshot_ref={'timestamp': structured_response['metadata']['timestamp']}
+                    )
+                    
+                    structured_response['metadata']['violation_id'] = str(violation_id)
+                    logger.info(f"Persisted violation {violation_id} for {equipment_id}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to persist violation: {e}", exc_info=True)
+                    # Don't fail the entire diagnostic if persistence fails
             
             return structured_response
         
@@ -270,6 +327,114 @@ class DiagnosticsExplainer:
         except Exception as e:
             logger.error(f"Failed to fetch line semantic signals: {e}")
             return None
+    
+    async def _fetch_material_context(self, station_id: str, profile = None) -> Dict[str, Any]:
+        """
+        Fetch material context from v_material_evidence for a given station.
+        
+        If no row exists, returns a default object with evidence_present=false.
+        This ensures missing evidence is a first-class condition that can trigger violations.
+        
+        Args:
+            station_id: Station identifier (e.g., "ST18")
+            profile: Domain profile (to determine default mode)
+        
+        Returns:
+            Dictionary with material context fields and evidence_present flag
+        """
+        try:
+            # Use synchronous psycopg (thread-safe)
+            with psycopg.connect(DATABASE_URL) as conn:
+                with conn.cursor() as cur:
+                    # Query v_material_evidence for this station
+                    cur.execute(
+                        """
+                        SELECT 
+                            mode, active_serial, active_lot, 
+                            work_order, operation,
+                            bom_revision, as_built_revision,
+                            quality_status,
+                            dry_run_authorization,
+                            deviation_id,
+                            tooling_calibration_ok,
+                            operator_certified,
+                            material_ts
+                        FROM v_material_evidence
+                        WHERE station = %s
+                        LIMIT 1
+                        """,
+                        (station_id,)
+                    )
+                    
+                    row = cur.fetchone()
+                    
+                    if row:
+                        # Evidence exists - map 1:1
+                        return {
+                            "mode": row[0],
+                            "active_serial": row[1],
+                            "active_lot": row[2],
+                            "work_order": row[3],
+                            "operation": row[4],
+                            "bom_revision": row[5],
+                            "as_built_revision": row[6],
+                            "quality_status": row[7],
+                            "dry_run_authorization": row[8],
+                            "deviation_id": row[9],
+                            "tooling_calibration_ok": row[10],
+                            "operator_certified": row[11],
+                            "material_ts": row[12].isoformat() if row[12] else None,
+                            "evidence_present": True
+                        }
+                    else:
+                        # No evidence - return default with evidence_present=false
+                        # Determine mode from profile
+                        default_mode = None
+                        if profile:
+                            profile_name = profile.display_name.lower()
+                            if 'aerospace' in profile_name or 'defence' in profile_name:
+                                default_mode = "serial"
+                            elif 'pharma' in profile_name or 'process' in profile_name:
+                                default_mode = "lot"
+                        
+                        logger.warning(f"No material evidence found for station {station_id} - returning default")
+                        return {
+                            "mode": default_mode,
+                            "active_serial": None,
+                            "active_lot": None,
+                            "work_order": None,
+                            "operation": None,
+                            "bom_revision": None,
+                            "as_built_revision": None,
+                            "quality_status": None,
+                            "dry_run_authorization": None,
+                            "deviation_id": None,
+                            "tooling_calibration_ok": None,
+                            "operator_certified": None,
+                            "material_ts": None,
+                            "evidence_present": False
+                        }
+        
+        except Exception as e:
+            logger.error(f"Failed to fetch material context for {station_id}: {e}")
+            # Return default on error
+            return {
+                "mode": None,
+                "active_serial": None,
+                "active_lot": None,
+                "work_order": None,
+                "operation": None,
+                "bom_revision": None,
+                "as_built_revision": None,
+                "quality_status": None,
+                "dry_run_authorization": None,
+                "deviation_id": None,
+                "tooling_calibration_ok": None,
+                "operator_certified": None,
+                "material_ts": None,
+                "evidence_present": False,
+                "error": str(e)
+            }
     
     def _extract_loss_context(
         self,
@@ -389,8 +554,10 @@ class DiagnosticsExplainer:
         - Only retrieves documents relevant to active profile
         - Behavioral change: Same query returns different docs per profile
         """
+        logger.info(f"🔍 RAG QUERY CALLED: equipment_id={equipment_id}, profile={profile.name if profile else 'None'}, CHROMA_AVAILABLE={CHROMA_AVAILABLE}")
+        
         if not CHROMA_AVAILABLE:
-            logger.warning("Chroma client not available")
+            logger.error("❌ RAG BLOCKED: Chroma client not available")
             return []
         
         try:
@@ -404,8 +571,22 @@ class DiagnosticsExplainer:
                 priority_sources = ["work_instructions", "sop", "maintenance_log"]
                 search_weights = {}
             
-            # Build search query
-            query_parts = [equipment_id]
+            # Build search query with broader context
+            query_parts = []
+            
+            # Add equipment context
+            if equipment_id:
+                query_parts.append(equipment_id)
+            
+            # Add profile-specific search terms for better semantic matching
+            if profile:
+                # Add industry-specific keywords to improve retrieval
+                if profile.name == "aerospace_defence":
+                    query_parts.extend(["procedure", "work instruction", "deviation", "calibration"])
+                elif profile.name == "pharma_process":
+                    query_parts.extend(["batch", "SOP", "quality", "deviation"])
+                elif profile.name == "automotive_discrete":
+                    query_parts.extend(["downtime", "maintenance", "work instruction", "assembly"])
             
             # Add loss category keywords (backward compatible with legacy loss_category)
             for category in loss_categories:
@@ -417,7 +598,9 @@ class DiagnosticsExplainer:
             query_text = ' '.join(query_parts)
             
             # Use existing Chroma client infrastructure
-            collection = get_collection("shopfloor_docs")
+            logger.info(f"📦 Getting Chroma collection: rag_core (default)")
+            collection = get_collection()  # Use default collection name
+            logger.info(f"✅ Collection obtained, count: {collection.count()}")
             
             # Sprint 4: Build metadata filter based on profile priority sources
             # Map profile source names to doc_types in Chroma
@@ -454,17 +637,23 @@ class DiagnosticsExplainer:
                 doc_types = ['work_instruction', 'sop', 'maintenance_log']
             
             # Query with profile-aware metadata filter
-            where_clause = {
-                "$or": [{"doc_type": dt} for dt in doc_types]
-            }
+            # NOTE: Many ingested docs have doctype="unknown" due to parsing issues
+            # For Sprint 5 citation discipline, filter by profile only
+            # TODO: Fix doc_type parsing in ingestion pipeline
+            where_clause = None  # No filtering - rely on profile context in prompts
+            if profile:
+                # Filter by profile to get relevant documents
+                where_clause = {"profile": profile.name}
             
-            logger.info(f"RAG query: '{query_text}' with doc_types: {doc_types}")
+            logger.info(f"🔎 RAG QUERY: text='{query_text}', where={where_clause}, n_results=10")
             
             results = collection.query(
                 query_texts=[query_text],
                 n_results=10,  # Get more results to apply weighting
                 where=where_clause
             )
+            
+            logger.info(f"📊 RAG RESULTS: ids={len(results.get('ids', [[]])[0])}, documents={len(results.get('documents', [[]])[0])}")
             
             # Format results with profile-aware weighting
             documents = results.get('documents', [[]])[0]
@@ -474,8 +663,8 @@ class DiagnosticsExplainer:
             weighted_results = []
             for doc, meta, dist in zip(documents, metadatas, distances):
                 if dist < 1.5:  # Base similarity threshold
-                    # Get doc_type and apply profile weight
-                    doc_type = meta.get('doc_type', 'default')
+                    # Get doctype and apply profile weight (Chroma uses 'doctype' not 'doc_type')
+                    doc_type = meta.get('doctype', meta.get('doc_type', 'default'))
                     
                     # Reverse map to profile source name for weight lookup
                     profile_source = next(
@@ -500,10 +689,14 @@ class DiagnosticsExplainer:
             weighted_results.sort(key=lambda x: x['score'], reverse=True)
             
             # Return top 5 after weighting
-            return weighted_results[:5]
+            top_results = weighted_results[:5]
+            logger.info(f"✅ RAG RETURNING: {len(top_results)} documents (from {len(weighted_results)} after filtering)")
+            return top_results
         
         except Exception as e:
-            logger.error(f"RAG query failed: {e}")
+            logger.error(f"❌ RAG QUERY EXCEPTION: {type(e).__name__}: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return []
     
     def _build_diagnostic_prompt(

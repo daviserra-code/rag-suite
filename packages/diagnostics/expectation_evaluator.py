@@ -62,7 +62,46 @@ def evaluate_profile_expectations(
     logger.info(f"Evaluating expectations for profile: {profile.display_name}")
     logger.info(f"Runtime metrics: zero_output={metrics['has_zero_output']}, "
                 f"reduced_speed={metrics['has_reduced_speed']}, "
-                f"station_id={metrics.get('station_id')}")
+                f"station_id={metrics.get('station_id')}, "
+                f"material_evidence_present={metrics['material_evidence_present']}, "
+                f"quality_status={metrics['material_quality_status']}")
+    
+    # HOTFIX STEP 2: Missing Material Evidence (Profile-Driven)
+    # This must be evaluated FIRST as it's a foundational requirement
+    
+    # Aerospace & Defence: Missing evidence is BLOCKING
+    profile_name_lower = profile.display_name.lower()
+    is_aerospace = 'aerospace' in profile_name_lower or 'defence' in profile_name_lower or 'defense' in profile_name_lower
+    is_pharma = 'pharma' in profile_name_lower or 'process' in profile_name_lower
+    is_automotive = 'automotive' in profile_name_lower or 'discrete' in profile_name_lower
+    
+    if is_aerospace and not metrics['material_evidence_present']:
+        # Aerospace: Missing evidence is a critical violation
+        violated_expectations.append("critical_station_requires_evidence")
+        blocking_conditions.append("missing_material_context")
+        warnings.append(f"Station {metrics.get('station_id')} has no material evidence record")
+        
+        # Additional blocking for serial mode
+        if expectations.missing_serial_binding_is_blocking:
+            if not metrics['has_serial_binding']:
+                blocking_conditions.append("missing_serial_binding")
+    
+    # Pharma: Missing evidence is BLOCKING (batch context required)
+    if is_pharma and not metrics['material_evidence_present']:
+        violated_expectations.append("zero_output_requires_batch_context")
+        blocking_conditions.append("missing_batch_context")
+        warnings.append(f"Station {metrics.get('station_id')} has no batch/lot context")
+    
+    # HOTFIX STEP 2: Pharma HOLD/QUARANTINE is BLOCKING
+    if is_pharma and metrics['material_quality_status'] in ['HOLD', 'QUARANTINE']:
+        violated_expectations.append("quality_hold_blocks_production")
+        blocking_conditions.append("material_quality_hold")
+        warnings.append(f"Material quality status is {metrics['material_quality_status']} - production blocked")
+        
+        # If HOLD without deviation, that's also a violation
+        if not metrics['has_deviation_record']:
+            blocking_conditions.append("missing_deviation_record")
+            warnings.append("Quality hold requires deviation record")
     
     # Rule 1: Zero Output Evaluation
     if metrics['has_zero_output']:
@@ -178,16 +217,20 @@ def _extract_runtime_metrics(semantic_signals: Optional[Dict]) -> Dict[str, Any]
         'is_declared_dry_run': False,
         'has_serial_binding': False,
         # Material evidence (STEP 2)
-        'material_context': None
+        'material_context': None,
+        'material_evidence_present': False,
+        'material_quality_status': None
     }
     
     if not semantic_signals:
         return metrics
     
-    # Extract material_context if present (STEP 2)
+    # Extract material_context if present (STEP 2 - HOTFIX)
     if 'material_context' in semantic_signals:
         mat_ctx = semantic_signals['material_context']
         metrics['material_context'] = mat_ctx
+        metrics['material_evidence_present'] = mat_ctx.get('evidence_present', False)
+        metrics['material_quality_status'] = mat_ctx.get('quality_status')
         
         # Update flags based on material evidence
         metrics['has_serial_binding'] = mat_ctx.get('active_serial') is not None

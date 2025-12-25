@@ -35,6 +35,136 @@ def build_api(state: PlantState, historian: Historian) -> FastAPI:
     @app.get("/snapshot")
     def snapshot():
         return state.snapshot()
+    
+    @app.get("/semantic/snapshot")
+    def semantic_snapshot(station: str = None):
+        """
+        Get semantic snapshot with material context.
+        
+        If station is specified, returns focused view for that station.
+        Otherwise returns full plant snapshot.
+        
+        Material context is always included for each station, with evidence_present flag.
+        """
+        # Import at runtime to avoid circular dependencies
+        import os
+        import psycopg
+        
+        def fetch_material_context(station_id: str) -> dict:
+            """Fetch material context from v_material_evidence"""
+            try:
+                db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@postgres:5432/ragdb")
+                with psycopg.connect(db_url) as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            SELECT 
+                                mode, active_serial, active_lot, 
+                                work_order, operation,
+                                bom_revision, as_built_revision,
+                                quality_status,
+                                dry_run_authorization,
+                                deviation_id,
+                                tooling_calibration_ok,
+                                operator_certified,
+                                material_ts
+                            FROM v_material_evidence
+                            WHERE station = %s
+                            LIMIT 1
+                            """,
+                            (station_id,)
+                        )
+                        
+                        row = cur.fetchone()
+                        
+                        if row:
+                            return {
+                                "mode": row[0],
+                                "active_serial": row[1],
+                                "active_lot": row[2],
+                                "work_order": row[3],
+                                "operation": row[4],
+                                "bom_revision": row[5],
+                                "as_built_revision": row[6],
+                                "quality_status": row[7],
+                                "dry_run_authorization": row[8],
+                                "deviation_id": row[9],
+                                "tooling_calibration_ok": row[10],
+                                "operator_certified": row[11],
+                                "material_ts": row[12].isoformat() if row[12] else None,
+                                "evidence_present": True
+                            }
+                        else:
+                            # No evidence - return default
+                            return {
+                                "mode": None,
+                                "active_serial": None,
+                                "active_lot": None,
+                                "work_order": None,
+                                "operation": None,
+                                "bom_revision": None,
+                                "as_built_revision": None,
+                                "quality_status": None,
+                                "dry_run_authorization": None,
+                                "deviation_id": None,
+                                "tooling_calibration_ok": None,
+                                "operator_certified": None,
+                                "material_ts": None,
+                                "evidence_present": False
+                            }
+            except Exception as e:
+                return {
+                    "mode": None,
+                    "active_serial": None,
+                    "active_lot": None,
+                    "work_order": None,
+                    "operation": None,
+                    "bom_revision": None,
+                    "as_built_revision": None,
+                    "quality_status": None,
+                    "dry_run_authorization": None,
+                    "deviation_id": None,
+                    "tooling_calibration_ok": None,
+                    "operator_certified": None,
+                    "material_ts": None,
+                    "evidence_present": False,
+                    "error": str(e)
+                }
+        
+        # Get base snapshot
+        base_snapshot = state.snapshot()
+        
+        # If specific station requested
+        if station:
+            # Find the station
+            lines = base_snapshot.get('data', {}).get('lines', {})
+            for line_id, line_data in lines.items():
+                stations = line_data.get('stations', {})
+                if station in stations:
+                    # Fetch material context
+                    material_context = fetch_material_context(station)
+                    return {
+                        "ok": True,
+                        "station": station,
+                        "line": line_id,
+                        "station_data": stations[station],
+                        "material_context": material_context
+                    }
+            
+            # Station not found
+            raise HTTPException(status_code=404, detail=f"Station {station} not found")
+        
+        # Full snapshot - add material context to all stations
+        snapshot_with_material = base_snapshot.copy()
+        lines = snapshot_with_material.get('data', {}).get('lines', {})
+        
+        for line_id, line_data in lines.items():
+            stations = line_data.get('stations', {})
+            for station_id in stations.keys():
+                material_context = fetch_material_context(station_id)
+                stations[station_id]['material_context'] = material_context
+        
+        return snapshot_with_material
 
     @app.get("/historian/status")
     def hist_status():

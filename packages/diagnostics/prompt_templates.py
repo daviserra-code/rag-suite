@@ -14,7 +14,9 @@ STRICT RULES:
 3. Clearly separate facts from reasoning from recommendations
 4. If evidence is incomplete, explicitly state "insufficient data"
 5. Never recommend control actions or write-back operations
-6. Ground all recommendations in retrieved knowledge (WI/SOP citations)
+6. MANDATORY: Ground all recommendations in retrieved knowledge with explicit document citations
+7. CITATION DISCIPLINE: Always cite documents in format "According to [DOC_ID]..." or "As specified in [DOC_ID] (rev X)..."
+8. Never hallucinate procedures - only reference documents provided in the Retrieved Documents section
 
 OUTPUT STRUCTURE (mandatory):
 Your response must have exactly four sections:
@@ -30,10 +32,12 @@ Your response must have exactly four sections:
 - State uncertainty if evidence is incomplete
 
 ## Section 3 — What to do now (procedures)
-- Reference relevant WI/SOP from retrieved knowledge
-- Include document citations
+- Reference relevant WI/SOP from retrieved knowledge with EXPLICIT document citations
+- Format citations as: "According to [WI-OP40-Serial-Binding]..." or "As per [SOP-Deviation-Approval] (rev B)..."
+- Include document ID and revision for traceability
 - Prioritize safety and quality
-- If no procedures found, state this explicitly
+- If no procedures found, state this explicitly - DO NOT invent procedures
+- Example: "According to WI-OP40-Serial-Binding (rev C), verify component serial numbers match traveler..."
 
 ## Section 4 — What to check next (checklist)
 - Short, actionable steps (3-7 items)
@@ -306,22 +310,54 @@ def format_loss_context(semantic_signals: dict, scope: str) -> str:
     return formatted
 
 def format_retrieved_knowledge(rag_results: list) -> str:
-    """Format RAG retrieval results for the prompt."""
-    if not rag_results:
-        return "No relevant procedures or documentation found in knowledge base."
+    """
+    Format RAG retrieval results for the prompt with citation-ready format.
     
-    formatted = "Retrieved Documents:\n\n"
+    Sprint 5: Adds document ID, title, and revision for mandatory citation discipline.
+    LLM must cite these documents in responses - no hallucinated procedures allowed.
+    """
+    if not rag_results:
+        return "No relevant procedures or documentation found in knowledge base.\n\nWARNING: Without retrieved documents, DO NOT recommend specific procedures. Only provide general guidance."
+    
+    formatted = "Retrieved Documents (MUST be cited in your response):\n"
+    formatted += "=" * 80 + "\n\n"
     
     for i, result in enumerate(rag_results, 1):
+        # Get metadata
         doc = result.get('metadata', {})
         content = result.get('document', '')
         
-        formatted += f"[{i}] {doc.get('source', 'Unknown Source')}\n"
-        if doc.get('doc_type'):
-            formatted += f"    Type: {doc.get('doc_type')}\n"
-        if doc.get('equipment'):
-            formatted += f"    Equipment: {doc.get('equipment')}\n"
-        formatted += f"    Relevance Score: {result.get('score', 0):.3f}\n"
-        formatted += f"    Content: {content[:500]}...\n\n"
+        # Extract citation-critical fields
+        doc_id = doc.get('original_doc_id', doc.get('doc_id', 'UNKNOWN'))
+        doc_title = doc.get('doc_title', doc.get('source', 'Unknown Document'))
+        doc_type = doc.get('doctype', doc.get('doc_type', 'document'))
+        revision = doc.get('rev', 'unknown')
+        station = doc.get('station', '')
+        score = result.get('score', result.get('base_score', 0))
+        
+        # Format document header with citation info
+        formatted += f"[{i}] DOCUMENT ID: {doc_id}\n"
+        formatted += f"    Title: {doc_title}\n"
+        formatted += f"    Type: {doc_type}\n"
+        formatted += f"    Revision: {revision}\n"
+        if station:
+            formatted += f"    Station/Operation: {station}\n"
+        formatted += f"    Relevance Score: {score:.3f}\n"
+        formatted += f"\n    CITATION FORMAT: According to {doc_id} (rev {revision})...\n"
+        formatted += f"\n    Content:\n"
+        
+        # Include substantial content for context
+        content_lines = content[:800].split('\n')
+        for line in content_lines:
+            if line.strip():
+                formatted += f"    {line}\n"
+        
+        if len(content) > 800:
+            formatted += f"    [... document continues ...]\n"
+        
+        formatted += "\n" + "-" * 80 + "\n\n"
+    
+    formatted += "\nREMINDER: You MUST cite these documents using their DOCUMENT ID in your response.\n"
+    formatted += "Do NOT reference procedures not listed above. If needed procedures are missing, state this explicitly.\n"
     
     return formatted
