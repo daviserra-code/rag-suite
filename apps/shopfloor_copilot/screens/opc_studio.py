@@ -294,18 +294,18 @@ def opc_studio_screen():
             ui.label(f"⚠️ Template loading error: {str(e)}").classes('text-orange-600 text-sm')
         
         with ui.row().classes('gap-4 w-full mt-3'):
-            line_input = ui.input('Line ID', placeholder='A01', value='A01').classes('flex-1')
-            station_input = ui.input('Station ID', placeholder='ST18', value='ST18').classes('flex-1')
+            line_input = ui.input('Line ID', placeholder='A01', value='A01').classes('flex-1').style('background: #1f2937; color: #e5e7eb;')
+            station_input = ui.input('Station ID', placeholder='ST18', value='ST18').classes('flex-1').style('background: #1f2937; color: #e5e7eb;')
         
         # Template selection
-        template_select = ui.select([], label='Scenario Template', with_input=True).classes('w-full mt-2')
+        template_select = ui.select([], label='Scenario Template', with_input=True).classes('w-full mt-2').style('background: #1f2937; color: #e5e7eb;')
         
         # Severity selection
         severity_select = ui.select(
             ['minor', 'moderate', 'major', 'critical'],
             label='Severity Override (optional)',
             value='moderate'
-        ).classes('w-full mt-2')
+        ).classes('w-full mt-2').style('background: #1f2937; color: #e5e7eb;')
         
         # Template details display
         template_details = ui.label('').classes('text-sm text-gray-600 mt-2 mb-2')

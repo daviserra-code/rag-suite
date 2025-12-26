@@ -4,10 +4,11 @@ from apps.shopfloor_copilot.screens.operator_qna_interactive import build_operat
 
 @ui.page('/intelligence/qna')
 def operator_qna_page():
-    with layout_shell(title="Operator Q&A"):
+    with layout_shell(title="Operator Q&A", theme="dark"):
         create_page_header(
             "Operator Q&A",
             "Interactive operator assistance",
-            "question_answer"
+            "question_answer",
+            theme="dark"
         )
         build_operator_qna()

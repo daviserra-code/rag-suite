@@ -4,10 +4,11 @@ from apps.shopfloor_copilot.screens.answer_citations import build_answer_citatio
 
 @ui.page('/intelligence/citations')
 def answer_citations_page():
-    with layout_shell(title="Answer Citations"):
+    with layout_shell(title="Answer Citations", theme="dark"):
         create_page_header(
             "Answer Citations",
             "Source verification and document references",
-            "book"
+            "book",
+            theme="dark"
         )
         build_answer_citations()
