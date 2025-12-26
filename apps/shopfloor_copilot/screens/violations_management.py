@@ -155,20 +155,20 @@ class ViolationsManagementScreen:
                     with ui.row().classes('w-full gap-4'):
                         # Left: Active violations table
                         with ui.column().classes('w-2/3'):
-                            ui.label('Active Violations').classes('text-xl font-semibold mb-2')
+                            ui.label('Active Violations').classes('text-xl font-semibold text-white mb-2')
                             self.active_table = ui.column().classes('w-full')
                         
                         # Right: Details and timeline
                         with ui.column().classes('w-1/3'):
-                            ui.label('Violation Details').classes('text-xl font-semibold mb-2')
+                            ui.label('Violation Details').classes('text-xl font-semibold text-white mb-2')
                             self.details_panel = ui.column().classes('w-full')
                             
-                            ui.label('Timeline').classes('text-xl font-semibold mt-4 mb-2')
+                            ui.label('Timeline').classes('text-xl font-semibold text-white mt-4 mb-2')
                             self.timeline_panel = ui.column().classes('w-full')
                 
                 # Historical violations tab
                 with ui.tab_panel(tab_history):
-                    ui.label('Historical Violations').classes('text-xl font-semibold mb-2')
+                    ui.label('Historical Violations').classes('text-xl font-semibold text-white mb-2')
                     self.history_table = ui.column().classes('w-full')
             
             # Load data
