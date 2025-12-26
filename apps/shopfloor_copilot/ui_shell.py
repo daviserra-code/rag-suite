@@ -22,6 +22,7 @@ MACRO_CATEGORIES = {
     "Quality": {
         "icon": "verified",
         "pages": [
+            {"name": "Violations Management", "route": "/quality/violations", "icon": "warning", "description": "Compliance violations lifecycle"},
             {"name": "Root Cause Analysis", "route": "/quality/rca", "icon": "troubleshoot", "description": "Issue analysis and tracking"},
             {"name": "5 Whys Analysis", "route": "/quality/why", "icon": "psychology", "description": "Deep-dive problem solving"},
             {"name": "Comparative Analytics", "route": "/quality/compare", "icon": "compare_arrows", "description": "Line/station comparisons"},

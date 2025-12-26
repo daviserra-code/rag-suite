@@ -6,7 +6,7 @@ Import this module to register all routes before running the app.
 """
 
 # Import all page modules to register routes
-from . import landing, legacy
+from . import landing, legacy, violations
 from .operations import live, lines, plant, dashboard, heatmap
 from .quality import rca, why, compare
 from .maintenance import diagnostics, predictive, handover
@@ -19,6 +19,7 @@ from .settings import profiles
 __all__ = [
     'landing',
     'legacy',
+    'violations',
     'live', 'lines', 'plant', 'dashboard', 'heatmap',
     'rca', 'why', 'compare',
     'diagnostics', 'predictive', 'handover',
