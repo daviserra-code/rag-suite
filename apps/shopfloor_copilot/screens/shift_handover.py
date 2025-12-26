@@ -215,7 +215,7 @@ def shift_handover_screen():
                             ui.label('Units').classes('text-xs text-gray-900 font-semibold')
                         
                         with ui.column().classes('items-center'):
-                            ui.label(str(int(downtime))).classes('text-2xl font-bold text-red-600')
+                            ui.label(str(int(downtime or 0))).classes('text-2xl font-bold text-red-600')
                             ui.label('Min Down').classes('text-xs text-gray-900 font-semibold')
                 
                 # Summary
