@@ -242,12 +242,12 @@ class ViolationsManagementScreen:
                 # Right: Action buttons
                 if is_active:
                     with ui.row().classes('gap-2'):
-                        ui.button('View', icon='visibility', on_click=lambda v=violation_id: self.view_violation(v)).props('size=sm outline')
+                        ui.button('View', icon='visibility', on_click=lambda v_id=violation_id: asyncio.create_task(self.view_violation(v_id))).props('size=sm outline')
                         if state == 'OPEN':
-                            ui.button('Acknowledge', icon='check', on_click=lambda v=violation_id: self.acknowledge_violation(v)).props('size=sm color=orange')
+                            ui.button('Acknowledge', icon='check', on_click=lambda v_id=violation_id: asyncio.create_task(self.acknowledge_violation(v_id))).props('size=sm color=orange')
                         if state == 'ACKNOWLEDGED':
-                            ui.button('Justify', icon='note_add', on_click=lambda v=violation_id: self.show_justify_dialog(v)).props('size=sm color=yellow')
-                        ui.button('Resolve', icon='done_all', on_click=lambda v=violation_id: self.show_resolve_dialog(v)).props('size=sm color=green')
+                            ui.button('Justify', icon='note_add', on_click=lambda v_id=violation_id: self.show_justify_dialog(v_id)).props('size=sm color=yellow')
+                        ui.button('Resolve', icon='done_all', on_click=lambda v_id=violation_id: self.show_resolve_dialog(v_id)).props('size=sm color=green')
     
     async def view_violation(self, violation_id: str):
         """View violation details and timeline"""
