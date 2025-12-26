@@ -366,17 +366,17 @@ def advanced_rag_screen():
         """).classes('text-base')
         
         # Tabs for different RAG features
-        with ui.tabs().classes('w-full') as tabs:
+        with ui.tabs().classes('w-full bg-gray-800') as tabs:
             tab_ingest = ui.tab('Document Ingestion', icon='upload_file')
             tab_image = ui.tab('Image Troubleshooting', icon='photo_camera')
             tab_multilang = ui.tab('Multi-Language Q&A', icon='translate')
             tab_knowledge = ui.tab('Knowledge Base', icon='library_books')
         
-        with ui.tab_panels(tabs, value=tab_ingest).classes('w-full'):
+        with ui.tab_panels(tabs, value=tab_ingest).classes('w-full bg-gray-900'):
             
             # Document Ingestion Tab
             with ui.tab_panel(tab_ingest):
-                with ui.card().classes('w-full'):
+                with ui.card().classes('w-full bg-gray-800'):
                     ui.label('Ingest Technical Documents').classes('text-2xl font-bold').style('color: #f1f5f9;')
                     ui.separator()
                     
