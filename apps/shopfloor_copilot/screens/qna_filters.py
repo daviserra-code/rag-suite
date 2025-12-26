@@ -218,7 +218,7 @@ def build_qna_filters():
             value=app.storage.user['checklist_type'],
             label='Checklist Type',
             on_change=lambda e: update_type(e.value)
-        ).classes('w-full')
+        ).classes('w-full').style('background: #1f2937; color: #e5e7eb;')
     
     @ui.refreshable
     def checklist_selector():
@@ -243,7 +243,7 @@ def build_qna_filters():
                 value=current_value,
                 label='Select Checklist',
                 on_change=lambda e: load_selected_checklist(int(e.value) if e.value else None)
-            ).classes('w-full')
+            ).classes('w-full').style('background: #1f2937; color: #e5e7eb;')
         else:
             ui.label('No checklists found for this line').classes('text-sm text-gray-500')
     
@@ -443,29 +443,29 @@ def build_qna_filters():
         # Left - Filters & Controls
         with ui.column().classes('w-80 gap-4'):
             # Filters Card
-            with ui.card().classes('sf-card'):
-                ui.label('🔍 Filters').classes('text-lg font-bold mb-3')
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+                ui.label('🔍 Filters').classes('text-lg font-bold mb-3 text-gray-100')
                 
                 ui.select(
                     ['M10', 'B02', 'C03', 'D01', 'SMT1', 'WC01'],
                     value=app.storage.user['checklist_line'],
                     label='Production Line',
                     on_change=lambda e: update_line(e.value)
-                ).classes('w-full')
+                ).classes('w-full').style('background: #1f2937; color: #e5e7eb;')
                 
                 type_selector()
                 
                 checklist_selector()
             
             # AI Generation Card
-            with ui.card().classes('sf-card'):
-                ui.label('🤖 AI Generation').classes('text-lg font-bold mb-3')
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+                ui.label('🤖 AI Generation').classes('text-lg font-bold mb-3 text-gray-100')
                 
                 ui.textarea(
                     label='Context / Instructions',
                     placeholder='e.g., "Changeover from Product A to Product B" or "Morning shift startup procedure"',
                     on_change=lambda e: app.storage.user.update({'ai_context': e.value})
-                ).classes('w-full').style('min-height: 100px')
+                ).classes('w-full').style('min-height: 100px; background: #1f2937; color: #e5e7eb;')
                 
                 ui.button(
                     'Generate with AI',
@@ -474,8 +474,8 @@ def build_qna_filters():
                 ).classes('sf-btn w-full')
             
             # Actions Card
-            with ui.card().classes('sf-card'):
-                ui.label('⚙️ Actions').classes('text-lg font-bold mb-3')
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+                ui.label('⚙️ Actions').classes('text-lg font-bold mb-3 text-gray-100')
                 
                 ui.button(
                     'Reset All',
@@ -491,9 +491,9 @@ def build_qna_filters():
         
         # Right - Checklist Display
         with ui.column().classes('flex-grow gap-4'):
-            with ui.card().classes('sf-card'):
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
                 with ui.row().classes('w-full items-center justify-between mb-4'):
-                    ui.label('✓ Checklist Items').classes('text-lg font-bold')
+                    ui.label('✓ Checklist Items').classes('text-lg font-bold text-gray-100')
                     
                     if app.storage.user.get('selected_checklist'):
                         checklists = get_checklists_for_line(app.storage.user['checklist_line'])

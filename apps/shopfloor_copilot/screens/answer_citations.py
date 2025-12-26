@@ -229,14 +229,14 @@ def build_answer_citations():
         
         with ui.column().classes('w-full gap-4'):
             # Full Answer Card
-            with ui.card().classes('sf-card'):
-                ui.label('📝 Answer').classes('text-lg font-bold mb-3')
+            with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+                ui.label('📝 Answer').classes('text-lg font-bold mb-3 text-gray-100')
                 ui.label(answer).classes('text-sm whitespace-pre-wrap')
             
             # Steps Card (if steps were parsed)
             if len(steps) > 1:
-                with ui.card().classes('sf-card'):
-                    ui.label('📋 Step-by-Step Guide').classes('text-lg font-bold mb-3')
+                with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+                    ui.label('📋 Step-by-Step Guide').classes('text-lg font-bold mb-3 text-gray-100')
                     
                     for idx, step in enumerate(steps, 1):
                         with ui.row().classes('items-start gap-3 mb-3'):
@@ -267,7 +267,7 @@ def build_answer_citations():
         ui.label(f'📚 {len(sources)} Source Document{"s" if len(sources) != 1 else ""}').classes('text-lg font-bold mb-3')
         
         for idx, source in enumerate(sources, 1):
-            with ui.card().classes('sf-card bg-gray-50 dark:bg-gray-800 p-3 mb-3'):
+            with ui.card().classes('bg-gray-700 border border-gray-600 p-3 mb-3 rounded-lg'):
                 # Source header
                 with ui.row().classes('w-full items-start justify-between mb-2'):
                     ui.label(f'Source {idx}').classes('text-xs font-bold text-teal-600')
@@ -289,8 +289,8 @@ def build_answer_citations():
                 content = source.get('content', source.get('text', ''))
                 if content:
                     preview = content[:300] + '...' if len(content) > 300 else content
-                    with ui.card().classes('bg-white dark:bg-gray-900 p-2'):
-                        ui.label(preview).classes('text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap')
+                    with ui.card().classes('bg-gray-900 border border-gray-600 p-2 rounded'):
+                        ui.label(preview).classes('text-xs text-gray-300 whitespace-pre-wrap')
                 
                 # Open document button (if available)
                 if source.get('metadata', {}).get('source'):
@@ -303,8 +303,8 @@ def build_answer_citations():
     # Main layout
     with ui.column().classes('w-full gap-4'):
         # Question Input Card
-        with ui.card().classes('sf-card'):
-            ui.label('🤖 Ask a Question').classes('text-lg font-bold mb-3')
+        with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
+            ui.label('🤖 Ask a Question').classes('text-lg font-bold mb-3 text-gray-100')
             
             with ui.row().classes('w-full gap-2'):
                 ui.select(
@@ -318,14 +318,14 @@ def build_answer_citations():
                     value=app.storage.user.get('citation_collection', 'shopfloor_docs'),
                     label='Collection',
                     on_change=lambda e: app.storage.user.update({'citation_collection': e.value})
-                ).classes('w-48')
+                ).classes('w-48').style('background: #1f2937; color: #e5e7eb;')
             
             ui.textarea(
                 label='Your Question',
                 placeholder='e.g., How do I perform a changeover on Line M10? What are the startup procedures?',
                 value=app.storage.user.get('citation_question', ''),
                 on_change=update_question
-            ).classes('w-full').style('min-height: 80px')
+            ).classes('w-full').style('min-height: 80px; background: #1f2937; color: #e5e7eb;')
             
             ui.button(
                 'Get Answer',
@@ -337,10 +337,10 @@ def build_answer_citations():
         with ui.row().classes('w-full gap-4'):
             # Left - Answer
             with ui.column().classes('flex-[3] gap-4'):
-                with ui.card().classes('sf-card'):
+                with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
                     answer_display()
             
             # Right - Citations
             with ui.column().classes('flex-[2] gap-4'):
-                with ui.card().classes('sf-card'):
+                with ui.card().classes('bg-gray-800 border border-gray-700 p-4 rounded-lg'):
                     citations_display()
