@@ -328,10 +328,10 @@ class ViolationsManagementScreen:
             violation = self.timeline_data.get('violation', {})
             acknowledgments = self.timeline_data.get('acknowledgments', [])
             
-            # Violation info
-            with ui.card().classes('w-full bg-gray-50 p-3 mb-2'):
-                ui.label('Violation Created').classes('font-semibold')
-                ui.label(f"{violation.get('ts_start', '')[:19]}").classes('text-sm text-gray-600')
+            # Violation info - dark theme
+            with ui.card().classes('w-full bg-gray-800 p-3 mb-2'):
+                ui.label('Violation Created').classes('font-semibold text-white')
+                ui.label(f"{violation.get('ts_start', '')[:19]}").classes('text-sm text-gray-300')
             
             # Acknowledgments
             for ack in acknowledgments:
@@ -340,20 +340,20 @@ class ViolationsManagementScreen:
                 ts = ack.get('ts', '')
                 comment = ack.get('comment', '')
                 
-                # Color based on ack type
+                # Color based on ack type - dark theme variants
                 if ack_type == 'resolved':
-                    color = 'bg-green-50'
+                    color = 'bg-green-900 border-l-4 border-green-500'
                 elif ack_type == 'justified':
-                    color = 'bg-yellow-50'
+                    color = 'bg-yellow-900 border-l-4 border-yellow-500'
                 else:
-                    color = 'bg-blue-50'
+                    color = 'bg-blue-900 border-l-4 border-blue-500'
                 
                 with ui.card().classes(f'w-full {color} p-3 mb-2'):
-                    ui.label(ack_type.upper()).classes('font-semibold')
-                    ui.label(f'By: {ack_by}').classes('text-sm')
-                    ui.label(f'{ts[:19]}').classes('text-xs text-gray-600')
+                    ui.label(ack_type.upper()).classes('font-semibold text-white')
+                    ui.label(f'By: {ack_by}').classes('text-sm text-gray-200')
+                    ui.label(f'{ts[:19]}').classes('text-xs text-gray-300')
                     if comment:
-                        ui.label(f'"{comment}"').classes('text-sm italic mt-1')
+                        ui.label(f'"{comment}"').classes('text-sm italic mt-1 text-gray-100')
     
     async def refresh_all(self):
         """Refresh all data"""
