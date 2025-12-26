@@ -154,7 +154,7 @@ def digital_twin_screen():
                         
                         with ui.row().classes('w-full gap-4 mt-4'):
                             with ui.card().classes('flex-1'):
-                                ui.label('Current Capacity').classes('text-sm text-grey-7'):
+                                ui.label('Current Capacity').classes('text-sm text-grey-7')
                                 ui.label(f'{total_baseline:,.0f} units/month').classes('text-xl font-bold')
                             
                             with ui.card().classes('flex-1 bg-gray-800'):
