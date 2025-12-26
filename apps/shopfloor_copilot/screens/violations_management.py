@@ -138,7 +138,7 @@ class ViolationsManagementScreen:
     
     def render(self):
         """Render the violations management screen"""
-        with ui.column().classes('w-full gap-4 p-4'):
+        with ui.column().classes('w-full gap-4 p-4 bg-gray-900'):
             # Header
             with ui.row().classes('w-full items-center justify-between mb-4'):
                 ui.label('Violations Management').classes('text-2xl font-bold text-white')
@@ -149,17 +149,17 @@ class ViolationsManagementScreen:
                 tab_active = ui.tab('Active Violations', icon='warning')
                 tab_history = ui.tab('Historical', icon='history')
             
-            with ui.tab_panels(tabs, value=tab_active).classes('w-full'):
+            with ui.tab_panels(tabs, value=tab_active).classes('w-full bg-gray-900'):
                 # Active violations tab
-                with ui.tab_panel(tab_active):
-                    with ui.row().classes('w-full gap-4'):
+                with ui.tab_panel(tab_active).classes('bg-gray-900'):
+                    with ui.row().classes('w-full gap-4 bg-gray-900'):
                         # Left: Active violations table
-                        with ui.column().classes('w-2/3'):
+                        with ui.column().classes('w-2/3 bg-gray-900'):
                             ui.label('Active Violations').classes('text-xl font-semibold text-white mb-2')
                             self.active_table = ui.column().classes('w-full')
                         
                         # Right: Details and timeline
-                        with ui.column().classes('w-1/3'):
+                        with ui.column().classes('w-1/3 bg-gray-900'):
                             ui.label('Violation Details').classes('text-xl font-semibold text-white mb-2')
                             self.details_panel = ui.column().classes('w-full')
                             
@@ -167,7 +167,7 @@ class ViolationsManagementScreen:
                             self.timeline_panel = ui.column().classes('w-full')
                 
                 # Historical violations tab
-                with ui.tab_panel(tab_history):
+                with ui.tab_panel(tab_history).classes('bg-gray-900'):
                     ui.label('Historical Violations').classes('text-xl font-semibold text-white mb-2')
                     self.history_table = ui.column().classes('w-full')
             
