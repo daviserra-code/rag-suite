@@ -523,20 +523,20 @@ def shift_handover_screen():
                                     'general': '📝'
                                 }
                                 
-                                with ui.row().classes('w-full gap-2 p-2 bg-gray-50 rounded mb-2'):
+                                with ui.row().classes('w-full gap-2 p-2 bg-gray-800 rounded mb-2'):
                                     ui.label(note_icons.get(note_type, '📝')).classes('text-xl')
                                     with ui.column().classes('flex-1'):
-                                        ui.label(note_text).classes('text-sm')
-                                        ui.label(f"{note_by} - {note_time.strftime('%H:%M')}").classes('text-xs text-gray-500')
+                                        ui.label(note_text).classes('text-sm text-white')
+                                        ui.label(f"{note_by} - {note_time.strftime('%H:%M')}").classes('text-xs text-gray-300')
                     
                     # Metadata
-                    with ui.card().classes('w-full p-4 bg-gray-50'):
-                        ui.label('Metadata').classes('text-sm font-bold mb-2')
-                        ui.label(f'Handover ID: {hid}').classes('text-xs text-gray-600')
-                        ui.label(f'Created by: {created_by}').classes('text-xs text-gray-600')
-                        ui.label(f'Created at: {created_at.strftime("%Y-%m-%d %H:%M:%S")}').classes('text-xs text-gray-600')
+                    with ui.card().classes('w-full p-4 bg-gray-800'):
+                        ui.label('Metadata').classes('text-sm font-bold text-white mb-2')
+                        ui.label(f'Handover ID: {hid}').classes('text-xs text-gray-300')
+                        ui.label(f'Created by: {created_by}').classes('text-xs text-gray-300')
+                        ui.label(f'Created at: {created_at.strftime("%Y-%m-%d %H:%M:%S")}').classes('text-xs text-gray-300')
                         if submitted_at:
-                            ui.label(f'Submitted at: {submitted_at.strftime("%Y-%m-%d %H:%M:%S")}').classes('text-xs text-gray-600')
+                            ui.label(f'Submitted at: {submitted_at.strftime("%Y-%m-%d %H:%M:%S")}').classes('text-xs text-gray-300')
                     
                     # Close button
                     with ui.row().classes('w-full justify-end mt-4'):

@@ -115,8 +115,8 @@ def build_operator_qna():
                 elif msg['role'] == 'assistant':
                     with ui.row().classes('w-full justify-start'):
                         with ui.column().classes('max-w-3xl gap-3'):
-                            with ui.card().classes('bg-white border-2 border-gray-200 p-5 rounded-2xl shadow-md'):
-                                ui.markdown(msg['content']).classes('text-base text-gray-900 leading-relaxed')
+                            with ui.card().classes('bg-gray-800 border-2 border-gray-600 p-5 rounded-2xl shadow-md'):
+                                ui.markdown(msg['content']).classes('text-base text-gray-200 leading-relaxed')
                                 if msg.get('model'):
                                     ui.label(f"🤖 {msg['model']}").classes('text-xs text-gray-600 mt-3 font-mono')
                             
@@ -199,11 +199,11 @@ def build_operator_qna():
                     ui.button('Clear Chat', icon='delete', on_click=clear_chat).classes('bg-white text-blue-600 hover:bg-gray-100').props('no-caps')
             
             # Chat messages with better scroll area styling
-            with ui.scroll_area().classes('flex-grow border-2 border-gray-300 rounded-xl p-6 bg-gray-50'):
+            with ui.scroll_area().classes('flex-grow border-2 border-gray-600 rounded-xl p-6 bg-gray-900'):
                 chat_container()
             
             # Input area with modern styling
-            with ui.card().classes('p-4 bg-white border-2 border-blue-200'):
+            with ui.card().classes('p-4 bg-gray-800 border-2 border-blue-500'):
                 ui_elements['query_input'] = ui.textarea(
                     placeholder='📝 Ask me about work instructions, procedures, safety, troubleshooting...'
                 ).classes('w-full text-gray-900').props('outlined rows=3 bg-color=white').style('background: white; color: #111827;')

@@ -97,8 +97,8 @@ class ReportsScreen:
                     ui.label('Generating report...').classes('ml-4 text-gray-900 font-semibold')
             
             # Scheduled Reports Card with improved styling
-            with ui.card().classes('w-full p-6 bg-white border-2 border-gray-200'):
-                ui.label('Scheduled Reports').classes('text-xl font-bold text-gray-900 mb-4')
+            with ui.card().classes('w-full p-6 bg-gray-800 border-2 border-gray-600'):
+                ui.label('Scheduled Reports').classes('text-xl font-bold text-white mb-4')
                 
                 with ui.column().classes('w-full gap-4'):
                     # Email Configuration
@@ -124,7 +124,7 @@ class ReportsScreen:
                     
                     with ui.column().classes('w-full gap-3 mt-3'):
                         for schedule in schedules:
-                            with ui.row().classes('w-full items-center p-4 bg-gray-50 rounded-lg gap-4 border border-gray-200'):
+                            with ui.row().classes('w-full items-center p-4 bg-gray-900 rounded-lg gap-4 border border-gray-600'):
                                 ui.switch(value=schedule['enabled']).props('color=teal')
                                 
                                 with ui.column().classes('flex-1 gap-1'):
@@ -150,7 +150,7 @@ class ReportsScreen:
                 
                 with ui.column().classes('w-full gap-1'):
                     for report in recent:
-                        with ui.row().classes('w-full items-center p-3 hover:bg-gray-50 rounded cursor-pointer'):
+                        with ui.row().classes('w-full items-center p-3 hover:bg-gray-800 rounded cursor-pointer'):
                             # Icon based on type
                             icon_map = {
                                 'Daily': '📄',

@@ -112,8 +112,8 @@ def digital_twin_screen():
                             ui.label('Projected Production').classes('text-lg font-bold')
                             ui.label(f'{total_projected:,.0f} units').classes('text-3xl font-bold text-green-700')
                         
-                        with ui.card().classes('flex-1 bg-white'):
-                            ui.label('Additional Output').classes('text-sm text-grey-7')
+                        with ui.card().classes('flex-1 bg-gray-800'):
+                            ui.label('Additional Output').classes('text-sm text-gray-300')
                             ui.label(f'+{additional_units:,.0f} units').classes('text-2xl font-bold text-green')
                             ui.label(f'+{oee_increase*100:.1f}% increase').classes('text-sm text-grey-6')
                     
