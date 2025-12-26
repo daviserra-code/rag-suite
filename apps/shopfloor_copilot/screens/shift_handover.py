@@ -207,11 +207,11 @@ def shift_handover_screen():
                     # Metrics
                     with ui.row().classes('gap-4'):
                         with ui.column().classes('items-center'):
-                            ui.label(f"{oee*100:.1f}%").classes('text-2xl font-bold text-blue-600')
+                            ui.label(f"{(oee or 0)*100:.1f}%").classes('text-2xl font-bold text-blue-600')
                             ui.label('OEE').classes('text-xs text-gray-900 font-semibold')
                         
                         with ui.column().classes('items-center'):
-                            ui.label(str(total_prod)).classes('text-2xl font-bold text-green-600')
+                            ui.label(str(total_prod or 0)).classes('text-2xl font-bold text-green-600')
                             ui.label('Units').classes('text-xs text-gray-900 font-semibold')
                         
                         with ui.column().classes('items-center'):
