@@ -28,13 +28,13 @@ def comparative_analytics_screen():
                     [4, 8, 12, 16],
                     label='Weeks to Analyze',
                     value=8
-                ).classes('w-48').style('background: white;')
+                ).classes('w-48').style('background: #1f2937; color: #e5e7eb;')
                 
                 comparison_type = ui.select(
                     ['All Comparisons', 'Line Performance', 'Shift Analysis', 'Weekly Trends'],
                     label='View',
                     value='All Comparisons'
-                ).classes('w-48').style('background: white;')
+                ).classes('w-48').style('background: #1f2937; color: #e5e7eb;')
                 
                 ui.button('Analyze', icon='analytics', on_click=lambda: load_analytics())
         

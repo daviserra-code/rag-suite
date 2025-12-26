@@ -154,12 +154,12 @@ def digital_twin_screen():
                         
                         with ui.row().classes('w-full gap-4 mt-4'):
                             with ui.card().classes('flex-1'):
-                                ui.label('Current Capacity').classes('text-sm text-grey-7')
+                                ui.label('Current Capacity').classes('text-sm text-grey-7'):
                                 ui.label(f'{total_baseline:,.0f} units/month').classes('text-xl font-bold')
                             
-                            with ui.card().classes('flex-1 bg-white'):
-                                ui.label('New Total Capacity').classes('text-sm text-grey-7')
-                                ui.label(f'{total_projected:,.0f} units/month').classes('text-xl font-bold text-blue-700')
+                            with ui.card().classes('flex-1 bg-gray-800'):
+                                ui.label('New Total Capacity').classes('text-sm text-gray-300')
+                                ui.label(f'{total_projected:,.0f} units/month').classes('text-xl font-bold text-blue-400')
                             
                             with ui.card().classes('flex-1 bg-green-50'):
                                 ui.label('Capacity Increase').classes('text-sm text-grey-7')
@@ -221,9 +221,9 @@ def digital_twin_screen():
                                 ui.label('Current Production').classes('text-sm text-grey-7')
                                 ui.label(f'{total_baseline:,.0f} units/month').classes('text-xl font-bold')
                             
-                            with ui.card().classes('flex-1 bg-white'):
-                                ui.label('Projected Production').classes('text-sm text-grey-7')
-                                ui.label(f'{total_projected:,.0f} units/month').classes('text-xl font-bold text-purple-700')
+                            with ui.card().classes('flex-1 bg-gray-800'):
+                                ui.label('Projected Production').classes('text-sm text-gray-300')
+                                ui.label(f'{total_projected:,.0f} units/month').classes('text-xl font-bold text-purple-400')
                             
                             with ui.card().classes('flex-1 bg-green-50'):
                                 ui.label('Additional Output').classes('text-sm text-grey-7')
@@ -253,8 +253,8 @@ def digital_twin_screen():
                         ui.label('Current Capacity').classes('text-sm text-grey-7')
                         ui.label(f'{current_capacity:,.0f} units/month').classes('text-2xl font-bold')
                     
-                    with ui.card().classes('flex-1 bg-white'):
-                        ui.label('Target Demand').classes('text-sm text-grey-7')
+                    with ui.card().classes('flex-1 bg-gray-800'):
+                        ui.label('Target Demand').classes('text-sm text-gray-300')
                         ui.label(f'{target_units:,.0f} units/month').classes('text-2xl font-bold')
                     
                     with ui.card().classes('flex-1 ' + ('bg-red-50' if gap > 0 else 'bg-green-50')):

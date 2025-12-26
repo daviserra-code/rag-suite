@@ -190,8 +190,8 @@ def shift_handover_screen():
             shift_name = shift_names.get(shift, shift)
             
             status_colors = {
-                'submitted': 'bg-white border-green-500',
-                'draft': 'bg-white border-orange-500'
+                'submitted': 'bg-gray-800 border-green-500',
+                'draft': 'bg-gray-800 border-orange-500'
             }
             
             with ui.card().classes(f'w-full border-l-4 {status_colors.get(status, "border-gray-500")}'):
@@ -300,8 +300,8 @@ def shift_handover_screen():
                         text("SELECT DISTINCT line_id FROM oee_line_shift ORDER BY line_id")
                     ).fetchall()]
                 
-                line_input = ui.select(lines, label='Production Line').classes('w-full').style('background: white;')
-                shift_input = ui.select(['M', 'A', 'N'], label='Shift').classes('w-full').style('background: white;')
+                line_input = ui.select(lines, label='Production Line').classes('w-full').style('background: #1f2937; color: #e5e7eb;')
+                shift_input = ui.select(['M', 'A', 'N'], label='Shift').classes('w-full').style('background: #1f2937; color: #e5e7eb;')
                 date_inp = ui.input('Date', value=datetime.now().strftime('%Y-%m-%d')).classes('w-full')
                 summary_input = ui.textarea(label='Summary', placeholder='Shift summary...').classes('w-full')
                 

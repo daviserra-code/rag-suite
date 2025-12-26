@@ -29,7 +29,7 @@ def root_cause_analysis_screen():
                     [7, 14, 30, 60, 90],
                     label='Time Period (days)',
                     value=30
-                ).classes('w-48').style('background: white;')
+                ).classes('w-48').style('background: #1f2937; color: #e5e7eb;')
                 
                 with engine.connect() as conn:
                     lines = [row[0] for row in conn.execute(
@@ -40,7 +40,7 @@ def root_cause_analysis_screen():
                     ['All'] + lines,
                     label='Production Line',
                     value='All'
-                ).classes('w-48').style('background: white;')
+                ).classes('w-48').style('background: #1f2937; color: #e5e7eb;')
                 
                 ui.button('Analyze', icon='analytics', on_click=lambda: load_analysis())
         

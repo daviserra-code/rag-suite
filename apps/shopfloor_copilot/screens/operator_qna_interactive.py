@@ -196,7 +196,7 @@ def build_operator_qna():
                     with ui.row().classes('items-center gap-3'):
                         ui.icon('smart_toy', size='lg').classes('text-white')
                         ui.label('💬 AI Operator Assistant').classes('text-2xl font-bold text-white')
-                    ui.button('Clear Chat', icon='delete', on_click=clear_chat).classes('bg-white text-blue-600 hover:bg-gray-100').props('no-caps')
+                    ui.button('Clear Chat', icon='delete', on_click=clear_chat).classes('bg-gray-800 text-blue-400 hover:bg-gray-700').props('no-caps')
             
             # Chat messages with better scroll area styling
             with ui.scroll_area().classes('flex-grow border-2 border-gray-600 rounded-xl p-6 bg-gray-900'):

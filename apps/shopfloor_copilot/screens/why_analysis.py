@@ -372,7 +372,7 @@ def why_analysis_screen():
                         status_colors = {
                             'open': 'border-orange-500 bg-orange-50',
                             'completed': 'border-green-500 bg-green-50',
-                            'cancelled': 'border-gray-500 bg-gray-50'
+                            'cancelled': 'border-gray-500 bg-gray-800'
                         }
                         
                         with ui.card().classes(f'w-full p-4 border-l-4 {status_colors.get(status, "border-blue-500")} mb-3'):

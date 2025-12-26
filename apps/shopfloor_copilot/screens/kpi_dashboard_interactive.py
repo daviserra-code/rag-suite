@@ -471,7 +471,7 @@ def build_kpi_dashboard():
             ]
             
             for dt in downtimes:
-                with ui.row().classes('w-full items-center gap-4 p-3 bg-gray-50 rounded-lg mb-2 border border-gray-200'):
+                with ui.row().classes('w-full items-center gap-4 p-3 bg-gray-800 rounded-lg mb-2 border border-gray-600'):
                     ui.label(dt['time']).classes('text-sm w-20 text-gray-800 font-medium')
                     ui.label(dt['station']).classes('text-sm w-16 font-bold text-gray-900')
                     ui.label(dt['duration']).classes('text-sm w-20 text-orange-700 font-bold')
