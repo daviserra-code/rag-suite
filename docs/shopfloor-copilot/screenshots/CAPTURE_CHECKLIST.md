@@ -21,14 +21,13 @@
 
 ### Test Stations Ready
 - [ ] **ST18** - A&D blocking scenario (missing material)
-- [ ] **ST25** - Pharma blocking scenario (missing deviation)
-- [ ] **ST10** - Happy path (no issues)
+- [ ] **ST25** - Pharma blocking scenario (missing deviation)  
+- [ ] **ST17** - Happy path (no issues)
 
-**⚠️ IMPORTANT:** If these specific stations don't exist in your deployment:
-- Use OPC Explorer (Tab 15) to browse available stations
-- Pick any healthy/running station for "happy path" screenshots
-- Pick any blocked/faulted station for "blocking" screenshots
-- Adjust station IDs in instructions accordingly
+**⚠️ IMPORTANT:** Production OPC server has ST17 and ST18 only.
+- **ST17**: Available for "happy path" screenshots
+- **ST18**: Available for "blocking" screenshots
+- ST25 and other stations may not exist in OPC but have material data
 
 ### Capture Tool
 - [ ] Tool selected: Windows Snipping Tool (Win+Shift+S) or ShareX
@@ -134,35 +133,30 @@
 
 ## SECTION 4 — Material Evidence
 
-### ✅ Screenshot 05 — Material Context Present
+### ✅ Screenshot 05 — Material Context Present (Healthy Operation)
 - **Filename:** `manual_06_material_context_present.png`
 - **Profile:** aerospace_defence
-- **Station:** ST10 (happy path) **OR any healthy station if ST10 not available**
-- **Page:** Diagnostics → Material Evidence section
+- **Station:** **ST17** (healthy station)
+- **Page:** Diagnostics → Full explanation for healthy station
+- **⚠️ IMPORTANT:** The UI does NOT have a dedicated "Material Evidence" section. Material context appears in the LLM-generated explanation text if relevant.
 - **Steps:**
-  1. **First, find a healthy station:**
-     - Navigate to OPC Explorer (Tab 15)
-     - Browse to see available stations (e.g., ST01, ST02, ST20, etc.)
-     - Look for station with state = RUNNING or IDLE
-  2. Select aerospace_defence profile
-  3. Navigate to AI Diagnostics (Tab 17)
-  4. Enter station ID (ST10 or whichever healthy station you found)
-  5. Click "Explain this situation"
-  6. Scroll to Material Evidence section
-  7. **If Material Evidence section doesn't appear:** This screenshot may not be possible in production without seed data. Skip and note in documentation.
-  8. If present, capture showing:
-     - Active serial number
-     - Status: RELEASED
-     - Tooling: Calibrated
-     - Operator: Certified
-     - evidence_present = true
+  1. Select aerospace_defence profile
+  2. Navigate to AI Diagnostics (Tab 17)
+  3. Enter station: **ST17**
+  4. Click "Explain this situation"
+  5. Review all 4 sections (What is happening, Why, What to do, What to check)
+  6. Capture showing:
+     - **No BLOCKING** indicators (green/healthy state)
+     - Explanation describes normal operation
+     - May mention material traceability if available (NOT required)
+     - Professional, clean diagnostics view
 - **Checklist:**
-  - [ ] Serial number visible (OR note "Not available in production")
-  - [ ] RELEASED status (OR skip if no material context)
-  - [ ] All evidence checkmarks green
-  - [ ] No warnings
-- **Status:** ⬜ Not captured | ✅ Captured | ⚠️ Skipped (not available)
-- **Alternative:** If material context not implemented in production, capture normal diagnostics output for healthy station
+  - [ ] No BLOCKING/CRITICAL badges (healthy state)
+  - [ ] Explanation shows normal operation
+  - [ ] All 4 sections visible and populated
+  - [ ] Professional appearance (dark theme)
+- **Status:** ⬜ Not captured | ✅ Captured
+- **Note:** If ST17 explanation mentions material evidence (serial numbers, quality status), that's a bonus but not required for this screenshot
 
 ---
 
@@ -170,98 +164,102 @@
 - **Filename:** `manual_07_missing_material_evidence_ad.png`
 - **Profile:** aerospace_defence
 - **Station:** ST18 (blocking scenario)
-- **Page:** Diagnostics → Material Evidence section
+- **Page:** Diagnostics → Explanation text mentioning material evidence
+- **⚠️ IMPORTANT:** The UI does NOT have a dedicated "Material Evidence" section. Material context is internal to the backend and appears in the LLM-generated explanation text.
 - **Steps:**
   1. Select aerospace_defence profile
-  2. Navigate to AI Diagnostics
+  2. Navigate to AI Diagnostics (Tab 17)
   3. Enter station: ST18
   4. Click "Explain this situation"
-  5. Scroll to Material Evidence section
+  5. Expand **Section 1 — What is happening** (Runtime Evidence)
   6. Capture showing:
-     - material_context visible as section header
-     - evidence_present = false (red indicator)
-     - Missing serial / no lot number
-     - Warning messages
-     - Empty fields or "Not Found"
+     - Explanation mentions **missing material evidence** or **missing serial number**
+     - Text describes blocked/critical state
+     - Material traceability issues mentioned
+     - **BLOCKING** or **CRITICAL** indicators visible
 - **Checklist:**
-  - [ ] evidence_present = false clearly shown
-  - [ ] Missing data indicators (red/warning)
-  - [ ] Section labeled "Material Evidence" or "Material Context"
-  - [ ] Professional appearance (not error state)
+  - [ ] Explanation text mentions material evidence issues
+  - [ ] BLOCKING or CRITICAL badge visible
+  - [ ] Text references missing serial/traceability
+  - [ ] Professional appearance (dark theme, clear text)
 - **Status:** ⬜ Not captured | ✅ Captured
-- **⚠️ CRITICAL:** This is the most important screenshot for A&D reviewers
+- **⚠️ CRITICAL:** This is the most important screenshot for A&D reviewers - focus on the explanation describing material evidence problems
 
 ---
 
 ## SECTION 5 — Diagnostics & Violations
 
-### ✅ Screenshot 07 — Diagnostics with Blocking (A&D)
+### ✅ Screenshot 07 — Diagnostics with Blocking (A&D) - Full View
 - **Filename:** `manual_08_diagnostics_blocking_ad.png`
 - **Profile:** aerospace_defence
 - **Station:** ST18
-- **Page:** Diagnostics main view
+- **Page:** Diagnostics full view
+- **⚠️ NOTE:** This is the SAME query as Screenshot 06, but captured differently:
+  - **Screenshot 06** = Close crop of Section 1 text (material evidence details)
+  - **Screenshot 07** = Full page view showing BLOCKING badge + all sections
 - **Steps:**
-  1. Select aerospace_defence profile
-  2. Navigate to AI Diagnostics
-  3. Enter station: ST18
-  4. Click "Explain this situation"
-  5. Capture full diagnostics page showing:
-     - **BLOCKING** badge (red/critical)
-     - Severity: Critical
-     - Violation indicators
-     - missing_material_context reason
-     - missing_serial_binding
-     - Explanation text
+  1. **Use the same ST18 query result from Screenshot 06** (no need to requery)
+  2. Scroll to top to show full page layout
+  3. Capture showing:
+     - **BLOCKING** badge/indicator at top (if visible)
+     - Equipment ID: ST18
+     - All 4 sections visible (collapsed or expanded)
+     - Metadata showing critical/blocked state
+     - Overall diagnostics layout
 - **Checklist:**
-  - [ ] BLOCKING badge prominent
-  - [ ] Severity = Critical
-  - [ ] Material violations listed
-  - [ ] Dark theme
+  - [ ] Full diagnostics layout visible
+  - [ ] All 4 sections shown (can be collapsed)
+  - [ ] Equipment ID ST18 clear
+  - [ ] Dark theme consistent
 - **Status:** ⬜ Not captured | ✅ Captured
+- **TIP:** Capture this immediately after Screenshot 06 from the same screen
 
 ---
+
+## SECTION 6 — Violations Management
 
 ### ✅ Screenshot 08 — Violations List
 - **Filename:** `manual_09_violations_list.png`
-- **Page:** Violations overview (separate tab/page)
+- **Page:** Violations Management tab (Tab 18)
 - **Steps:**
-  1. Navigate to Violations dashboard/tab
-  2. Ensure at least one OPEN violation visible
+  1. Navigate to Violations tab
+  2. Wait for active violations to load
   3. Capture showing:
-     - List of violations (table or cards)
-     - At least one OPEN status
-     - Severity indicators (Critical/Warning/Info)
+     - List of violations (cards or table)
+     - At least one OPEN or ACKNOWLEDGED violation
+     - Severity indicators (Critical/Warning)
      - Station references (ST18, etc.)
-     - Date/time stamps
-     - Action buttons (View, Acknowledge, etc.)
+     - State badges (OPEN, ACKNOWLEDGED, JUSTIFIED, RESOLVED)
+     - Action buttons (View, Acknowledge, Justify, Resolve)
 - **Checklist:**
-  - [ ] OPEN violation visible
-  - [ ] Severity indicator clear
-  - [ ] Station column visible
-  - [ ] Professional table/list layout
+  - [ ] Multiple violations visible
+  - [ ] State badges clear (color-coded)
+  - [ ] Severity indicators shown
+  - [ ] Action buttons visible
+  - [ ] Dark theme consistent
 - **Status:** ⬜ Not captured | ✅ Captured
 
 ---
 
-## SECTION 6 — Violation Lifecycle
-
 ### ✅ Screenshot 09 — Violation Timeline
 - **Filename:** `manual_10_violation_timeline.png`
-- **Page:** Violation details page (click on a violation)
+- **Page:** Violations Management → Violation Details
 - **Steps:**
-  1. Navigate to Violations list
-  2. Click on a specific violation (preferably JUSTIFIED)
-  3. Scroll to timeline/history section
+  1. Navigate to Violations tab
+  2. Click "View" on a JUSTIFIED or RESOLVED violation
+  3. Timeline panel should appear on right side
   4. Capture showing:
-     - State transitions: OPEN → ACKNOWLEDGED → JUSTIFIED
-     - Timestamps for each state
-     - User comments/justification text
-     - User who performed action
-     - Visual timeline (if available)
+     - Violation creation event
+     - State transitions (OPEN → ACKNOWLEDGED → JUSTIFIED)
+     - Timestamps for each event
+     - Operator names (ack_by field)
+     - Comments/justification text
+     - Evidence references (if any)
 - **Checklist:**
-  - [ ] All three states visible
-  - [ ] User comment shown
+  - [ ] Timeline shows multiple states
   - [ ] Timestamps visible
+  - [ ] Operator names shown
+  - [ ] Comments/justification displayed
   - [ ] Clear progression path
 - **Status:** ⬜ Not captured | ✅ Captured
 
@@ -297,7 +295,13 @@
 
 ## SECTION 8 — OPC Studio Core Features
 
-### ✅**Connect to OPC server** (if not connected):
+### ✅ Screenshot 11 — OPC Browsing
+- **Filename:** `manual_13_opc_browsing.png`
+- **Filename:** `manual_13_opc_browsing.png`
+- **Page:** OPC Studio → Browse tab
+- **Steps:**
+  1. Navigate to OPC Studio (http://46.224.66.48:8040)
+  2. **Connect to OPC server** (if not connected): (if not connected):
      - **Local:** Use endpoint `opc.tcp://opc-demo:4850`
      - **Production:** Use endpoint `opc.tcp://46.224.66.48:4850`
      - Click "Connect" button
@@ -419,15 +423,14 @@
 ### ✅ Screenshot 16 — Demo Happy Path
 - **Filename:** `manual_18_demo_happy_path.png`
 - **Profile:** aerospace_defence
-- **Station:** ST10 **OR any healthy/running station**
-- **Page:** Full diagnostics view for ST10
+- **Station:** **ST17** (healthy station)
+- **Page:** Full diagnostics view for ST17
 - **Steps:**
-  1. **Find a healthy station** (use OPC Explorer to browse available stations)
-  2. Select aerospace_defence profile
-  3. Navigate to AI Diagnostics
-  4. Enter station ID (ST10 or available healthy station)
-  5. Click "Explain this situation"
-  6. Capture full page showing:
+  1. Select aerospace_defence profile
+  2. Navigate to AI Diagnostics
+  3. Enter station: **ST17**
+  4. Click "Explain this situation"
+  5. Capture full page showing:
      - **No blocking** (green/success indicator)
      - Informational explanation (no warnings)
      - Clean, healthy state
@@ -571,13 +574,30 @@ python scripts/seed_demo_data.py
 ```
 
 ### Problem: Material Evidence section not showing
-**Cause:** Material context tracking may not be configured in production deployment
+**Cause:** Material context data not seeded in database
 
-**Solution:**
-- This is expected if deployment doesn't have material tracking enabled
-- **Mark screenshot as "Not Available"** in checklist
-- Capture alternative: Normal diagnostics output for healthy station
-- Update final documentation to note: "Material Evidence available when tracking enabled"
+**Solution - Seed the database:**
+```powershell
+# For production (Hetzner)
+ssh root@46.224.66.48
+cd /opt/shopfloor/rag-suite
+docker exec shopfloor-copilot python scripts/seed_demo_material_data.py
+
+# For local development
+python scripts/seed_demo_material_data.py
+```
+
+**Expected output:**
+```
+✓ ST18 (A&D): No serial → BLOCKING
+✓ ST25 (Pharma): HOLD without deviation → BLOCKING  
+✓ ST10 (Normal): SN-100234, all OK → NO VIOLATIONS
+```
+
+**After seeding:**
+- **ST10** will show: Serial SN-100234, RELEASED, all evidence OK
+- **ST18** will show: Missing serial, no tooling, no operator → BLOCKING
+- **ST25** will show: LOT-2025-0042 in HOLD status → BLOCKING
 
 ### Problem: Demo data missing
 ```bash

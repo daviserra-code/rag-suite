@@ -24,6 +24,7 @@ from apps.shopfloor_copilot.screens.opc_studio import opc_studio_screen
 from apps.shopfloor_copilot.screens.opc_explorer import render_opc_explorer
 from apps.shopfloor_copilot.screens.semantic_signals import render_semantic_signals
 from apps.shopfloor_copilot.screens.diagnostics_explainer import render_diagnostics_explainer
+from apps.shopfloor_copilot.screens.violations_management import render_violations_management
 
 def build_ui():
     """Build the Shopfloor Copilot UI"""
@@ -54,6 +55,7 @@ def build_ui():
         tab_opc_explorer = ui.tab('OPC Explorer', icon='explore')
         tab_semantic = ui.tab('Semantic Signals', icon='transform')
         tab_diagnostics = ui.tab('AI Diagnostics', icon='psychology_alt')
+        tab_violations = ui.tab('Violations', icon='warning')
         tab_qna = ui.tab('Operator Q&A', icon='question_answer')
         tab_kpi = ui.tab('KPI Dashboard', icon='analytics')
         tab_filters = ui.tab('Q&A Filters', icon='filter_list')
@@ -144,7 +146,11 @@ def build_ui():
         with ui.tab_panel(tab_diagnostics).classes('p-4'):
             render_diagnostics_explainer()
 
-        # Operator Q&A (Tab 18)
+        # Violations Management (Tab 18) - Sprint 4
+        with ui.tab_panel(tab_violations).classes('p-4'):
+            render_violations_management()
+
+        # Operator Q&A (Tab 19)
         with ui.tab_panel(tab_qna).classes('p-4'):
             build_operator_qna()
 
