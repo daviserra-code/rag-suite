@@ -266,15 +266,15 @@ class ViolationsManagementScreen:
     
     async def view_violation(self, violation_id: str):
         """View violation details and timeline"""
-        ui.notify("Loading timeline...", type="info")
+        print(f"[INFO] Loading timeline for violation {violation_id}")
         try:
             await self.load_violation_timeline(violation_id)
             if self.timeline_data:
-                ui.notify("Timeline loaded", type="positive")
+                print(f"[INFO] Timeline loaded successfully")
             else:
-                ui.notify("No timeline data available", type="warning")
+                print(f"[WARNING] No timeline data available")
         except Exception as e:
-            ui.notify(f"Failed to load timeline: {str(e)}", type="negative")
+            print(f"[ERROR] Failed to load timeline: {str(e)}")
     
     def show_justify_dialog(self, violation_id: str):
         """Show dialog to justify a violation"""
