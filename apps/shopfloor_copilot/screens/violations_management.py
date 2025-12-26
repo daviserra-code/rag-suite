@@ -7,9 +7,10 @@ import httpx
 import asyncio
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+import os
 
 
-SHOPFLOOR_API = "http://localhost:8000"
+SHOPFLOOR_API = os.getenv("SHOPFLOOR_API", "http://localhost:8010")
 
 
 class ViolationsManagementScreen:
