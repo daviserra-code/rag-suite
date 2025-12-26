@@ -36,7 +36,7 @@ def build_ui():
         ui.html('<img src="/static/Gemini_Generated_Image_Logo_in_Blue2.png" style="height: 100px; width: auto;" />')
 
     # Tabs Layout with Enhanced Styling
-    with ui.tabs().classes('w-full bg-gray-100') as tabs:
+    with ui.tabs().classes('w-full bg-gray-800') as tabs:
         tab_live = ui.tab('Live Monitoring', icon='sensors')
         tab_lines = ui.tab('Production Lines', icon='precision_manufacturing')
         tab_plant = ui.tab('Plant Overview', icon='factory')
@@ -64,7 +64,7 @@ def build_ui():
         tab_reports = ui.tab('Reports', icon='description')
 
     # Container for operations tab content (for programmatic switching)
-    operations_container = ui.tab_panels(tabs, value=tab_lines).classes('w-full p-4 bg-white rounded shadow')
+    operations_container = ui.tab_panels(tabs, value=tab_lines).classes('w-full p-4 bg-gray-900 rounded shadow')
 
     # Navigation handler for Plant Overview to Operations
     def navigate_to_operations(line_id=None):

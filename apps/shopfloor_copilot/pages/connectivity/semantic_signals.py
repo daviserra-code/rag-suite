@@ -18,7 +18,7 @@ def semantic_signals_page():
     content = layout_shell(
         title="Semantic Signals",
         show_drawer=True,
-        theme="legacy"
+        theme="dark"
     )
     
     # Render page content
@@ -27,7 +27,7 @@ def semantic_signals_page():
             title="Semantic Signals",
             subtitle="Sprint 2: Kepware-like semantic mapping with loss category classification",
             icon="transform",
-            theme="legacy"
+            theme="dark"
         )
         
         # Render the existing Semantic Signals screen
