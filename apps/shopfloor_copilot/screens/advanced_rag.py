@@ -119,11 +119,11 @@ def advanced_rag_screen():
                 ui.label('No documents ingested yet. Upload your first document above!').classes('text-grey-6 italic')
             else:
                 for doc in docs:
-                    with ui.card().classes('w-full border-l-4 border-green'):
+                    with ui.card().classes('w-full border-l-4 border-green bg-gray-800'):
                         with ui.row().classes('w-full items-start gap-2'):
                             ui.icon('description', size='md').classes('text-green')
                             with ui.column().classes('gap-1 flex-1'):
-                                ui.label(doc.title).classes('font-bold')
+                                ui.label(doc.title).classes('font-bold text-white')
                                 with ui.row().classes('gap-2'):
                                     ui.badge(doc.doc_type, color='blue')
                                     ui.badge(doc.language, color='purple')
@@ -134,18 +134,18 @@ def advanced_rag_screen():
         """Simulate photo capture."""
         container.clear()
         with container:
-            with ui.card().classes('w-full bg-grey-2'):
-                ui.label('📸 Photo captured (simulated)').classes('text-center text-lg')
-                ui.label('Image: error_screen_20251214.jpg').classes('text-center text-sm text-grey-7')
+            with ui.card().classes('w-full bg-gray-800'):
+                ui.label('📸 Photo captured (simulated)').classes('text-center text-lg text-white')
+                ui.label('Image: error_screen_20251214.jpg').classes('text-center text-sm text-gray-300')
         ui.notify('Photo captured', type='positive')
     
     def simulate_image_upload(container):
         """Simulate image upload."""
         container.clear()
         with container:
-            with ui.card().classes('w-full bg-grey-2'):
-                ui.label('🖼️ Image uploaded (simulated)').classes('text-center text-lg')
-                ui.label('Image: machine_diagram.png').classes('text-center text-sm text-grey-7')
+            with ui.card().classes('w-full bg-gray-800'):
+                ui.label('🖼️ Image uploaded (simulated)').classes('text-center text-lg text-white')
+                ui.label('Image: machine_diagram.png').classes('text-center text-sm text-gray-300')
         ui.notify('Image uploaded', type='positive')
     
     def analyze_image(query, use_ocr, use_vision, result_container):
@@ -160,8 +160,8 @@ def advanced_rag_screen():
             ui.label('🔍 Analyzing image...').classes('text-blue font-bold')
             
             if use_ocr:
-                with ui.card().classes('w-full bg-yellow-50 mt-2'):
-                    ui.label('OCR Extracted Text:').classes('font-bold')
+                with ui.card().classes('w-full bg-gray-800 border-l-4 border-yellow-500 mt-2'):
+                    ui.label('OCR Extracted Text:').classes('font-bold text-white')
                     ui.separator()
                     ui.markdown("""
                     ```
@@ -173,8 +173,8 @@ def advanced_rag_screen():
                     """)
             
             if use_vision:
-                with ui.card().classes('w-full bg-blue-50 mt-2'):
-                    ui.label('Visual Analysis:').classes('font-bold')
+                with ui.card().classes('w-full bg-gray-800 border-l-4 border-blue-500 mt-2'):
+                    ui.label('Visual Analysis:').classes('font-bold text-white')
                     ui.separator()
                     ui.markdown("""
                     **Detected Components:**
@@ -185,8 +185,8 @@ def advanced_rag_screen():
                     **Issue Severity:** High
                     """)
             
-            with ui.card().classes('w-full bg-green-50 mt-2'):
-                ui.label('AI Answer:').classes('font-bold')
+            with ui.card().classes('w-full bg-gray-800 border-l-4 border-green-500 mt-2'):
+                ui.label('AI Answer:').classes('font-bold text-white')
                 ui.separator()
                 ui.markdown("""
                 **Error Code E-4532: Spindle Overload**

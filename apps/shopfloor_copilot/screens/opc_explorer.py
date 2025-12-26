@@ -145,9 +145,9 @@ class OPCExplorerScreen:
         # Icon based on node class
         icon = "📄" if "Variable" in node_class else "📁" if has_children else "📋"
         
-        with ui.card().classes("w-full mb-2"):
+        with ui.card().classes("w-full mb-2 bg-gray-800"):
             with ui.row().classes("w-full items-center"):
-                ui.label(f"{icon} {display_name}").classes("text-sm font-semibold flex-grow")
+                ui.label(f"{icon} {display_name}").classes("text-sm font-semibold flex-grow text-white")
                 
                 # Action buttons
                 ui.button("Browse", on_click=lambda nid=node_id: self.browse_node(nid)).props("size=sm dense")
@@ -189,10 +189,10 @@ class OPCExplorerScreen:
         self.node_details_container.clear()
         
         with self.node_details_container:
-            ui.label("Node Details").classes("text-lg font-bold mb-2")
+            ui.label("Node Details").classes("text-lg font-bold mb-2 text-white")
             
-            with ui.card().classes("w-full"):
-                ui.label(f"Display Name: {node_data.get('display_name')}").classes("font-semibold")
+            with ui.card().classes("w-full bg-gray-800"):
+                ui.label(f"Display Name: {node_data.get('display_name')}").classes("font-semibold text-white")
                 ui.label(f"Browse Name: {node_data.get('browse_name')}").classes("text-sm")
                 ui.label(f"Node Class: {node_data.get('node_class')}").classes("text-sm")
                 ui.label(f"Node ID: {node_data.get('node_id')}").classes("text-xs font-mono")
@@ -333,13 +333,13 @@ class OPCExplorerScreen:
                 # Right: Node Details + Watchlist
                 with ui.column().classes("w-1/2 gap-4"):
                     # Node Details
-                    with ui.card().classes("w-full"):
+                    with ui.card().classes("w-full bg-gray-800"):
                         self.node_details_container = ui.column().classes("w-full")
                         with self.node_details_container:
-                            ui.label("Select a node to view details").classes("text-gray-400 italic")
+                            ui.label("Select a node to view details").classes("text-gray-400 text-center p-4")
                     
                     # Watchlist
-                    with ui.card().classes("w-full"):
+                    with ui.card().classes("w-full bg-gray-800"):
                         self.watchlist_container = ui.column().classes("w-full").style("max-height: 400px; overflow-y: auto")
                         with self.watchlist_container:
                             ui.label("Watchlist (0 items)").classes("text-lg font-bold")
