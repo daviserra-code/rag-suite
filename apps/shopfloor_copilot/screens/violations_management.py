@@ -37,9 +37,8 @@ class ViolationsManagementScreen:
                 if data.get("ok"):
                     self.active_violations = data.get("violations", [])
                     await self.render_active_table()
-                    ui.notify(f"Loaded {len(self.active_violations)} active violations", type="positive")
         except Exception as e:
-            ui.notify(f"Failed to load active violations: {str(e)}", type="negative")
+            print(f"[ERROR] Failed to load active violations: {str(e)}")
     
     async def load_historical_violations(self):
         """Load historical violations from API"""
@@ -52,7 +51,7 @@ class ViolationsManagementScreen:
                     self.historical_violations = data.get("violations", [])
                     await self.render_history_table()
         except Exception as e:
-            ui.notify(f"Failed to load historical violations: {str(e)}", type="negative")
+            print(f"[ERROR] Failed to load historical violations: {str(e)}")
     
     async def load_violation_timeline(self, violation_id: str):
         """Load full timeline for a specific violation"""
