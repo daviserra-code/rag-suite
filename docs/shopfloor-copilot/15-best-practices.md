@@ -954,6 +954,584 @@ Yearly:    Major revision
 
 ---
 
-**Shopfloor Copilot Version:** 0.3.0  
-**Last Updated:** January 2025  
-**Next Review:** April 2025
+## UX Best Practices (v0.3.1+) 🆕
+
+### Design System Guidelines
+
+**Best Practice:** Consistent visual language across all screens
+
+**Color Palette:**
+```css
+/* Backgrounds (Gradients) */
+bg-gradient-to-br from-blue-50 to-indigo-50    /* Primary gradient */
+bg-gradient-to-br from-green-50 to-emerald-50  /* Success states */
+bg-gradient-to-br from-purple-50 to-pink-50    /* Special features */
+
+/* Text Colors */
+text-gray-900      /* Primary text (WCAG AA: 4.5:1 contrast) */
+text-gray-700      /* Secondary text */
+text-blue-700      /* Links and interactive elements */
+text-green-700     /* Success messages */
+text-red-700       /* Errors and warnings */
+
+/* Card Backgrounds */
+bg-white           /* Standard cards */
+bg-gray-50         /* Secondary panels */
+```
+
+**Typography Scale:**
+```css
+text-3xl font-bold     /* Page headers */
+text-xl font-semibold  /* Section headers */
+text-base              /* Body text */
+text-sm text-gray-600  /* Helper text */
+```
+
+**Spacing System:**
+```css
+p-6        /* Large padding (cards, containers) */
+p-4        /* Medium padding (nested sections) */
+p-3        /* Small padding (buttons, badges) */
+gap-6      /* Large gaps (grid columns) */
+gap-4      /* Medium gaps (form elements) */
+gap-2      /* Small gaps (inline elements) */
+```
+
+**Component Patterns:**
+```python
+# Gradient Card with Shadow
+with ui.card().classes('p-6 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50'):
+    ui.label('Dashboard Title').classes('text-3xl font-bold text-gray-900 mb-4')
+    ui.label('Subtitle text').classes('text-base text-gray-700')
+
+# Interactive Button
+ui.button('Action', on_click=handler).props('color=primary').classes('text-base')
+
+# Status Badge
+ui.badge('RUNNING', color='green').classes('text-sm font-semibold')
+```
+
+**Why This Matters:**
+- ✅ Users instantly recognize familiar patterns
+- ✅ Reduced cognitive load
+- ✅ Faster task completion
+- ✅ Professional appearance
+- ✅ Easier maintenance (consistent codebase)
+
+See [CHANGELOG.md](CHANGELOG.md#visual-design-system) for complete design token reference.
+
+---
+
+### Accessibility Guidelines (WCAG AA)
+
+**Best Practice:** Design for all users
+
+**Contrast Requirements:**
+```
+Text on Background:
+✅ PASS: text-gray-900 on bg-white (18.6:1 ratio)
+✅ PASS: text-gray-700 on bg-gray-50 (8.2:1 ratio)
+❌ FAIL: text-gray-400 on bg-white (2.8:1 ratio) → USE text-gray-900
+
+Required Minimums:
+- Normal text: 4.5:1 contrast ratio
+- Large text (18pt+): 3:1 contrast ratio
+- UI components: 3:1 contrast ratio
+```
+
+**Color-Blind Safe Design:**
+```python
+# DON'T rely only on color
+❌ ui.label('Error').style('color: red')  # Color-blind users might miss
+
+# DO combine color with icons/text
+✅ with ui.row().classes('gap-2 items-center'):
+       ui.icon('error', color='red').classes('text-xl')
+       ui.label('Error: Station not found').classes('text-red-700 font-semibold')
+```
+
+**Keyboard Navigation:**
+```
+All interactive elements must be keyboard accessible:
+✅ Buttons: Tab to focus, Enter to activate
+✅ Dropdowns: Arrow keys to navigate, Enter to select
+✅ Cards: Focus visible with ring-2 ring-blue-500
+✅ Skip links: Allow bypassing repeated navigation
+```
+
+**Screen Reader Support:**
+```python
+# Add semantic HTML and ARIA labels
+ui.button('Search', on_click=search).props('aria-label="Search stations"')
+ui.input('Station ID').props('aria-describedby="station-help"')
+ui.label('Enter station number (1-50)').props('id="station-help"')
+```
+
+**Focus Indicators:**
+```css
+/* Always visible focus states */
+focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+
+/* Example */
+ui.button('Filter').classes('focus:ring-2 focus:ring-blue-500')
+```
+
+**Testing Checklist:**
+```
+- [ ] All text meets 4.5:1 contrast (use WebAIM Contrast Checker)
+- [ ] Interactive elements have visible focus indicators
+- [ ] Color is not the only way to convey information
+- [ ] All images have alt text
+- [ ] Forms have proper labels and error messages
+- [ ] Keyboard navigation works without mouse
+- [ ] Screen reader announces all important state changes
+```
+
+**Tools:**
+```bash
+# Install axe DevTools extension (Chrome/Firefox)
+# Audit page:
+1. Open DevTools → axe tab
+2. Click "Scan ALL of my page"
+3. Fix issues flagged as "Violations"
+
+# Manual checks:
+1. Tab through interface (no trapped focus)
+2. Zoom to 200% (text still readable)
+3. View in grayscale (color not sole indicator)
+```
+
+**Common Fixes Applied in v0.3.1:**
+```
+Issue:                  Fix:
+Grey text (WCAG fail)   → text-gray-900 (WCAG pass)
+No focus indicator      → focus:ring-2 focus:ring-blue-500
+Color-only status       → Icon + text + color
+Unlabeled input         → aria-label added
+Low contrast button     → bg-blue-700 → bg-blue-600 with border
+```
+
+See [THIRD_ROUND_FIXES.md](../THIRD_ROUND_FIXES.md) for accessibility improvements across all dashboards.
+
+---
+
+### Dashboard Design Best Practices
+
+**Best Practice:** Information hierarchy and progressive disclosure
+
+**Layout Patterns:**
+```python
+# 1. Header with Key Actions
+with ui.row().classes('justify-between items-center mb-6'):
+    ui.label('Dashboard Title').classes('text-3xl font-bold text-gray-900')
+    with ui.row().classes('gap-2'):
+        ui.button('Export', icon='download')
+        ui.button('Refresh', icon='refresh')
+
+# 2. Filters in Prominent Card
+with ui.card().classes('p-6 mb-6 bg-white shadow-md'):
+    ui.label('Filters').classes('text-xl font-semibold mb-4')
+    with ui.grid(columns=3).classes('gap-4'):
+        ui.select(['Line A01', 'Line A02'], label='Line')
+        ui.input('Station ID', placeholder='e.g., ST18')
+        ui.button('Apply Filters', on_click=filter_data)
+
+# 3. Metrics Grid (Top Priority Info)
+with ui.grid(columns=4).classes('gap-6 mb-6'):
+    for metric in ['OEE', 'Availability', 'Performance', 'Quality']:
+        with ui.card().classes('p-6 bg-gradient-to-br from-blue-50 to-indigo-50'):
+            ui.label(metric).classes('text-sm text-gray-600')
+            ui.label('87.3%').classes('text-3xl font-bold text-gray-900')
+
+# 4. Detailed Data Table (Lower Priority)
+with ui.card().classes('p-6 bg-white'):
+    ui.label('Recent Events').classes('text-xl font-semibold mb-4')
+    ui.table(columns=[...], rows=[...])
+```
+
+**Information Density:**
+```
+✅ DO:
+- Most important data largest and at top
+- Use white space generously (p-6 padding)
+- Group related information in cards
+- Limit to 7±2 items per section (cognitive limit)
+
+❌ DON'T:
+- Cram everything on one screen
+- Use tiny fonts (text-xs) for important data
+- Mix unrelated metrics in same card
+- Create horizontal scrolling (breaks flow)
+```
+
+**Loading States:**
+```python
+# Show skeleton while loading
+if loading:
+    with ui.card().classes('p-6 animate-pulse'):
+        ui.skeleton().classes('h-8 w-48 mb-4')  # Title
+        ui.skeleton().classes('h-32 w-full')    # Content
+else:
+    # Real content
+    with ui.card().classes('p-6'):
+        ui.label('Dashboard Title').classes('text-xl font-semibold')
+        # ... data ...
+```
+
+**Empty States:**
+```python
+# Helpful message when no data
+if not data:
+    with ui.card().classes('p-12 text-center bg-gray-50'):
+        ui.icon('inbox', size='64px').classes('text-gray-400 mb-4')
+        ui.label('No data available').classes('text-xl text-gray-600 mb-2')
+        ui.label('Select a line and date range to view metrics').classes('text-gray-500')
+        ui.button('Configure Filters', on_click=show_filters).classes('mt-4')
+```
+
+**Real-Time Updates:**
+```python
+# Poll for updates without jarring refresh
+ui.timer(5.0, lambda: update_dashboard())  # Refresh every 5s
+
+# Show update indicator
+with ui.row().classes('gap-2 items-center text-sm text-gray-600'):
+    ui.spinner(size='sm')
+    ui.label('Updating...')  # Only show while fetching
+```
+
+See [Chapter 8](08-dashboards.md) for dashboard-specific design patterns.
+
+---
+
+### Form Design Best Practices
+
+**Best Practice:** Clear, forgiving input validation
+
+**Input Flexibility (Fuzzy Matching):**
+```python
+# Example from AI Diagnostics (v0.3.1)
+def normalize_station_id(raw_input: str) -> str:
+    """Accept flexible station ID formats."""
+    cleaned = raw_input.strip().upper()
+    
+    # Extract number: "ST18", "st18", "18", "Station 18" → "ST18"
+    if cleaned.startswith('ST'):
+        return cleaned  # Already formatted
+    elif cleaned.startswith('STATION'):
+        num = cleaned.replace('STATION', '').strip()
+        return f'ST{num}'
+    elif cleaned.isdigit():
+        return f'ST{cleaned}'  # Just number → add prefix
+    else:
+        raise ValueError(f'Invalid format: {raw_input}')
+
+# User Experience:
+✅ "18" → Accepts and converts to "ST18"
+✅ "st18" → Accepts and normalizes to "ST18"
+✅ "Station 18" → Accepts and converts to "ST18"
+❌ "abc" → Clear error: "Invalid format: abc"
+```
+
+**Error Messages:**
+```python
+# BAD: Technical jargon
+❌ "KeyError: 'station_id' not in request.json"
+
+# GOOD: Actionable guidance
+✅ "Station ID is required. Please enter a station number (e.g., ST18 or 18)."
+
+# BETTER: Suggest correction
+✅ "Station 'ST99' not found. Did you mean ST09? Available: ST01-ST50."
+```
+
+**Form Layout:**
+```python
+# Vertical layout for complex forms (easier to scan)
+with ui.column().classes('gap-4 max-w-md'):
+    ui.input('Line ID', placeholder='A01').classes('w-full')
+    ui.input('Station ID', placeholder='18').classes('w-full')
+    ui.select(['Day', 'Night'], label='Shift').classes('w-full')
+    with ui.row().classes('gap-2 justify-end w-full'):
+        ui.button('Cancel', on_click=close).props('flat')
+        ui.button('Submit', on_click=submit).props('color=primary')
+```
+
+**Validation Feedback:**
+```python
+# Real-time validation (not just on submit)
+station_input = ui.input('Station ID')
+
+def validate_station(e):
+    value = e.value
+    if not value:
+        station_input.props('error error-message="Required"')
+    elif not is_valid_station(value):
+        station_input.props('error error-message="Invalid format (use ST## or ##)"')
+    else:
+        station_input.props('error=false')  # Clear error
+
+station_input.on('blur', validate_station)
+```
+
+See [Chapter 7](07-ai-diagnostics.md#flexible-station-id-input) for fuzzy matching implementation.
+
+---
+
+### Performance Best Practices
+
+**Best Practice:** Optimize for perceived speed
+
+**Lazy Loading:**
+```python
+# Don't load all data upfront
+❌ stations = fetch_all_stations()  # 10,000 rows, 5s wait
+
+# Load on demand
+✅ stations = []  # Start empty
+✅ ui.button('Load Stations', on_click=lambda: fetch_stations())  # User-triggered
+```
+
+**Debouncing:**
+```python
+# Don't search on every keystroke
+import asyncio
+
+search_input = ui.input('Search')
+search_timer = None
+
+async def debounced_search(e):
+    global search_timer
+    if search_timer:
+        search_timer.cancel()
+    
+    async def do_search():
+        await asyncio.sleep(0.3)  # Wait 300ms
+        perform_search(e.value)
+    
+    search_timer = asyncio.create_task(do_search())
+
+search_input.on('input', debounced_search)
+```
+
+**Pagination:**
+```python
+# Limit rows per page
+ui.table(
+    columns=[...],
+    rows=data[page*50:(page+1)*50],  # 50 rows per page
+    pagination={'rowsPerPage': 50}
+)
+```
+
+**Progress Indicators:**
+```python
+# Show progress for long operations
+with ui.dialog() as progress_dialog:
+    with ui.card():
+        ui.label('Loading data...').classes('text-lg mb-4')
+        progress = ui.linear_progress(value=0)
+
+async def load_data():
+    progress_dialog.open()
+    for i in range(100):
+        # Simulate work
+        await asyncio.sleep(0.05)
+        progress.value = i / 100
+    progress_dialog.close()
+```
+
+**Connection Timeouts:**
+```python
+# Extended timeout for OPC connections (v0.3.1)
+async def connect_opc(endpoint: str):
+    client = Client(endpoint)
+    try:
+        # Increased from 10s → 15s (handles slow networks)
+        await asyncio.wait_for(client.connect(), timeout=15.0)
+        return client
+    except asyncio.TimeoutError:
+        raise ConnectionError(
+            f'Connection to {endpoint} timed out after 15 seconds. '
+            f'Check: 1) Server is running, 2) Firewall allows 4840, '
+            f'3) Network is stable.'
+        )
+```
+
+See [Chapter 4](04-opc-explorer.md#connection-improvements-v031) for connection optimization details.
+
+---
+
+### Testing Best Practices
+
+**Best Practice:** Test with real user workflows
+
+**User Acceptance Testing (UAT):**
+```
+Test Scenario: Shift handover workflow
+1. Login as operator
+2. Navigate to Shift Handover tab
+3. Select: Day shift, Line A01, Today
+4. Verify filters are readable (white background, dark text)
+5. Generate report
+6. Verify text contrast meets WCAG AA
+7. Add notes
+8. Email report to next shift
+9. Confirm email received
+
+Expected: Complete workflow in < 3 minutes with no confusion
+```
+
+**Accessibility Testing:**
+```bash
+# Keyboard-only navigation test
+1. Unplug mouse
+2. Tab through entire interface
+3. Verify all functions accessible
+4. Check focus indicators visible
+5. Test Escape key closes dialogs
+
+# Screen reader test (NVDA on Windows)
+1. Download NVDA (free)
+2. Close eyes
+3. Navigate interface by ear only
+4. Verify all elements announced correctly
+5. Check form errors are read aloud
+```
+
+**Cross-Browser Testing:**
+```
+Test in:
+- Chrome (primary)
+- Firefox
+- Edge
+- Safari (if macOS available)
+
+Check:
+- Layout consistent
+- Gradients render correctly
+- Interactions work
+- Performance acceptable
+```
+
+**Load Testing:**
+```bash
+# Simulate 50 concurrent users
+ab -n 1000 -c 50 http://localhost:8010/api/diagnostics/ST18
+
+# Check:
+- Response time < 2s (p95)
+- No errors
+- CPU < 80%
+- Memory stable
+```
+
+---
+
+## Screenshot Capture Best Practices 🆕
+
+**Best Practice:** Consistent, high-quality screenshots for documentation
+
+**Preparation:**
+```
+Before capturing:
+1. Clear browser cache (Ctrl+Shift+Delete)
+2. Zoom to 100% (Ctrl+0)
+3. Resize window to 1920x1080 (or document actual size)
+4. Close unnecessary tabs/windows in screenshot
+5. Use clean test data (avoid sensitive info)
+```
+
+**Capture Tools:**
+```
+Windows:
+- Snipping Tool (Win+Shift+S) → Rectangular selection
+- ShareX (advanced, free) → https://getsharex.com
+
+macOS:
+- Cmd+Shift+4 → Drag to select area
+- Cmd+Shift+3 → Full screen
+
+Browser Extensions:
+- Awesome Screenshot (Chrome/Firefox)
+- Full Page Screen Capture
+```
+
+**Naming Convention:**
+```
+Format: <chapter>-<feature>-<state>-<number>.png
+
+Examples:
+08-kpi-dashboard-overview-01.png
+08-kpi-dashboard-filters-02.png
+09-operator-qna-chat-interface-01.png
+09-operator-qna-citations-panel-02.png
+CHANGELOG-shift-handover-before-01.png
+CHANGELOG-shift-handover-after-02.png
+```
+
+**Image Processing:**
+```bash
+# Resize to max 1200px wide (keeps file size reasonable)
+magick input.png -resize 1200x input.png
+
+# Add border (helps visibility in docs)
+magick input.png -bordercolor gray -border 2 input.png
+
+# Compress
+optipng -o7 input.png  # Lossless
+```
+
+**Organization:**
+```
+docs/
+  shopfloor-copilot/
+    images/
+      chapter-01/
+        01-introduction-overview-01.png
+        01-introduction-architecture-02.png
+      chapter-08/
+        08-kpi-dashboard-overview-01.png
+        08-kpi-dashboard-filters-02.png
+      changelog/
+        shift-handover-before-01.png
+        shift-handover-after-02.png
+```
+
+**Markdown Embedding:**
+```markdown
+<!-- Standard image -->
+![KPI Dashboard Overview](images/chapter-08/08-kpi-dashboard-overview-01.png)
+*Figure 8.1: KPI Dashboard showing OEE metrics for Line A01*
+
+<!-- Image with caption -->
+<figure>
+  <img src="images/chapter-08/08-kpi-dashboard-overview-01.png" alt="KPI Dashboard">
+  <figcaption>Figure 8.1: KPI Dashboard with filters and metrics tiles</figcaption>
+</figure>
+
+<!-- Before/After comparison -->
+| Before (v0.3.0) | After (v0.3.1) |
+|-----------------|----------------|
+| ![Before](images/changelog/shift-handover-before-01.png) | ![After](images/changelog/shift-handover-after-02.png) |
+| Grey text hard to read | Dark text, high contrast |
+```
+
+**Placeholder Format (Used in Documentation):**
+```markdown
+> **📸 SCREENSHOT PLACEHOLDER:**  
+> **Filename:** `08-kpi-dashboard-overview-01.png`  
+> **Caption:** "KPI Dashboard Overview - Line A01 Day Shift"  
+> **What to Capture:**
+> - Navigate to Tab 2 (KPI Dashboard)
+> - Select: Line A01, Day Shift, Last 7 Days
+> - Ensure 4 KPI tiles visible (OEE, Availability, Performance, Quality)
+> - Show recent downtimes table below
+> - Capture full viewport (1920x1080)
+```
+
+---
+
+**Shopfloor Copilot Version:** 0.3.1  
+**Last Updated:** December 2025  
+**Next Review:** March 2026

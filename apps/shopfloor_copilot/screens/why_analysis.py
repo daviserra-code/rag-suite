@@ -143,7 +143,7 @@ def why_analysis_screen():
                                                     options[selected_issue.value][5]   # line_id
                                                 )).classes('w-full mt-2')
                                     else:
-                                        ui.label('No recent downtime events found').classes('text-gray-500')
+                                        ui.label('No recent downtime events found').classes('text-gray-300')
                             
                             elif source_type.value == 'Shift Issues':
                                 with engine.connect() as conn:
@@ -179,7 +179,7 @@ def why_analysis_screen():
                                                     options[selected_issue.value][4]   # line_id
                                                 )).classes('w-full mt-2')
                                     else:
-                                        ui.label('No open shift issues found').classes('text-gray-500')
+                                        ui.label('No open shift issues found').classes('text-gray-300')
                             
                             else:  # Custom Issue
                                 custom_line = ui.input('Production Line', placeholder='e.g., M10').classes('w-full')
@@ -215,7 +215,7 @@ def why_analysis_screen():
                     with ui.row().classes('w-full gap-2 items-center mb-2'):
                         ui.icon('category', size='sm').classes('text-purple-600')
                         ui.label(f'Category: {issue_category}').classes('font-semibold')
-                    ui.label(issue_description or 'No description provided').classes('text-sm text-gray-700')
+                    ui.label(issue_description or 'No description provided').classes('text-sm text-gray-200')
                 
                 # 5 Whys Form
                 whys_data = []
@@ -224,7 +224,7 @@ def why_analysis_screen():
                     ui.label('5 Whys Analysis').classes('text-lg font-bold mb-4')
                     
                     for i in range(5):
-                        with ui.card().classes('w-full p-3 mb-3 bg-gray-50'):
+                        with ui.card().classes('w-full p-3 mb-3 bg-gray-800'):
                             with ui.row().classes('w-full items-start gap-2'):
                                 ui.label(f'{i+1}.').classes('text-2xl font-bold text-purple-600 w-8')
                                 with ui.column().classes('flex-1 gap-2'):
@@ -236,7 +236,7 @@ def why_analysis_screen():
                                     whys_data.append(why_input)
                     
                     # Root Cause
-                    with ui.card().classes('w-full p-4 bg-green-50 border-l-4 border-green-500'):
+                    with ui.card().classes('w-full p-4 bg-green-900 border-l-4 border-green-500'):
                         ui.label('🎯 Root Cause Identified').classes('text-lg font-bold mb-2')
                         root_cause_input = ui.textarea(
                             'Root Cause',
@@ -324,7 +324,7 @@ def why_analysis_screen():
                     with ui.card().classes('w-full p-4 mb-3'):
                         with ui.expansion(template_name, icon='lightbulb').classes('w-full'):
                             with ui.column().classes('w-full gap-3 pt-2'):
-                                ui.label(template_data['description']).classes('text-sm text-gray-700 mb-2')
+                                ui.label(template_data['description']).classes('text-sm text-gray-200 mb-2')
                                 
                                 ui.label('Example Analysis:').classes('font-semibold text-sm mb-2')
                                 for idx, why in enumerate(template_data['example_whys']):
@@ -332,9 +332,9 @@ def why_analysis_screen():
                                         ui.label(f'{idx+1}.').classes('font-bold text-purple-600 w-6')
                                         ui.label(why).classes('text-sm flex-1')
                                 
-                                with ui.card().classes('w-full p-3 bg-green-50 mt-2'):
+                                with ui.card().classes('w-full p-3 bg-green-900 mt-2'):
                                     ui.label('🎯 Example Root Cause:').classes('font-semibold text-sm mb-1')
-                                    ui.label(template_data['root_cause_example']).classes('text-sm text-gray-800')
+                                    ui.label(template_data['root_cause_example']).classes('text-sm text-gray-200')
             
             dialog.open()
         
@@ -359,9 +359,9 @@ def why_analysis_screen():
                     
                     if not analyses:
                         with ui.card().classes('w-full p-8 text-center'):
-                            ui.icon('history', size='xl').classes('text-gray-400 mb-2')
-                            ui.label('No analysis history yet').classes('text-gray-500')
-                            ui.label('Start your first 5 Whys analysis to see it here').classes('text-sm text-gray-900')
+                            ui.icon('history', size='xl').classes('text-gray-300 mb-2')
+                            ui.label('No analysis history yet').classes('text-gray-300')
+                            ui.label('Start your first 5 Whys analysis to see it here').classes('text-sm text-gray-300')
                         return
                     
                     for analysis in analyses:

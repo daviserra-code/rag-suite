@@ -78,8 +78,8 @@ async def apply_scenario(line_id: str, station_id: str, event: str, duration_min
 def opc_studio_screen():
     """Build the OPC Studio tab UI"""
     
-    ui.label('OPC Studio Control Panel').classes('text-2xl font-bold mb-4')
-    ui.label('Monitor and control the OPC UA simulation and historian').classes('text-gray-600 mb-6')
+    ui.label('OPC Studio Control Panel').classes('text-2xl font-bold text-white mb-4')
+    ui.label('Monitor and control the OPC UA simulation and historian').classes('text-gray-200 mb-6')
     
     # Status Panel
     with ui.card().classes('w-full mb-4'):
@@ -111,7 +111,7 @@ def opc_studio_screen():
                 
                 if historian.get("enabled"):
                     interval = historian.get("interval_s", "?")
-                    ui.label(f"(Interval: {interval}s)").classes('text-sm text-gray-600')
+                    ui.label(f"(Interval: {interval}s)").classes('text-sm text-gray-200')
         
         ui.button('Refresh Status', on_click=refresh_status, icon='refresh').classes('mt-2')
     
@@ -138,13 +138,13 @@ def opc_studio_screen():
                 lines = model.get("lines", [])
                 
                 if not plant_id:
-                    ui.label("No plant loaded").classes('text-gray-600')
+                    ui.label("No plant loaded").classes('text-gray-300')
                     return
                 
                 # Plant header with metadata
                 with ui.expansion(f"Plant: {plant_id} - {plant_name}", icon='factory', value=True).classes('w-full'):
                     if location:
-                        ui.label(f"📍 Location: {location}").classes('text-sm text-gray-600 mb-2')
+                        ui.label(f"📍 Location: {location}").classes('text-sm text-gray-200 mb-2')
                     ui.label(f"📊 Total Lines: {len(lines)}").classes('text-sm font-semibold mb-3')
                     
                     for line in lines:

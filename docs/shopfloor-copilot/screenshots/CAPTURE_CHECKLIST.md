@@ -618,6 +618,39 @@ Get-ChildItem *.png | ForEach-Object {
 - Clear browser cache (Ctrl+Shift+Delete)
 - Try incognito mode
 
+### Problem: Violations tab not visible after deployment
+**Cause:** NiceGUI heavily caches UI structure in browser
+
+**Solution (Choose ONE):**
+
+**Option 1: Force Browser Cache Clear**
+1. Open http://46.224.66.48:8010
+2. Press F12 to open DevTools
+3. Right-click the refresh button → "Empty Cache and Hard Reload"
+4. Close DevTools
+5. Check for Violations tab (⚠️ icon, after AI Diagnostics)
+
+**Option 2: Private/Incognito Window**
+1. Press Ctrl+Shift+N (Chrome) or Ctrl+Shift+P (Firefox)
+2. Navigate to http://46.224.66.48:8010
+3. Violations tab should be visible
+
+**Option 3: Clear All Browser Data**
+1. Press Ctrl+Shift+Delete
+2. Select "All time" for time range
+3. Check "Cached images and files"
+4. Click "Clear data"
+5. Reload http://46.224.66.48:8010
+
+**Option 4: Different Browser**
+- Try Edge, Firefox, or Chrome (whichever you're NOT currently using)
+- Fresh browser = no cache
+
+**Verification:**
+- Count tabs - should see **24 tabs total**
+- Look for ⚠️ warning icon between "AI Diagnostics" and "Operator Q&A"
+- Tab should be labeled "Violations"
+
 ---
 
 ## Next Steps

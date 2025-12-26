@@ -141,7 +141,7 @@ class ViolationsManagementScreen:
         with ui.column().classes('w-full gap-4 p-4'):
             # Header
             with ui.row().classes('w-full items-center justify-between mb-4'):
-                ui.label('Violations Management').classes('text-2xl font-bold text-gray-900')
+                ui.label('Violations Management').classes('text-2xl font-bold text-white')
                 ui.button('Refresh', icon='refresh', on_click=self.refresh_all).props('color=primary')
             
             # Tabs for Active vs Historical
@@ -184,7 +184,7 @@ class ViolationsManagementScreen:
         
         with self.active_table:
             if not self.active_violations:
-                ui.label('No active violations').classes('text-gray-500 italic')
+                ui.label('No active violations').classes('text-gray-300 italic')
                 return
             
             for violation in self.active_violations:
@@ -199,7 +199,7 @@ class ViolationsManagementScreen:
         
         with self.history_table:
             if not self.historical_violations:
-                ui.label('No historical violations').classes('text-gray-500 italic')
+                ui.label('No historical violations').classes('text-gray-300 italic')
                 return
             
             for violation in self.historical_violations:
@@ -214,15 +214,15 @@ class ViolationsManagementScreen:
         state = violation.get('state', 'OPEN')
         ts_start = violation.get('ts_start', '')
         
-        # Color based on severity and state
+        # Color based on severity and state - dark theme
         if severity == 'critical':
-            card_color = 'bg-red-50 border-l-4 border-red-500'
+            card_color = 'bg-red-900 border-l-4 border-red-500'
             severity_badge = 'red'
         elif severity == 'warning':
-            card_color = 'bg-yellow-50 border-l-4 border-yellow-500'
+            card_color = 'bg-yellow-900 border-l-4 border-yellow-500'
             severity_badge = 'orange'
         else:
-            card_color = 'bg-blue-50 border-l-4 border-blue-500'
+            card_color = 'bg-blue-900 border-l-4 border-blue-500'
             severity_badge = 'blue'
         
         # State badge color
@@ -242,8 +242,8 @@ class ViolationsManagementScreen:
                         ui.badge(station).props(f'color=primary')
                         ui.badge(severity.upper()).props(f'color={severity_badge}')
                         ui.badge(state).props(f'color={state_color}')
-                    ui.label(f'Profile: {profile}').classes('text-sm text-gray-600')
-                    ui.label(f'Started: {ts_start[:19] if ts_start else "Unknown"}').classes('text-xs text-gray-500')
+                    ui.label(f'Profile: {profile}').classes('text-sm text-gray-200')
+                    ui.label(f'Started: {ts_start[:19] if ts_start else "Unknown"}').classes('text-xs text-gray-300')
                 
                 # Right: Action buttons
                 if is_active:

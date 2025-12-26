@@ -126,23 +126,23 @@ def shift_handover_screen():
                 with stats_container:
                     with ui.card().classes('p-4'):
                         ui.label(str(stats[0])).classes('text-3xl font-bold text-blue-600')
-                        ui.label('Total Reports').classes('text-sm text-gray-600')
+                        ui.label('Total Reports').classes('text-sm text-gray-200')
                     
                     with ui.card().classes('p-4'):
                         ui.label(str(stats[1])).classes('text-3xl font-bold text-green-600')
-                        ui.label('Submitted').classes('text-sm text-gray-600')
+                        ui.label('Submitted').classes('text-sm text-gray-200')
                     
                     with ui.card().classes('p-4'):
                         ui.label(str(stats[2])).classes('text-3xl font-bold text-orange-600')
-                        ui.label('Draft').classes('text-sm text-gray-600')
+                        ui.label('Draft').classes('text-sm text-gray-200')
                     
                     with ui.card().classes('p-4'):
                         ui.label(f"{stats[3] or 0}%").classes('text-3xl font-bold text-purple-600')
-                        ui.label('Avg OEE').classes('text-sm text-gray-600')
+                        ui.label('Avg OEE').classes('text-sm text-gray-200')
                     
                     with ui.card().classes('p-4'):
                         ui.label(str(issues_count)).classes('text-3xl font-bold text-red-600')
-                        ui.label('Open Issues').classes('text-sm text-gray-600')
+                        ui.label('Open Issues').classes('text-sm text-gray-200')
                 
                 # Get handover reports
                 handovers = conn.execute(text(f"""
@@ -160,9 +160,9 @@ def shift_handover_screen():
                 if not handovers:
                     with handover_container:
                         with ui.card().classes('w-full p-8 text-center'):
-                            ui.icon('info', size='xl').classes('text-gray-400 mb-2')
-                            ui.label('No handover reports found for the selected filters.').classes('text-lg text-gray-500 mb-2')
-                            ui.label('Try clearing the date filter or selecting different criteria.').classes('text-sm text-gray-400')
+                            ui.icon('info', size='xl').classes('text-gray-300 mb-2')
+                            ui.label('No handover reports found for the selected filters.').classes('text-lg text-gray-300 mb-2')
+                            ui.label('Try clearing the date filter or selecting different criteria.').classes('text-sm text-gray-300')
                     return
                 
                 # Display handover reports
@@ -199,24 +199,24 @@ def shift_handover_screen():
                     # Header
                     with ui.column().classes('gap-1'):
                         with ui.row().classes('items-center gap-2'):
-                            ui.label(f'{line_id} - {shift_name} Shift').classes('text-xl font-bold')
+                            ui.label(f'{line_id} - {shift_name} Shift').classes('text-xl font-bold text-white')
                             ui.badge(status.upper(), color='green' if status == 'submitted' else 'orange')
-                        ui.label(f"{shift_date.strftime('%A, %B %d, %Y')}").classes('text-sm text-gray-900')
-                        ui.label(f"Created by: {created_by}").classes('text-xs text-gray-800')
+                        ui.label(f"{shift_date.strftime('%A, %B %d, %Y')}").classes('text-sm text-gray-200')
+                        ui.label(f"Created by: {created_by}").classes('text-xs text-gray-300')
                     
                     # Metrics
                     with ui.row().classes('gap-4'):
                         with ui.column().classes('items-center'):
                             ui.label(f"{(oee or 0)*100:.1f}%").classes('text-2xl font-bold text-blue-600')
-                            ui.label('OEE').classes('text-xs text-gray-900 font-semibold')
+                            ui.label('OEE').classes('text-xs text-gray-200 font-semibold')
                         
                         with ui.column().classes('items-center'):
                             ui.label(str(total_prod or 0)).classes('text-2xl font-bold text-green-600')
-                            ui.label('Units').classes('text-xs text-gray-900 font-semibold')
+                            ui.label('Units').classes('text-xs text-gray-200 font-semibold')
                         
                         with ui.column().classes('items-center'):
                             ui.label(str(int(downtime or 0))).classes('text-2xl font-bold text-red-600')
-                            ui.label('Min Down').classes('text-xs text-gray-900 font-semibold')
+                            ui.label('Min Down').classes('text-xs text-gray-200 font-semibold')
                 
                 # Summary
                 with ui.expansion('Summary & Details', icon='description').classes('w-full'):
@@ -242,12 +242,12 @@ def shift_handover_screen():
                                 'low': 'blue'
                             }
                             
-                            with ui.row().classes('w-full items-start gap-2 p-2 border-l-2 border-gray-300'):
+                            with ui.row().classes('w-full items-start gap-2 p-2 border-l-2 border-gray-600'):
                                 ui.badge(severity.upper(), color=severity_colors.get(severity, 'gray'))
                                 
                                 with ui.column().classes('flex-1'):
-                                    ui.label(issue_type).classes('font-semibold text-gray-900')
-                                    ui.label(description).classes('text-sm text-gray-900')
+                                    ui.label(issue_type).classes('font-semibold text-white')
+                                    ui.label(description).classes('text-sm text-gray-200')
                                     
                                     if issue_status == 'resolved':
                                         ui.label(f'✓ Resolved by {resolved_by}').classes('text-xs text-green-600')
@@ -274,11 +274,11 @@ def shift_handover_screen():
                                 'general': '📝'
                             }
                             
-                            with ui.row().classes('w-full gap-2 p-2 bg-gray-50 rounded'):
+                            with ui.row().classes('w-full gap-2 p-2 bg-gray-800 rounded'):
                                 ui.label(note_icons.get(note_type, '📝'))
                                 with ui.column().classes('flex-1'):
-                                    ui.label(note_text).classes('text-sm')
-                                    ui.label(f"{note_by} - {note_time.strftime('%H:%M')}").classes('text-xs text-gray-500')
+                                    ui.label(note_text).classes('text-sm text-white')
+                                    ui.label(f"{note_by} - {note_time.strftime('%H:%M')}").classes('text-xs text-gray-300')
                 
                 # Actions
                 with ui.row().classes('w-full gap-2 mt-2'):

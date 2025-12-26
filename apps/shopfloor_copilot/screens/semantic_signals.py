@@ -79,7 +79,7 @@ class SemanticSignalsScreen:
         self.signals_container.clear()
         
         with self.signals_container:
-            ui.label(f"Semantic Signals ({len(self.semantic_signals)}) ").classes("text-xl font-bold text-gray-900 mb-4")
+            ui.label(f"Semantic Signals ({len(self.semantic_signals)}) ").classes("text-xl font-bold text-white mb-4")
             
             if not self.semantic_signals:
                 ui.label("No semantic signals available - Check OPC Studio connection").classes("text-orange-600 italic text-base")
@@ -134,25 +134,25 @@ class SemanticSignalsScreen:
         card_class = "p-3 rounded"
         if loss_category:
             if 'availability' in loss_category:
-                card_class += " bg-red-50 border-l-4 border-red-500"
+                card_class += " bg-red-900 border-l-4 border-red-500"
             elif 'performance' in loss_category:
-                card_class += " bg-yellow-50 border-l-4 border-yellow-500"
+                card_class += " bg-yellow-900 border-l-4 border-yellow-500"
             elif 'quality' in loss_category:
-                card_class += " bg-orange-50 border-l-4 border-orange-500"
+                card_class += " bg-orange-900 border-l-4 border-orange-500"
             else:
-                card_class += " bg-gray-50 border-l-4 border-gray-400"
+                card_class += " bg-gray-800 border-l-4 border-gray-400"
         else:
-            card_class += " bg-white border"
+            card_class += " bg-gray-800 border"
         
         with ui.element('div').classes(card_class):
             # Semantic ID with better color
-            ui.label(semantic_id).classes("text-sm font-mono text-gray-900 font-semibold")
+            ui.label(semantic_id).classes("text-sm font-mono text-white font-semibold")
             
             # Value with better visibility
             value_text = f"{value}"
             if unit:
                 value_text += f" {unit}"
-            ui.label(value_text).classes("text-xl font-bold text-gray-900")
+            ui.label(value_text).classes("text-xl font-bold text-white")
             
             # Loss category badge
             if loss_category:

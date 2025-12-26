@@ -55,10 +55,365 @@ Click the **Connect** button. You should see:
 - Browse tree populates with root nodes
 - Connection indicator turns green
 
-**Troubleshooting:**
-- ❌ **Connection Failed:** Check server URL and port
-- ❌ **Timeout:** Verify network connectivity
-- ❌ **Authentication Error:** Check username/password (if required)
+---
+
+### ✨ Connection Improvements (v0.3.1)
+
+**What's New:** Enhanced connection reliability, better timeout handling, and helpful error messages.
+
+[📸 SCREENSHOT PLACEHOLDER]
+**File:** `screenshots/opc-explorer-connection-error.png`
+**Caption:** OPC Explorer showing improved error message with troubleshooting tips
+**Instructions:**
+1. Navigate to OPC Explorer tab
+2. Stop OPC Demo container: `docker stop opc-demo`
+3. Try to connect to show error message
+4. Capture error notification with troubleshooting tips
+5. Restart container: `docker start opc-demo`
+
+**Improvements:**
+
+#### 1. Extended Timeout (10s → 15s)
+**Before:** Connection attempts timed out after 10 seconds  
+**After:** Extended to 15 seconds to accommodate slower networks
+
+**Why:** Some OPC servers take longer to respond, especially:
+- During startup (first connection)
+- On slow networks
+- When server is under heavy load
+- Virtual machines or containers
+
+#### 2. Better Error Messages
+
+**Before (v0.3.0):**
+```
+❌ Connection failed
+```
+
+**After (v0.3.1):**
+```
+❌ Connection Failed
+
+Could not connect to OPC server within 15 seconds.
+
+🔍 Troubleshooting Tips:
+• Check that OPC Demo container is running: docker ps
+• Verify endpoint URL is correct: opc.tcp://opc-demo:4850
+• Check network connectivity between containers
+• Ensure firewall allows port 4850
+• Try increasing timeout if server is slow to respond
+
+💡 Common Solutions:
+• Restart OPC Demo: docker restart opc-demo
+• Check Docker network: docker network inspect rag-suite_default
+• Verify service health: docker logs opc-demo
+```
+
+#### 3. Specific Timeout Exception
+
+**Technical Details:**
+
+File: `apps/shopfloor_copilot/screens/opc_explorer.py`
+
+```python
+# Connection function with improved error handling
+async def connect_to_server():
+    try:
+        client = Client(server_url, timeout=15)  # Increased from 10s
+        await client.connect()
+        
+        # Success notification
+        ui.notify(
+            '✅ Connected successfully',
+            type='positive',
+            position='top',
+            timeout=3000
+        )
+        
+        connection_status.set_text('✅ Connected')
+        connection_status.classes('text-green-600 font-bold')
+        
+    except asyncio.TimeoutError:
+        # Specific timeout handling
+        error_msg = (
+            "❌ Connection Failed\n\n"
+            "Could not connect to OPC server within 15 seconds.\n\n"
+            "🔍 Troubleshooting Tips:\n"
+            "• Check Docker services: docker ps | grep opc\n"
+            "• Verify endpoint URL is correct\n"
+            "• Check network connectivity\n"
+            "• Try increasing timeout if server is slow\n\n"
+            "💡 Quick Fix:\n"
+            "docker restart opc-demo"
+        )
+        
+        ui.notify(
+            error_msg,
+            type='negative',
+            position='top-right',
+            timeout=10000,  # Show for 10 seconds
+            multi_line=True
+        )
+        
+        connection_status.set_text('❌ Timeout (15s)')
+        connection_status.classes('text-red-600 font-bold')
+        
+    except Exception as e:
+        # Generic error handling
+        error_msg = (
+            f"❌ Connection Error\n\n"
+            f"Error: {str(e)}\n\n"
+            f"🔍 Check:\n"
+            f"• Server URL format: opc.tcp://host:port\n"
+            f"• Server is running and accessible\n"
+            f"• Authentication if required\n\n"
+            f"💡 Try: docker logs opc-demo"
+        )
+        
+        ui.notify(
+            error_msg,
+            type='negative',
+            position='top-right',
+            timeout=10000,
+            multi_line=True
+        )
+        
+        connection_status.set_text(f'❌ Error: {type(e).__name__}')
+        connection_status.classes('text-red-600 font-bold')
+```
+
+#### 4. Connection Status Indicators
+
+**Visual Feedback:**
+
+| Status | Indicator | Description |
+|--------|-----------|-------------|
+| **Not Connected** | ⚪ grey | Initial state, not attempted |
+| **Connecting...** | 🔄 blue | Connection in progress |
+| **Connected** | ✅ green | Successfully connected |
+| **Timeout** | ⏱️ orange | Exceeded 15 second timeout |
+| **Error** | ❌ red | Connection failed with error |
+| **Disconnected** | 🔌 grey | Was connected, now disconnected |
+
+#### 5. Notification Positioning
+
+**Before:** Notifications appeared center screen (blocked content)  
+**After:** Notifications appear top-right corner (non-intrusive)
+
+```python
+ui.notify(
+    message='Connection status...',
+    position='top-right',  # Changed from 'center'
+    timeout=10000          # Show longer for errors (10s)
+)
+```
+
+---
+
+### Troubleshooting Connection Issues
+
+#### Problem: "Connection timed out after 15 seconds"
+
+**Possible Causes:**
+1. OPC Demo container not running
+2. Wrong endpoint URL
+3. Network connectivity issue
+4. Port 4850 blocked by firewall
+5. Server overwhelmed with requests
+
+**Solutions:**
+
+**Step 1: Verify OPC Demo is Running**
+```powershell
+docker ps | findstr opc-demo
+```
+
+Expected output:
+```
+abc123def456   opc-demo:latest   "python server.py"   Up 2 hours   4850/tcp
+```
+
+If not running:
+```powershell
+docker start opc-demo
+```
+
+**Step 2: Check Endpoint URL**
+```
+Correct: opc.tcp://opc-demo:4850
+Wrong:   opc.tcp://opc-demo:4850/demo/server  ❌ (old endpoint)
+Wrong:   opc.tcp://localhost:4850              ❌ (use container name)
+Wrong:   http://opc-demo:4850                  ❌ (not HTTP)
+```
+
+**Step 3: Test Network Connectivity**
+```powershell
+# From Shopfloor Copilot container
+docker exec shopfloor ping opc-demo
+
+# Expected:
+# 64 bytes from opc-demo (172.20.0.5): icmp_seq=1 ttl=64 time=0.123 ms
+```
+
+**Step 4: Check Docker Network**
+```powershell
+docker network inspect rag-suite_default
+
+# Look for:
+# - opc-demo container in network
+# - shopfloor container in network
+# - Both on same subnet
+```
+
+**Step 5: View OPC Server Logs**
+```powershell
+docker logs opc-demo --tail 50
+
+# Look for:
+# - "Server started on port 4850"
+# - Any error messages
+# - Connection attempts
+```
+
+---
+
+#### Problem: "Authentication required"
+
+**If Server Requires Credentials:**
+
+1. Click **"Advanced Options"** in connection panel
+2. Enter credentials:
+   ```
+   Username: operator
+   Password: ********
+   Security Policy: Basic256Sha256
+   Security Mode: SignAndEncrypt
+   ```
+
+3. Click **Connect**
+
+**Note:** Demo server does not require authentication (anonymous allowed)
+
+---
+
+#### Problem: "Certificate validation failed"
+
+**If Using Secure Connection:**
+
+**Option 1: Accept Certificate (Development)**
+1. First connection attempt will fail
+2. Server certificate is automatically saved to `~/.opcua/certificates/`
+3. Click **Connect** again - should succeed
+
+**Option 2: Install Certificate (Production)**
+1. Export server certificate
+2. Add to trusted certificates:
+   ```powershell
+   cp server-cert.pem ~/.opcua/certificates/trusted/
+   ```
+3. Restart Shopfloor Copilot
+4. Connect should succeed
+
+---
+
+#### Problem: "Network unreachable"
+
+**Docker Network Issues:**
+
+1. **Check Shopfloor container network:**
+   ```powershell
+   docker inspect shopfloor | findstr NetworkMode
+   ```
+
+2. **Verify both containers on same network:**
+   ```powershell
+   docker network inspect rag-suite_default
+   ```
+
+3. **Recreate network if needed:**
+   ```powershell
+   docker-compose down
+   docker-compose up -d
+   ```
+
+---
+
+### Testing Connection Reliability
+
+**Quick Test Procedure:**
+
+1. **Normal Connection:**
+   ```
+   Server URL: opc.tcp://opc-demo:4850
+   Expected: Connect in 2-5 seconds ✅
+   ```
+
+2. **Wrong Port (should fail gracefully):**
+   ```
+   Server URL: opc.tcp://opc-demo:4851
+   Expected: Timeout after 15s with helpful error ❌
+   ```
+
+3. **Wrong Host (should fail gracefully):**
+   ```
+   Server URL: opc.tcp://invalid-host:4850
+   Expected: DNS error with helpful message ❌
+   ```
+
+4. **Malformed URL (should validate):**
+   ```
+   Server URL: http://opc-demo:4850
+   Expected: Validation error before attempting connection ❌
+   ```
+
+**All failures should provide:**
+- ✅ Clear error message
+- ✅ Troubleshooting tips
+- ✅ Suggested solutions
+- ✅ Relevant Docker commands
+
+---
+
+### Best Practices
+
+**Connection Management:**
+
+1. **Always test connection first:**
+   - Use "Test Connection" button (if available)
+   - Don't proceed with operations until connected
+
+2. **Monitor connection status:**
+   - Check indicator before reading values
+   - Reconnect if status shows disconnected
+
+3. **Use meaningful server URLs:**
+   ```
+   Good: opc.tcp://press-line-plc:4840
+   Bad:  opc.tcp://192.168.1.100:4840  (hard to remember)
+   ```
+
+4. **Document custom servers:**
+   - Keep list of server URLs
+   - Note authentication requirements
+   - Record certificate fingerprints
+
+---
+
+### Troubleshooting Checklist
+
+Before requesting support, verify:
+
+- [ ] OPC Demo container is running (`docker ps`)
+- [ ] Endpoint URL is correct (`opc.tcp://opc-demo:4850`)
+- [ ] Network connectivity works (`docker exec shopfloor ping opc-demo`)
+- [ ] No firewall blocking port 4850
+- [ ] Docker network is healthy (`docker network ls`)
+- [ ] Logs show no errors (`docker logs opc-demo`)
+- [ ] Browser console has no JavaScript errors (F12 → Console)
+- [ ] Tried disconnecting and reconnecting
+- [ ] Restarted containers if needed (`docker restart opc-demo shopfloor`)
+
+---
 
 ### Step 3: Verify Connection
 

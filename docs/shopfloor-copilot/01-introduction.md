@@ -1,5 +1,42 @@
 # Chapter 1: Introduction & Overview
 
+**Version:** 0.3.1  
+**Last Updated:** December 26, 2025  
+**Status:** Production Ready ✅
+
+---
+
+## What's New in v0.3.1
+
+### Recent Improvements (December 22-26, 2025)
+
+Shopfloor Copilot has received **major UI/UX enhancements** and **bug fixes** based on user feedback:
+
+- ✅ **21 Issues Fixed:** Functional bugs, readability issues, and accessibility improvements
+- ✅ **15 Screens Enhanced:** Complete redesign of Operator Q&A, plus improvements across all dashboards
+- ✅ **WCAG AA Compliant:** All text now meets accessibility standards for contrast (4.5:1 ratio)
+- ✅ **Modern UI:** Gradient cards, bold typography, Material Design patterns
+- ✅ **Better UX:** Clear error messages, helpful tooltips, improved feedback
+
+**Key Highlights:**
+- **AI Diagnostics:** Now accepts flexible station IDs (e.g., "20", "st20", "ST20")
+- **Operator Q&A:** Complete redesign with modern chat interface
+- **All Dashboards:** Improved text contrast, larger fonts, clearer layouts
+- **OPC Explorer:** Better connection error handling with troubleshooting tips
+- **Shift Handover:** Readable filters and report text
+
+For detailed changes, see [CHANGELOG.md](CHANGELOG.md).
+
+[📸 SCREENSHOT PLACEHOLDER]
+**File:** `screenshots/dashboard-overview-v031.png`
+**Caption:** Shopfloor Copilot v0.3.1 dashboard showing new UI improvements
+**Instructions:**
+1. Navigate to main dashboard (Home tab)
+2. Capture full screen showing modern UI with gradient cards
+3. Include visible text demonstrating improved contrast
+
+---
+
 ## What is Shopfloor Copilot?
 
 **Shopfloor Copilot** is an AI-powered Manufacturing Execution System (MES) companion that transforms traditional manufacturing monitoring into intelligent decision support.

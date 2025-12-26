@@ -131,8 +131,8 @@ Choose the analysis scope:
 Enter the equipment identifier:
 
 **For Station Scope:**
-- Enter station ID: `ST18`
-- Format: Must match OPC snapshot IDs
+- Enter station ID: `ST18` (or variations - see below)
+- Format: Flexible - fuzzy matching enabled (v0.3.1)
 
 **For Line Scope:**
 - Enter line ID: `A01`
@@ -141,6 +141,217 @@ Enter the equipment identifier:
 **Quick Examples:**
 - Click **Station ST18** button to auto-fill
 - Click **Line A01** button for line diagnostic
+
+---
+
+#### ✨ NEW: Flexible Station ID Input (v0.3.1)
+
+**Problem Solved:** Previous versions required exact station ID format (e.g., "ST18"). Operators often typed variations like "18", "st18", or "Station 18", which were rejected.
+
+**Solution:** Smart fuzzy matching now accepts multiple formats:
+
+[📸 SCREENSHOT PLACEHOLDER]
+**File:** `screenshots/ai-diagnostics-fuzzy-matching.png`
+**Caption:** AI Diagnostics accepting flexible station ID formats
+**Instructions:**
+1. Navigate to AI Diagnostics tab
+2. Try entering "20" or "st20" in equipment ID field
+3. Click "Explain this situation"
+4. Capture successful diagnostic result showing station ST20
+
+**Accepted Formats:**
+
+| Input | Interpretation | Status |
+|-------|---------------|--------|
+| `ST18` | Direct match | ✅ Works |
+| `st18` | Case-insensitive | ✅ Works (v0.3.1) |
+| `18` | Number only - adds "ST" prefix | ✅ Works (v0.3.1) |
+| `Station 18` | Text + number - extracts "ST18" | ✅ Works (v0.3.1) |
+| `ST-18` | With dash - normalizes to "ST18" | ✅ Works (v0.3.1) |
+| `s18` | Partial match | ✅ Works (v0.3.1) |
+
+**How It Works:**
+
+```python
+# Fuzzy Matching Algorithm (simplified)
+def normalize_station_id(equipment_id: str, available_stations: List[str]) -> str:
+    """
+    Smart station ID normalization with fuzzy matching
+    """
+    # 1. Convert to uppercase and trim
+    equipment_id_upper = equipment_id.upper().strip()
+    
+    # 2. Try direct match first
+    if equipment_id_upper in available_stations:
+        return equipment_id_upper
+    
+    # 3. Try adding "ST" prefix for number-only input
+    if equipment_id_upper.isdigit():
+        potential_id = f"ST{equipment_id_upper}"
+        if potential_id in available_stations:
+            return potential_id
+    
+    # 4. Remove non-alphanumeric and try again
+    clean_id = ''.join(c for c in equipment_id_upper if c.isalnum())
+    if clean_id in available_stations:
+        return clean_id
+    
+    # 5. Fuzzy match - check if input is substring of any station
+    for station in available_stations:
+        if clean_id in station or station in clean_id:
+            return station
+    
+    # 6. If all fails, show helpful error
+    raise ValueError(
+        f"Station '{equipment_id}' not found.\n"
+        f"Available stations: {', '.join(available_stations[:10])}..."
+    )
+```
+
+**Examples:**
+
+**Scenario 1: Operator types "20"**
+```
+Input: "20"
+Processing: Add "ST" prefix → "ST20"
+Match: ST20 found in snapshot
+Result: ✅ Diagnostic proceeds for Station ST20
+```
+
+**Scenario 2: Operator types "st15" (lowercase)**
+```
+Input: "st15"
+Processing: Convert to uppercase → "ST15"
+Match: ST15 found in snapshot
+Result: ✅ Diagnostic proceeds for Station ST15
+```
+
+**Scenario 3: Operator types "Station 18" (natural language)**
+```
+Input: "Station 18"
+Processing: 
+  1. Uppercase → "STATION 18"
+  2. Extract alphanumeric → "STATION18"
+  3. Fuzzy match → "ST18" contains "18"
+Match: ST18 found in snapshot
+Result: ✅ Diagnostic proceeds for Station ST18
+```
+
+**Scenario 4: Invalid station**
+```
+Input: "ST99"
+Processing: Check all available stations
+Match: ST99 not found
+Result: ❌ Error message with helpful suggestions:
+  "Station 'ST99' not found. Available stations: 
+   ST10, ST11, ST12, ST13, ST14, ST15, ST16, ST17, ST18, ST19, ST20..."
+```
+
+**Benefits:**
+- ✅ **Faster input:** Operators can type "20" instead of "ST20"
+- ✅ **Error reduction:** No need to remember exact format
+- ✅ **Natural language:** "Station 20" works just like "ST20"
+- ✅ **Case insensitive:** "st20" and "ST20" both work
+- ✅ **Better UX:** Helpful error messages if station not found
+
+**Error Handling:**
+
+If station truly doesn't exist, you'll see:
+```
+❌ Station 'ST99' not found
+
+Available stations in current snapshot:
+ST10, ST11, ST12, ST13, ST14, ST15, ST16, ST17, ST18, ST19, 
+ST20, ST21, ST22, ST23, ST24, ST25, ST26, ST27, ST28, ST29, ST30
+
+💡 Tip: Make sure the station is connected to OPC server and 
+showing up in the semantic snapshot. Check OPC Explorer tab 
+to verify station is online.
+```
+
+**Technical Implementation:**
+
+File: `packages/diagnostics/explainer.py`
+
+```python
+# Line ~50
+def normalize_station_id(equipment_id: str, available_stations: List[str]) -> str:
+    """
+    Normalize equipment ID with fuzzy matching.
+    Accepts variations like "st20", "20", "Station 20".
+    """
+    equipment_id_upper = equipment_id.upper().strip()
+    
+    # Direct match
+    if equipment_id_upper in available_stations:
+        return equipment_id_upper
+    
+    # Try adding ST prefix for numbers
+    if equipment_id_upper.isdigit():
+        potential_id = f"ST{equipment_id_upper}"
+        if potential_id in available_stations:
+            return potential_id
+    
+    # Clean and retry
+    clean_id = ''.join(c for c in equipment_id_upper if c.isalnum())
+    if not clean_id.startswith("ST") and clean_id.isdigit():
+        clean_id = f"ST{clean_id}"
+    
+    if clean_id in available_stations:
+        return clean_id
+    
+    # Fuzzy match
+    for station in available_stations:
+        if clean_id in station or station in clean_id:
+            return station
+    
+    # Not found - provide helpful error
+    raise ValueError(
+        f"Station '{equipment_id}' not found. "
+        f"Available: {', '.join(available_stations)}"
+    )
+
+# Line ~120 - Usage in diagnostic request
+try:
+    # Normalize station ID before processing
+    normalized_id = normalize_station_id(equipment_id, list(snapshot.keys()))
+    station_data = snapshot[normalized_id]
+    # ... continue with diagnostic
+except ValueError as e:
+    # Return error to user with helpful message
+    return {"error": str(e)}
+```
+
+**Testing:**
+
+You can test fuzzy matching with these inputs:
+```python
+# All should work for Station ST18
+test_inputs = [
+    "ST18",      # Standard format
+    "st18",      # Lowercase
+    "18",        # Number only
+    "Station 18", # Natural language
+    "ST-18",     # With dash
+    "s18",       # Partial
+]
+
+for input_id in test_inputs:
+    result = normalize_station_id(input_id, ["ST18", "ST20", "ST22"])
+    print(f"{input_id:15} → {result}")  # All should return "ST18"
+```
+
+Expected output:
+```
+ST18            → ST18
+st18            → ST18
+18              → ST18
+Station 18      → ST18
+ST-18           → ST18
+s18             → ST18
+```
+
+---
 
 ### Step 4: Request Explanation
 

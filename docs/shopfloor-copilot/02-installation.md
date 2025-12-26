@@ -518,6 +518,598 @@ rm -rf rag-suite
 
 ---
 
+## Production Deployment to Hetzner (v0.3.1) 🆕
+
+**Best Practice:** Deploy to dedicated cloud server for reliable 24/7 operation
+
+### Production Server Specifications
+
+**Hetzner Cloud Instance:**
+- **IP:** 46.224.66.48
+- **OS:** Ubuntu 22.04 LTS
+- **CPU:** 4 vCPUs
+- **RAM:** 16 GB
+- **Storage:** 160 GB SSD
+- **Network:** 20 TB traffic included
+- **Location:** Falkenstein, Germany (eu-central)
+
+**SSH Access:**
+```bash
+# Connect to server
+ssh root@46.224.66.48
+
+# Or use deploy script (Windows PowerShell)
+.\deploy-production-safe.ps1
+```
+
+---
+
+### Deployment Process
+
+#### Step 1: Prepare Production Files
+
+**On local machine:**
+
+```powershell
+# Windows PowerShell deployment script
+# File: deploy-production-safe.ps1
+
+# Define variables
+$ServerIP = "46.224.66.48"
+$RemoteUser = "root"
+$RemotePath = "/root/rag-suite"
+
+# 1. Build production Docker images locally
+Write-Host "Building production images..." -ForegroundColor Green
+docker-compose -f docker-compose.prod.yml build
+
+# 2. Save images to tar files
+Write-Host "Saving images..." -ForegroundColor Green
+docker save -o shopfloor-image.tar rag-suite-shopfloor:latest
+docker save -o opc-studio-image.tar rag-suite-opc-studio:latest
+
+# 3. Upload files to server
+Write-Host "Uploading to server..." -ForegroundColor Green
+scp docker-compose.prod.yml ${RemoteUser}@${ServerIP}:${RemotePath}/
+scp shopfloor-image.tar ${RemoteUser}@${ServerIP}:${RemotePath}/
+scp opc-studio-image.tar ${RemoteUser}@${ServerIP}:${RemotePath}/
+scp .env.production ${RemoteUser}@${ServerIP}:${RemotePath}/.env
+
+# 4. SSH and deploy
+Write-Host "Deploying on server..." -ForegroundColor Green
+ssh ${RemoteUser}@${ServerIP} "cd ${RemotePath} && \
+  docker load -i shopfloor-image.tar && \
+  docker load -i opc-studio-image.tar && \
+  docker-compose -f docker-compose.prod.yml down && \
+  docker-compose -f docker-compose.prod.yml up -d && \
+  rm *.tar"
+
+# 5. Health check
+Start-Sleep -Seconds 10
+Write-Host "Checking health..." -ForegroundColor Green
+$health = Invoke-WebRequest -Uri "http://46.224.66.48:8010/health" -UseBasicParsing
+if ($health.StatusCode -eq 200) {
+    Write-Host "✅ Deployment successful!" -ForegroundColor Green
+} else {
+    Write-Host "❌ Health check failed!" -ForegroundColor Red
+}
+```
+
+**Run deployment:**
+```powershell
+# Execute script
+.\deploy-production-safe.ps1
+
+# Or manual steps:
+.\deploy-to-hetzner.ps1
+```
+
+---
+
+#### Step 2: Configure Production Environment
+
+**Create `.env.production` file:**
+
+```env
+# Production environment configuration
+NODE_ENV=production
+
+# Database (use external RDS/managed PostgreSQL in production)
+POSTGRES_HOST=46.224.66.48
+POSTGRES_PORT=5432
+POSTGRES_USER=shopfloor_prod
+POSTGRES_PASSWORD=<STRONG_PASSWORD_HERE>
+POSTGRES_DB=shopfloor_mes
+
+# Chroma (vector database)
+CHROMA_HOST=46.224.66.48
+CHROMA_PORT=8000
+
+# Ollama (LLM service)
+OLLAMA_BASE_URL=http://compassionate_thompson:11434
+OLLAMA_MODEL=llama3.2
+
+# Shopfloor Copilot
+SHOPFLOOR_PORT=8010
+LOG_LEVEL=INFO
+
+# OPC Studio
+OPC_STUDIO_PORT=8040
+OPC_DEMO_ENDPOINT=opc.tcp://46.224.66.48:4850/freeopcua/server/
+
+# Security (IMPORTANT!)
+SECRET_KEY=<GENERATE_RANDOM_SECRET>
+JWT_SECRET=<GENERATE_RANDOM_SECRET>
+ALLOWED_ORIGINS=http://46.224.66.48:8010,https://yourdomain.com
+
+# Monitoring
+ENABLE_METRICS=true
+SENTRY_DSN=<YOUR_SENTRY_DSN>  # Optional: error tracking
+```
+
+**Generate secrets:**
+```bash
+# Generate random secrets
+openssl rand -hex 32
+# Use output for SECRET_KEY and JWT_SECRET
+```
+
+---
+
+#### Step 3: Production Docker Compose
+
+**File:** `docker-compose.prod.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # ChromaDB (Vector Database)
+  chroma:
+    image: chromadb/chroma:latest
+    environment:
+      CHROMA_SERVER_HOST: 0.0.0.0
+      CHROMA_SERVER_PORT: 8000
+    volumes:
+      - chroma_data:/chroma/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  # OPC UA Demo Server
+  opc-demo:
+    build:
+      context: ./opc-demo
+      dockerfile: Dockerfile
+    ports:
+      - "4850:4850"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import asyncua; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  # OPC Studio (OPC UA abstraction layer)
+  opc-studio:
+    build:
+      context: ./opc-studio
+      dockerfile: Dockerfile.prod
+    environment:
+      OPC_DEMO_ENDPOINT: ${OPC_DEMO_ENDPOINT}
+      LOG_LEVEL: ${LOG_LEVEL}
+    ports:
+      - "8040:8040"
+    depends_on:
+      - opc-demo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8040/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  # Shopfloor Copilot (Main UI)
+  shopfloor:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      CHROMA_HOST: chroma
+      CHROMA_PORT: 8000
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+    ports:
+      - "8010:8010"
+    depends_on:
+      - postgres
+      - chroma
+      - opc-studio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  postgres_data:
+  chroma_data:
+```
+
+---
+
+#### Step 4: Deploy to Server
+
+**Execute deployment:**
+
+```bash
+# On production server (SSH)
+cd /root/rag-suite
+
+# Pull latest code
+git pull origin main
+
+# Load environment
+source .env.production
+
+# Build and start services
+docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.prod.yml up -d
+
+# Check services
+docker-compose -f docker-compose.prod.yml ps
+
+# Expected output:
+# NAME                  STATUS    PORTS
+# rag-suite-postgres    Up        0.0.0.0:5432->5432/tcp
+# rag-suite-chroma      Up        0.0.0.0:8000->8000/tcp
+# rag-suite-opc-demo    Up        0.0.0.0:4850->4850/tcp
+# rag-suite-opc-studio  Up        0.0.0.0:8040->8040/tcp
+# rag-suite-shopfloor   Up        0.0.0.0:8010->8010/tcp
+```
+
+---
+
+#### Step 5: Verify Deployment
+
+**Health checks:**
+
+```bash
+# Check all services
+curl http://46.224.66.48:8010/health
+# Expected: {"status": "healthy", "version": "0.3.1"}
+
+curl http://46.224.66.48:8040/status
+# Expected: {"status": "ok", "opc_connected": true}
+
+curl http://46.224.66.48:8000/api/v1/heartbeat
+# Expected: {"status": "ok"}
+
+# Check database connection
+docker-compose -f docker-compose.prod.yml exec postgres \
+  psql -U shopfloor_prod -d shopfloor_mes -c "SELECT NOW();"
+# Expected: Current timestamp
+
+# Check OPC connection
+docker-compose -f docker-compose.prod.yml exec opc-studio \
+  python -c "from asyncua import Client; print('OPC OK')"
+# Expected: OPC OK
+```
+
+**Access UI:**
+```
+Open browser: http://46.224.66.48:8010
+```
+
+---
+
+#### Step 6: Production Monitoring
+
+**View logs:**
+
+```bash
+# All services
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Specific service
+docker-compose -f docker-compose.prod.yml logs -f shopfloor
+
+# Last 100 lines
+docker-compose -f docker-compose.prod.yml logs --tail=100 shopfloor
+
+# Filter errors
+docker-compose -f docker-compose.prod.yml logs | grep ERROR
+```
+
+**Container stats:**
+
+```bash
+# Resource usage
+docker stats
+
+# Expected:
+# CONTAINER         CPU %   MEM USAGE / LIMIT   MEM %
+# rag-suite-shopfloor   2.5%    1.2GiB / 16GiB      7.5%
+# rag-suite-postgres    0.8%    512MiB / 16GiB      3.2%
+# rag-suite-chroma      1.2%    800MiB / 16GiB      5.0%
+```
+
+**Health monitoring script:**
+
+```bash
+#!/bin/bash
+# File: /root/rag-suite/health-check.sh
+
+# Check all services
+services=("8010" "8040" "8000")
+for port in "${services[@]}"; do
+  response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$port/health 2>/dev/null || echo "000")
+  if [ "$response" -eq 200 ]; then
+    echo "✅ Port $port: OK"
+  else
+    echo "❌ Port $port: FAIL (HTTP $response)"
+    # Send alert (email, Slack, PagerDuty, etc.)
+  fi
+done
+
+# Run every 5 minutes
+# Add to crontab: */5 * * * * /root/rag-suite/health-check.sh
+```
+
+---
+
+### Production Troubleshooting
+
+#### Problem: Deployment Fails with "Connection Refused"
+
+**Cause:** Firewall blocking ports
+
+**Solution:**
+```bash
+# Check firewall status
+ufw status
+
+# Allow required ports
+ufw allow 8010/tcp  # Shopfloor UI
+ufw allow 8040/tcp  # OPC Studio
+ufw allow 4850/tcp  # OPC UA Server
+
+# Enable firewall
+ufw enable
+
+# Verify
+ufw status verbose
+```
+
+---
+
+#### Problem: Docker Containers Keep Restarting
+
+**Cause:** OOM (Out of Memory)
+
+**Solution:**
+```bash
+# Check memory usage
+free -h
+
+# Check Docker logs for OOM
+docker-compose -f docker-compose.prod.yml logs | grep "OOM"
+
+# Add memory limits to docker-compose.prod.yml
+services:
+  shopfloor:
+    mem_limit: 4g
+    mem_reservation: 2g
+```
+
+---
+
+#### Problem: Slow Performance
+
+**Cause:** Insufficient resources or network latency
+
+**Solution:**
+```bash
+# Check system load
+uptime
+# Load average should be < number of CPUs (4.0 for 4 vCPU)
+
+# Check disk I/O
+iostat -x 1 5
+
+# Check network latency
+ping 46.224.66.48
+
+# Optimize database
+docker-compose -f docker-compose.prod.yml exec postgres \
+  psql -U shopfloor_prod -d shopfloor_mes -c "VACUUM ANALYZE;"
+
+# Consider upgrading server plan
+```
+
+---
+
+### Production Backup & Recovery
+
+**Automated daily backup:**
+
+```bash
+#!/bin/bash
+# File: /root/rag-suite/backup.sh
+
+BACKUP_DIR="/root/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Create backup directory
+mkdir -p $BACKUP_DIR
+
+# Backup PostgreSQL
+docker-compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U shopfloor_prod shopfloor_mes | gzip > $BACKUP_DIR/postgres_$DATE.sql.gz
+
+# Backup ChromaDB
+docker-compose -f docker-compose.prod.yml exec -T chroma \
+  tar -czf - /chroma/data > $BACKUP_DIR/chroma_$DATE.tar.gz
+
+# Backup configuration
+cp .env.production $BACKUP_DIR/env_$DATE
+cp docker-compose.prod.yml $BACKUP_DIR/docker-compose_$DATE.yml
+
+# Keep only last 7 days
+find $BACKUP_DIR -name "*.gz" -mtime +7 -delete
+
+echo "✅ Backup completed: $DATE"
+```
+
+**Add to cron:**
+```bash
+# Edit crontab
+crontab -e
+
+# Add daily backup at 2 AM
+0 2 * * * /root/rag-suite/backup.sh >> /var/log/backup.log 2>&1
+```
+
+**Restore from backup:**
+```bash
+# Stop services
+docker-compose -f docker-compose.prod.yml down
+
+# Restore PostgreSQL
+gunzip -c /root/backups/postgres_20251226_020000.sql.gz | \
+  docker-compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U shopfloor_prod -d shopfloor_mes
+
+# Restore ChromaDB
+docker-compose -f docker-compose.prod.yml exec -T chroma \
+  tar -xzf - -C / < /root/backups/chroma_20251226_020000.tar.gz
+
+# Restart services
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+---
+
+### SSL/HTTPS Configuration (Optional)
+
+**Using Let's Encrypt + Nginx:**
+
+```bash
+# Install Certbot
+apt-get install certbot python3-certbot-nginx
+
+# Get certificate (interactive)
+certbot --nginx -d shopfloor.yourdomain.com
+
+# Certificate auto-renews via cron
+# Test renewal:
+certbot renew --dry-run
+```
+
+**Nginx configuration:**
+```nginx
+# File: /etc/nginx/sites-available/shopfloor
+
+server {
+    listen 443 ssl http2;
+    server_name shopfloor.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/shopfloor.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/shopfloor.yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:8010;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Redirect HTTP to HTTPS
+server {
+    listen 80;
+    server_name shopfloor.yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+```
+
+---
+
+### Production Deployment Checklist ✅
+
+**Pre-Deployment:**
+- [ ] `.env.production` configured with strong passwords
+- [ ] Secrets generated (SECRET_KEY, JWT_SECRET)
+- [ ] SSL certificate obtained (if using HTTPS)
+- [ ] Firewall configured (ports 8010, 8040, 4850 open)
+- [ ] DNS configured (if using domain name)
+- [ ] Backup script created and tested
+- [ ] Health check script created
+
+**Deployment:**
+- [ ] Code pulled to server (git pull)
+- [ ] Docker images built (docker-compose build)
+- [ ] Services started (docker-compose up -d)
+- [ ] Health checks passed (all endpoints return 200)
+- [ ] UI accessible (http://46.224.66.48:8010)
+- [ ] OPC connection verified
+- [ ] Database connected
+- [ ] RAG ingestion successful
+
+**Post-Deployment:**
+- [ ] Backups scheduled (cron job)
+- [ ] Monitoring enabled (health-check.sh)
+- [ ] Logs reviewed (no errors)
+- [ ] Performance tested (acceptable response times)
+- [ ] User access verified (operators can login)
+- [ ] Documentation updated (README, runbooks)
+
+---
+
+**Deployment Scripts Location:**
+- `deploy-production-safe.ps1` (Windows PowerShell)
+- `deploy-production-safe.sh` (Linux Bash)
+- `deploy-to-hetzner.ps1` (Direct SSH deployment)
+- `hetzner-fix.sh` (Troubleshooting script)
+
+See [CHANGELOG.md](CHANGELOG.md#deployment-to-hetzner) for detailed deployment notes from v0.3.1 release.
+
+---
+
 ## Production Deployment
 
 ### Recommended Changes for Production

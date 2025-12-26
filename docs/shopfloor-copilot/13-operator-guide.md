@@ -1,8 +1,22 @@
 # Chapter 13: Operator Quick Reference Guide
 
-**One-Page Guide for Daily Operations**
+**One-Page Guide for Daily Operations**  
+**Version:** 0.3.1 - Updated December 2025
 
 Print this page and keep it near your workstation!
+
+---
+
+## 🆕 What's New in v0.3.1
+
+### New Features for Operators
+- ✅ **Dashboard Access:** 7 new dashboards for monitoring (KPI, Operations, Energy, etc.)
+- ✅ **Operator Q&A:** Ask questions about procedures in natural language
+- ✅ **Better UI:** All screens redesigned with improved readability
+- ✅ **Flexible Input:** Can now type "20" instead of "ST20" in AI Diagnostics
+- ✅ **Shift Handover:** Improved filters and report readability
+
+See [CHANGELOG.md](CHANGELOG.md) for complete details.
 
 ---
 
@@ -11,49 +25,116 @@ Print this page and keep it near your workstation!
 **Shopfloor Copilot:** http://localhost:8010
 
 **Most Used Tabs:**
+- **Tab 1:** Operations Dashboard (real-time line monitoring) 🆕
+- **Tab 2:** KPI Dashboard (performance metrics) 🆕
 - **Tab 15:** OPC Explorer (browse live equipment data)
 - **Tab 16:** Semantic Signals (view loss categories)
 - **Tab 17:** AI Diagnostics (get troubleshooting help)
-- **Tab 1:** Live Monitoring (plant overview)
+- **Tab 18:** Operator Q&A (ask procedure questions) 🆕
 
 ---
 
 ## Common Tasks
 
-### 1. Check Station Status
+### 1. Check Station Status ⚡ FASTEST
 
-**Time:** 10 seconds
+**Time:** 5 seconds (improved!)
 
+**Option A: Operations Dashboard (NEW - Recommended)**
+1. Go to **Tab 1: Operations Dashboard**
+2. Select your line from dropdown
+3. View all station tiles at once:
+   - 🟢 Green = RUNNING (normal)
+   - 🟡 Yellow = IDLE/STARVED/BLOCKED (waiting)
+   - 🔴 Red = FAULTED (problem!)
+
+**Option B: OPC Explorer (Traditional)**
 1. Go to **Tab 15: OPC Explorer**
 2. Browse tree: **Line → Station → Status**
-3. Read value:
-   - 🟢 **RUNNING** = Normal
-   - 🟡 **STARVED** = Waiting for upstream
-   - 🟡 **BLOCKED** = Downstream full
-   - 🔴 **FAULTED** = Problem!
+3. Read value
+
+**Why Operations Dashboard is Better:**
+- ✅ See all stations at once (no clicking)
+- ✅ Color-coded status instantly visible
+- ✅ Shows OEE % on each tile
+- ✅ Updates automatically
+
+---
 
 ### 2. Get AI Troubleshooting Help
 
 **Time:** 30 seconds
 
+**Updated Process (v0.3.1):**
+
 1. Go to **Tab 17: AI Diagnostics**
 2. Select **station**
-3. Enter station ID (e.g., `ST18`)
+3. Enter station ID - **Now accepts flexible formats!** 🆕
+   - Can type: `20` (just the number)
+   - Or: `st20` (lowercase)
+   - Or: `ST20` (standard)
+   - Or: `Station 20` (natural language)
 4. Click **"Explain this situation"**
 5. Read Section 4 (checklist)
 
-### 3. Monitor Multiple Stations
+**What's New:**
+- ✅ No need to remember exact format
+- ✅ Faster input (just type station number)
+- ✅ Better error messages if station not found
 
-**Time:** 2 minutes
+See [Chapter 7](07-ai-diagnostics.md#flexible-station-id-input) for details.
 
+---
+
+### 3. Ask About Procedures 🆕 NEW FEATURE
+
+**Time:** 1 minute
+
+**Use Operator Q&A for quick answers!**
+
+1. Go to **Tab 18: Operator Q&A**
+2. Type your question or click a suggestion:
+   - "What are the lockout/tagout procedures?"
+   - "How do I troubleshoot a slow motor?"
+   - "What's the torque spec for M8 bolts?"
+3. Get instant answer with citations to official documents
+4. Review source documents if needed
+
+**Common Uses:**
+- ✅ Safety procedures
+- ✅ Quality standards
+- ✅ Troubleshooting steps
+- ✅ Maintenance procedures
+- ✅ Material specifications
+
+**Pro Tip:** Use filters to narrow search by station type or document type
+
+See [Chapter 9](09-operator-qna.md) for complete guide.
+
+---
+
+### 4. Monitor Multiple Stations
+
+**Time:** 1 minute (improved!)
+
+**Option A: Operations Dashboard (Easiest - NEW)**
+1. Go to **Tab 1: Operations Dashboard**
+2. Select your line
+3. All stations visible at once - done! ✅
+
+**Option B: OPC Explorer Watchlist (Traditional)**
 1. Go to **Tab 15: OPC Explorer**
 2. Navigate to each station
 3. Click **"Add to Watchlist"**
 4. Watch values update every second
 
-### 4. Find What's Causing Loss
+---
 
-**Time:** 1 minute
+### 5. Find What's Causing Loss
+
+**Time:** 30 seconds (improved!)
+
+**Updated UI (v0.3.1):**
 
 1. Go to **Tab 16: Semantic Signals**
 2. Enter Line + Station IDs
@@ -62,6 +143,62 @@ Print this page and keep it near your workstation!
    - 🔴 Red = Availability loss (station down)
    - 🟡 Yellow = Performance loss (running slow)
    - 🟠 Orange = Quality loss (bad parts)
+
+**What's Improved:**
+- ✅ Larger, bolder text (easier to read)
+- ✅ Values in `text-xl font-bold` (was too small)
+- ✅ Better empty state messages
+- ✅ KPIs show helpful message if no data yet
+
+---
+
+### 6. View Performance Metrics 🆕 NEW
+
+**Time:** 10 seconds
+
+**Use KPI Dashboard:**
+
+1. Go to **Tab 2: KPI Dashboard**
+2. Select your line and time period
+3. View key metrics:
+   - **OEE:** Overall Equipment Effectiveness %
+   - **Availability:** % time equipment is running
+   - **Performance:** % of target speed
+   - **Quality:** % good parts
+4. Check recent downtimes list below
+
+**When to Use:**
+- ✅ Daily shift handover
+- ✅ Weekly performance review
+- ✅ Investigating OEE drops
+- ✅ Comparing lines
+
+See [Chapter 8](08-dashboards.md#kpi-dashboard) for details.
+
+---
+
+### 7. Generate Shift Handover Report 🆕 IMPROVED
+
+**Time:** 2 minutes
+
+**What's New (v0.3.1):**
+- ✅ Readable filters (white background, dark text)
+- ✅ Better text contrast (no more grey on light green)
+- ✅ Clear issue descriptions
+
+**Process:**
+1. Go to **Shift Handover** tab
+2. Set filters (now much easier to read!):
+   - Shift: Day/Afternoon/Night
+   - Line: Select your line
+   - Date: Today
+3. Click **"Generate Report"**
+4. Review issues and add notes
+5. Click **"Email Report"** to send to next shift
+
+See [CHANGELOG.md](CHANGELOG.md#shift-handover-filters--text-readability) for improvements.
+
+---
 
 ---
 

@@ -86,37 +86,37 @@ class DiagnosticsExplainerScreen:
                 ui.label('Diagnostic Explanation').classes('text-xl font-semibold mt-4')
                 
                 # Section 1: What is happening (Runtime Evidence)
-                with ui.expansion('Section 1 — What is happening', icon='fact_check').classes('w-full bg-blue-50').props('default-opened'):
-                    with ui.card().classes('w-full bg-white'):
-                        ui.label('Runtime Evidence (Facts Only)').classes('text-sm font-medium text-gray-600 mb-2')
+                with ui.expansion('Section 1 — What is happening', icon='fact_check').classes('w-full bg-blue-900').props('default-opened'):
+                    with ui.card().classes('w-full bg-gray-800'):
+                        ui.label('Runtime Evidence (Facts Only)').classes('text-sm font-medium text-gray-200 mb-2')
                         self.section1_content = ui.markdown('*No diagnostic generated yet*')
                 
                 # Section 2: Why this is happening (Reasoned Explanation)
-                with ui.expansion('Section 2 — Why this is happening', icon='lightbulb').classes('w-full bg-yellow-50').props('default-opened'):
-                    with ui.card().classes('w-full bg-white'):
-                        ui.label('Reasoned Explanation').classes('text-sm font-medium text-gray-600 mb-2')
+                with ui.expansion('Section 2 — Why this is happening', icon='lightbulb').classes('w-full bg-yellow-900').props('default-opened'):
+                    with ui.card().classes('w-full bg-gray-800'):
+                        ui.label('Reasoned Explanation').classes('text-sm font-medium text-gray-200 mb-2')
                         self.section2_content = ui.markdown('*No diagnostic generated yet*')
                 
                 # Section 3: What to do now (Procedures)
-                with ui.expansion('Section 3 — What to do now', icon='build').classes('w-full bg-green-50').props('default-opened'):
-                    with ui.card().classes('w-full bg-white'):
-                        ui.label('Procedures (from RAG)').classes('text-sm font-medium text-gray-600 mb-2')
+                with ui.expansion('Section 3 — What to do now', icon='build').classes('w-full bg-green-900').props('default-opened'):
+                    with ui.card().classes('w-full bg-gray-800'):
+                        ui.label('Procedures (from RAG)').classes('text-sm font-medium text-gray-200 mb-2')
                         self.section3_content = ui.markdown('*No diagnostic generated yet*')
                 
                 # Section 4: What to check next (Checklist)
-                with ui.expansion('Section 4 — What to check next', icon='checklist').classes('w-full bg-purple-50').props('default-opened'):
-                    with ui.card().classes('w-full bg-white'):
-                        ui.label('Actionable Checklist').classes('text-sm font-medium text-gray-600 mb-2')
+                with ui.expansion('Section 4 — What to check next', icon='checklist').classes('w-full bg-purple-900').props('default-opened'):
+                    with ui.card().classes('w-full bg-gray-800'):
+                        ui.label('Actionable Checklist').classes('text-sm font-medium text-gray-200 mb-2')
                         self.section4_content = ui.markdown('*No diagnostic generated yet*')
                 
                 # Metadata
-                with ui.card().classes('w-full bg-gray-50 mt-4'):
-                    ui.label('Diagnostic Metadata').classes('text-sm font-semibold mb-2')
-                    self.metadata_content = ui.column().classes('text-xs text-gray-700')
+                with ui.card().classes('w-full bg-gray-800 mt-4'):
+                    ui.label('Diagnostic Metadata').classes('text-sm font-semibold text-white mb-2')
+                    self.metadata_content = ui.column().classes('text-xs text-gray-200')
             
             # Examples
-            with ui.card().classes('w-full bg-gray-50 mt-4'):
-                ui.label('Examples').classes('text-sm font-semibold mb-2')
+            with ui.card().classes('w-full bg-gray-800 mt-4'):
+                ui.label('Examples').classes('text-sm font-semibold text-white mb-2')
                 with ui.row().classes('gap-2'):
                     ui.button(
                         'Station ST18',

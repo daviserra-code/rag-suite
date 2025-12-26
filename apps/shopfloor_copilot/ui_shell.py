@@ -239,17 +239,17 @@ def render_default_drawer(theme: str = "dark"):
             with ui.expansion(category_name, icon=category_data["icon"]).classes('w-full'):
                 for page in category_data["pages"]:
                     # Page link button
-                    with ui.row().classes('w-full items-center gap-2 px-2 py-1 hover:bg-gray-200 cursor-pointer').on('click', lambda p=page: ui.navigate.to(p["route"])):
-                        ui.icon(page["icon"]).classes('text-gray-600')
+                    with ui.row().classes('w-full items-center gap-2 px-2 py-1 hover:bg-gray-700 cursor-pointer').on('click', lambda p=page: ui.navigate.to(p["route"])):
+                        ui.icon(page["icon"]).classes('text-gray-300')
                         with ui.column().classes('flex-1'):
-                            ui.label(page["name"]).classes('text-sm font-medium')
-                            ui.label(page["description"]).classes('text-xs text-gray-500')
+                            ui.label(page["name"]).classes('text-sm font-medium text-white')
+                            ui.label(page["description"]).classes('text-xs text-gray-300')
         
         # Legacy link at bottom
         ui.separator().classes('mt-4')
-        with ui.row().classes('w-full items-center gap-2 px-4 py-2 hover:bg-gray-200 cursor-pointer').on('click', lambda: ui.navigate.to('/legacy')):
-            ui.icon('view_module').classes('text-gray-600')
-            ui.label('Legacy 23-Tab View').classes('text-sm')
+        with ui.row().classes('w-full items-center gap-2 px-4 py-2 hover:bg-gray-700 cursor-pointer').on('click', lambda: ui.navigate.to('/legacy')):
+            ui.icon('view_module').classes('text-gray-300')
+            ui.label('Legacy 23-Tab View').classes('text-sm text-white')
 
 
 def get_category_color(category_name: str) -> str:

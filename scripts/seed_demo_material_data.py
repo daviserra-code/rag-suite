@@ -200,43 +200,43 @@ def seed_normal_operation_scenario(conn):
     """
     cursor = conn.cursor()
     
-    print("\n=== Seeding Normal Operation Scenario (ST10) ===")
+    print("\n=== Seeding Normal Operation Scenario (ST17) ===")
     
-    # ST10: Material instance with RELEASED status
+    # ST17: Material instance with RELEASED status
     cursor.execute("""
         INSERT INTO material_instances
         (plant, line, station, mode, serial, lot, work_order, operation,
          bom_revision, as_built_revision, quality_status, active)
         VALUES
-        ('P001', 'A01', 'ST10', 'serial', 'SN-100234', NULL, 'WO-77812', 'OP40',
+        ('TORINO', 'A01', 'ST17', 'serial', 'SN-100234', NULL, 'WO-77812', 'OP40',
          'B', 'B', 'RELEASED', true)
     """)
     
-    # ST10: Authorization present
+    # ST17: Authorization present
     cursor.execute("""
         INSERT INTO material_authorizations
         (station_id, dry_run_authorization, deviation_id, active, authorized_by, reason)
         VALUES
-        ('ST10', false, NULL, true, 'supervisor_01', 'normal_operation')
+        ('ST17', false, NULL, true, 'supervisor_01', 'normal_operation')
     """)
     
-    # ST10: Tooling calibrated
+    # ST17: Tooling calibrated
     cursor.execute("""
         INSERT INTO tooling_status
         (tooling_id, station_id, calibration_ok, calibration_due_date, last_calibration_date, active, calibrated_by)
         VALUES
-        ('TOOL-ST10-001', 'ST10', true, %s, %s, true, 'cal_lab')
+        ('TOOL-ST17-001', 'ST17', true, %s, %s, true, 'cal_lab')
     """, (
         datetime.now().date() + timedelta(days=45),
         datetime.now().date() - timedelta(days=15)
     ))
     
-    # ST10: Operator certified
+    # ST17: Operator certified
     cursor.execute("""
         INSERT INTO operator_certifications
         (operator_id, station_id, certified, certification_date, certification_expiry, active, certified_by)
         VALUES
-        ('OP-CERTIFIED-001', 'ST10', true, %s, %s, true, 'training_dept')
+        ('OP-CERTIFIED-001', 'ST17', true, %s, %s, true, 'training_dept')
     """, (
         datetime.now().date() - timedelta(days=90),
         datetime.now().date() + timedelta(days=275)
@@ -244,7 +244,7 @@ def seed_normal_operation_scenario(conn):
     
     conn.commit()
     cursor.close()
-    print("✓ ST10: SN-100234, all evidence OK → NO VIOLATIONS")
+    print("✓ ST17: SN-100234, all evidence OK → NO VIOLATIONS")
 
 
 def verify_seed_data(conn):
