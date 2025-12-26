@@ -5,6 +5,7 @@ Connect, browse, read, and subscribe to OPC UA servers
 from nicegui import ui
 import httpx
 import asyncio
+import os
 from typing import Optional, Dict, Any
 
 
@@ -16,8 +17,10 @@ class OPCExplorerScreen:
     
     def __init__(self):
         self.connected = False
-        # Updated endpoint - use localhost for local development
-        self.endpoint_url = "opc.tcp://opc-demo:4850"
+        # Get endpoint from environment variable with fallback
+        # Production: opc.tcp://46.224.66.48:4850
+        # Local: opc.tcp://opc-demo:4850
+        self.endpoint_url = os.getenv("OPC_DEMO_ENDPOINT", "opc.tcp://opc-studio:4840/shopfloor/opc-studio")
         self.current_node = "i=85"  # Objects folder
         self.watchlist_items = []
         
