@@ -63,9 +63,15 @@ class ViolationsManagementScreen:
                 
                 if data.get("ok"):
                     self.timeline_data = data
-                    await self.render_timeline()
+                    if self.timeline_panel:
+                        await self.render_timeline()
+                    else:
+                        print("[WARNING] Timeline panel not initialized")
+                else:
+                    print(f"[ERROR] Timeline API returned error: {data}")
         except Exception as e:
-            ui.notify(f"Failed to load timeline: {str(e)}", type="negative")
+            print(f"[ERROR] Failed to load timeline: {str(e)}")
+            raise
     
     async def acknowledge_violation(self, violation_id: str):
         """Acknowledge a violation"""
@@ -260,7 +266,15 @@ class ViolationsManagementScreen:
     
     async def view_violation(self, violation_id: str):
         """View violation details and timeline"""
-        await self.load_violation_timeline(violation_id)
+        ui.notify("Loading timeline...", type="info")
+        try:
+            await self.load_violation_timeline(violation_id)
+            if self.timeline_data:
+                ui.notify("Timeline loaded", type="positive")
+            else:
+                ui.notify("No timeline data available", type="warning")
+        except Exception as e:
+            ui.notify(f"Failed to load timeline: {str(e)}", type="negative")
     
     def show_justify_dialog(self, violation_id: str):
         """Show dialog to justify a violation"""
