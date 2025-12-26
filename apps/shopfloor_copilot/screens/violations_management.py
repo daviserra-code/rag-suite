@@ -248,21 +248,21 @@ class ViolationsManagementScreen:
                 # Right: Action buttons
                 if is_active:
                     with ui.row().classes('gap-2'):
-                        # NiceGUI handles async functions directly - no lambda wrapper needed for async
-                        ui.button('View', icon='visibility', on_click=lambda v_id=violation_id: self._view_click(v_id)).props('size=sm outline')
+                        # Create handler with immediate feedback
+                        async def handle_view(vid=violation_id):
+                            await ui.run_javascript('console.log("View clicked for: ' + vid + '")')
+                            await self.view_violation(vid)
+                        
+                        async def handle_ack(vid=violation_id):
+                            await ui.run_javascript('console.log("Acknowledge clicked for: ' + vid + '")')
+                            await self.acknowledge_violation(vid)
+                        
+                        ui.button('View', icon='visibility', on_click=handle_view).props('size=sm outline')
                         if state == 'OPEN':
-                            ui.button('Acknowledge', icon='check', on_click=lambda v_id=violation_id: self._ack_click(v_id)).props('size=sm color=orange')
+                            ui.button('Acknowledge', icon='check', on_click=handle_ack).props('size=sm color=orange')
                         if state == 'ACKNOWLEDGED':
                             ui.button('Justify', icon='note_add', on_click=lambda v_id=violation_id: self.show_justify_dialog(v_id)).props('size=sm color=yellow')
                         ui.button('Resolve', icon='done_all', on_click=lambda v_id=violation_id: self.show_resolve_dialog(v_id)).props('size=sm color=green')
-    
-    def _view_click(self, violation_id: str):
-        """Wrapper to handle view button click with async operation"""
-        asyncio.create_task(self.view_violation(violation_id))
-    
-    def _ack_click(self, violation_id: str):
-        """Wrapper to handle acknowledge button click with async operation"""
-        asyncio.create_task(self.acknowledge_violation(violation_id))
     
     async def view_violation(self, violation_id: str):
         """View violation details and timeline"""
