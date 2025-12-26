@@ -82,8 +82,8 @@ def opc_studio_screen():
     ui.label('Monitor and control the OPC UA simulation and historian').classes('text-gray-200 mb-6')
     
     # Status Panel
-    with ui.card().classes('w-full mb-4'):
-        ui.label('🔍 Status Panel').classes('text-lg font-semibold mb-2')
+    with ui.card().classes('w-full mb-4 bg-gray-800'):
+        ui.label('🔍 Status Panel').classes('text-lg font-semibold mb-2 text-white')
         
         status_container = ui.row().classes('gap-4 w-full')
         
@@ -116,8 +116,8 @@ def opc_studio_screen():
         ui.button('Refresh Status', on_click=refresh_status, icon='refresh').classes('mt-2')
     
     # Model Browser
-    with ui.card().classes('w-full mb-4'):
-        ui.label('🏭 Plant Model Browser').classes('text-lg font-semibold mb-2')
+    with ui.card().classes('w-full mb-4 bg-gray-800'):
+        ui.label('🏭 Plant Model Browser').classes('text-lg font-semibold mb-2 text-white')
         
         model_container = ui.column().classes('w-full')
         
@@ -172,10 +172,10 @@ def opc_studio_screen():
                                         badge_color = 'red' if is_critical else 'indigo'
                                         badge_icon = '⚠️' if is_critical else '🔧'
                                         
-                                        with ui.card().classes('p-2 bg-blue-50'):
-                                            ui.label(f"{badge_icon} {station_id}").classes('font-semibold text-sm')
+                                        with ui.card().classes('p-2 bg-gray-700'):
+                                            ui.label(f"{badge_icon} {station_id}").classes('font-semibold text-sm text-white')
                                             if station_name != station_id:
-                                                ui.label(station_name).classes('text-xs text-gray-700')
+                                                ui.label(station_name).classes('text-xs text-gray-300')
                                             if station_type:
                                                 ui.badge(station_type, color=badge_color).classes('text-xs mt-1')
                             else:
@@ -184,8 +184,8 @@ def opc_studio_screen():
         ui.button('Load Model', on_click=load_model, icon='download').classes('mt-2')
     
     # Live Snapshot Viewer
-    with ui.card().classes('w-full mb-4'):
-        ui.label('📊 Live Snapshot Viewer').classes('text-lg font-semibold mb-2')
+    with ui.card().classes('w-full mb-4 bg-gray-800'):
+        ui.label('📊 Live Snapshot Viewer').classes('text-lg font-semibold mb-2 text-white')
         
         snapshot_container = ui.column().classes('w-full')
         
@@ -265,14 +265,14 @@ def opc_studio_screen():
         ui.button('Refresh Snapshot', on_click=refresh_snapshot, icon='refresh').classes('mt-2')
     
     # Scenario Builder (Template-Based)
-    with ui.card().classes('w-full mb-4'):
-        ui.label('🎬 Scenario Builder').classes('text-lg font-semibold mb-2')
-        ui.label('Apply realistic scenario templates with cascading impacts').classes('text-sm text-gray-900 mb-2')
+    with ui.card().classes('w-full mb-4 bg-gray-800'):
+        ui.label('🎬 Scenario Builder').classes('text-lg font-semibold mb-2 text-white')
+        ui.label('Apply realistic scenario templates with cascading impacts').classes('text-sm text-gray-200 mb-2')
         
         # Help/Instructions Card
-        with ui.card().classes('bg-blue-50 border-l-4 border-blue-500 p-4 mb-4'):
-            ui.label('📖 How to Use:').classes('font-bold text-blue-900 mb-2')
-            with ui.column().classes('gap-1 text-sm text-blue-900'):
+        with ui.card().classes('bg-gray-700 border-l-4 border-blue-500 p-4 mb-4'):
+            ui.label('📚 How to Use:').classes('font-bold text-white mb-2')
+            with ui.column().classes('gap-1 text-sm text-gray-200'):
                 ui.label('1. Click "Load Templates" to fetch available scenarios')
                 ui.label('2. Select a Line ID and Station ID (e.g., A01, ST18)')
                 ui.label('3. Choose a scenario template from the dropdown')
@@ -382,9 +382,9 @@ def opc_studio_screen():
         ui.button('Apply Template Scenario', on_click=apply_template_scenario, icon='play_arrow').classes('mt-2 bg-green-600')
     
     # Send to Copilot
-    with ui.card().classes('w-full mb-4'):
-        ui.label('💬 Send Snapshot to AI Copilot').classes('text-lg font-semibold mb-2')
-        ui.label('Fetch current snapshot and use it in chat context').classes('text-sm text-gray-600 mb-4')
+    with ui.card().classes('w-full mb-4 bg-gray-800'):
+        ui.label('💬 Send Snapshot to AI Copilot').classes('text-lg font-semibold mb-2 text-white')
+        ui.label('Fetch current snapshot and use it in chat context').classes('text-sm text-gray-200 mb-4')
         
         copilot_result = ui.label('').classes('mt-2')
         
